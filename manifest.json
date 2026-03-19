@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "DLive Sticker Quick",
+  "version": "1.5",
+  "description": "儲存貼圖 ID 並一鍵送出聊天訊息",
+  "permissions": [
+    "activeTab",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://dlive.tv/*",
+    "https://graphigo.prd.dlive.tv/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "DLive Sticker Quick"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://dlive.tv/*"],
+      "js": ["content.js"]
+    }
+  ]
+}
