@@ -8,8 +8,11 @@ const UI = {
   btnId: 'dlsq_btn',
   panelId: 'dlsq_panel',
   styleId: 'dlsq_style_v2',
-  ctxMenuId: 'dlsq_ctx_menu'
+  ctxMenuId: 'dlsq_ctx_menu',
+  failToastId: 'dlsq_fail_overlay'
 };
+
+let failToastHideTimer = null;
 
 function ensureStyles() {
   let style = document.getElementById(UI.styleId);
@@ -147,7 +150,101 @@ function ensureStyles() {
       font-size: 11px;
       word-break: break-all;
     }
+
+    /* ===== Send failure toast（與貼圖面板同角落，不遮全畫面）===== */
+    #${UI.failToastId} {
+      position: fixed;
+      right: 16px;
+      bottom: 80px;
+      width: 320px;
+      z-index: 1000001;
+      display: none;
+      pointer-events: none;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    #${UI.failToastId}.open { display: block; }
+    #${UI.failToastId} .dlsq-fail-card {
+      width: 100%;
+      pointer-events: auto;
+      background: rgba(22,24,30,0.98);
+      border: 1px solid rgba(255,80,80,0.35);
+      border-radius: 10px;
+      box-shadow: 0 16px 44px rgba(0,0,0,0.55);
+      overflow: hidden;
+    }
+    #${UI.failToastId} .dlsq-fail-hdr {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 14px;
+      background: rgba(40,20,22,0.95);
+      border-bottom: 1px solid rgba(255,80,80,0.2);
+    }
+    #${UI.failToastId} .dlsq-fail-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #ff6b6b;
+    }
+    #${UI.failToastId} .dlsq-fail-x {
+      border: 0;
+      background: rgba(255,255,255,0.10);
+      color: rgba(255,255,255,0.85);
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1;
+    }
+    #${UI.failToastId} .dlsq-fail-x:hover { background: rgba(255,255,255,0.18); }
+    #${UI.failToastId} .dlsq-fail-msg {
+      padding: 14px;
+      font-size: 12px;
+      line-height: 1.45;
+      color: rgba(255,255,255,0.88);
+      word-break: break-word;
+      max-height: 180px;
+      overflow-y: auto;
+    }
   `;
+}
+
+function hideSendFailureToast() {
+  if (failToastHideTimer) {
+    clearTimeout(failToastHideTimer);
+    failToastHideTimer = null;
+  }
+  const wrap = document.getElementById(UI.failToastId);
+  if (wrap) wrap.classList.remove('open');
+}
+
+function showSendFailureToast(message) {
+  const text = String(message || '').trim() || '未知錯誤';
+  ensureStyles();
+  let wrap = document.getElementById(UI.failToastId);
+  if (!wrap) {
+    wrap = document.createElement('div');
+    wrap.id = UI.failToastId;
+    wrap.innerHTML = `
+      <div class="dlsq-fail-card" role="alert" aria-labelledby="dlsq_fail_title">
+        <div class="dlsq-fail-hdr">
+          <span class="dlsq-fail-title" id="dlsq_fail_title">貼圖送出失敗</span>
+          <button type="button" class="dlsq-fail-x" aria-label="關閉">✕</button>
+        </div>
+        <div class="dlsq-fail-msg"></div>
+      </div>
+    `;
+    document.body.appendChild(wrap);
+    wrap.querySelector('.dlsq-fail-x').addEventListener('click', () => hideSendFailureToast());
+  }
+  wrap.querySelector('.dlsq-fail-msg').textContent = text;
+  wrap.classList.add('open');
+  if (failToastHideTimer) clearTimeout(failToastHideTimer);
+  failToastHideTimer = setTimeout(() => {
+    failToastHideTimer = null;
+    hideSendFailureToast();
+  }, 6200);
 }
 
 function setPanelStatus(text, color = '#495057') {
@@ -199,6 +296,10 @@ function createContextMenuIfNeeded() {
     <div class="item" data-action="toggleFavorite">
       <div data-label="fav">標記常用（★）</div>
       <div style="opacity:.65;">★</div>
+    </div>
+    <div class="item" data-action="removeStickerId">
+      <div>從清單刪除</div>
+      <div style="opacity:.65;">✕</div>
     </div>
     <div class="sub" data-sub="id"></div>
   `;
@@ -361,6 +462,47 @@ async function addStickerIdToStorage(id) {
   return { added: afterSize > beforeSize, count: uniqueIds.length };
 }
 
+async function removeStickerIdFromStorage(id) {
+  const trimmed = String(id || '').trim();
+  if (!/^[A-Za-z0-9_]+$/.test(trimmed)) {
+    throw new Error(`ID 格式不正確：${trimmed}`);
+  }
+
+  const res = await chrome.storage.sync.get(['stickerIdsText', 'stickers', 'favoriteStickerIds']);
+
+  const idsFromText = (typeof res.stickerIdsText === 'string' ? res.stickerIdsText : '')
+    .split(/\r?\n/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  const idsFromStickers = Array.isArray(res.stickers)
+    ? res.stickers
+        .map((s) => String(s?.code || ''))
+        .map((code) => (code.match(/^:emote\/mine\/dlive\/([A-Za-z0-9_]+):$/)?.[1] || null))
+        .filter(Boolean)
+    : [];
+
+  const merged = [...new Set([...idsFromText, ...idsFromStickers])];
+  const hadId = merged.includes(trimmed);
+  const nextIds = merged.filter((x) => x !== trimmed);
+  const nextFav = (Array.isArray(res.favoriteStickerIds) ? res.favoriteStickerIds : []).filter((x) => x !== trimmed);
+  const favSet = new Set(nextFav);
+  const sortedIds = [...nextIds].sort((a, b) => (favSet.has(b) ? 1 : 0) - (favSet.has(a) ? 1 : 0));
+  const stickers = sortedIds.map((sid, index) => ({
+    name: `ID${index + 1}`,
+    code: `:emote/mine/dlive/${sid}:`,
+    imageUrl: `https://images.prd.dlivecdn.com/emote/${sid}`
+  }));
+
+  await chrome.storage.sync.set({
+    stickerIdsText: sortedIds.join('\n'),
+    stickers,
+    favoriteStickerIds: nextFav
+  });
+
+  return { removed: hadId, count: sortedIds.length };
+}
+
 function getDefaultStickers() {
   return [
     {
@@ -423,15 +565,12 @@ async function refreshPanelStickers() {
       tile.innerHTML = `${tile.innerHTML}<div class="fallback">${(s.name || 'sticker')}</div>`;
     }
 
-    tile.addEventListener('click', async () => {
-      try {
-        setPanelStatus('送出中…');
-        await sendChatMessage(s.code);
-        setPanelStatus('✅ 已送出', '#28a745');
-        setTimeout(() => setPanelStatus(''), 1200);
-      } catch (e) {
-        setPanelStatus(`❌ 送出失敗：${e?.message || e}`, '#dc3545');
-      }
+    tile.addEventListener('click', () => {
+      const code = s.code;
+      togglePanel(false);
+      sendChatMessage(code).catch((e) => {
+        showSendFailureToast(e?.message || e);
+      });
     });
 
     grid.appendChild(tile);
@@ -521,6 +660,12 @@ function setupUiAutoMount() {
         } else if (action === 'toggleFavorite') {
           const r = await toggleFavoriteIdInStorage(id);
           setPanelStatus(r.favored ? '✅ 已標記常用（★）' : '✅ 已取消常用', r.favored ? '#ffd43b' : '#adb5bd');
+        } else if (action === 'removeStickerId') {
+          const r = await removeStickerIdFromStorage(id);
+          setPanelStatus(
+            r.removed ? `✅ 已從清單刪除（剩 ${r.count} 個）` : 'ℹ️ 清單內沒有此 ID',
+            r.removed ? '#28a745' : '#adb5bd'
+          );
         }
         const panel = document.getElementById(UI.panelId);
         if (panel?.classList.contains('open')) refreshPanelStickers();
@@ -545,6 +690,7 @@ function setupUiAutoMount() {
     if (e.key === 'Escape') {
       togglePanel(false);
       hideContextMenu();
+      hideSendFailureToast();
     }
   });
 
@@ -708,6 +854,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     sendResponse({ ok: true, id });
   })().catch((e) => {
     console.error('❌ sendSticker failed', e);
+    showSendFailureToast(e?.message || e);
     sendResponse({ ok: false, error: String(e?.message || e), code: e?.code || null });
   });
 
