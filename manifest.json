@@ -1,19 +1,21 @@
 {
   "manifest_version": 3,
   "name": "DLive Sticker Quick",
-  "version": "1.6",
+  "version": "2.0",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
-  "description": "儲存貼圖 ID 並一鍵送出聊天訊息",
+  "description": "Save sticker IDs and send them as chat messages with one click.",
   "permissions": [
     "activeTab",
     "storage"
   ],
   "host_permissions": [
     "https://dlive.tv/*",
+    "https://www.dlive.tv/*",
+    "https://*.dlive.tv/*",
     "https://graphigo.prd.dlive.tv/*"
   ],
   "action": {
@@ -27,8 +29,12 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://dlive.tv/*"],
-      "js": ["content.js"]
+      "matches": [
+        "https://dlive.tv/*",
+        "https://www.dlive.tv/*",
+        "https://*.dlive.tv/*"
+      ],
+      "js": ["stickerStorage.js", "stickerTags.js", "content.js"]
     }
   ]
 }

@@ -1,14 +1,18 @@
-// 語系設定
+/* global DLSQ */
+const TAG = typeof DLSQ !== 'undefined' ? DLSQ : null;
+
 let currentLang = 'zh';
 
 const I18N = {
   zh: {
     headerSubtitle: '貼圖清單管理',
-    configTitle: '貼圖 ID 設定',
-    configHint: '一行一個 ID，儲存後會自動列出圖片',
-    saveButton: '儲存 ID 清單',
+    configTitle: '貼圖 ID 與標籤',
+    configHint: '一行一組：ID 後可接 #標籤（每張最多 4 個，單一標籤最多 16 字元）',
+    tagVocabTitle: '標籤詞庫（一行一個）',
+    tagVocabHint: '頻道頁右鍵貼圖或面板內右鍵可套用；每張最多 4 個標籤',
+    saveButton: '儲存 ID 清單與詞庫',
     reminder: '提醒：需要先在 DLive 登入；並在頻道頁使用',
-    footer: '🔥 點「★」設常用 • 點「✕」刪除',
+    footer: '🔥 點「★」常用 •「✕」刪除 • 頻道頁／面板右鍵可套標籤',
     favTitle: '常用',
     delTitle: '刪除',
     statusFavOn: '✅ 已標記常用',
@@ -17,15 +21,26 @@ const I18N = {
     statusSavedCount: (n) => `✅ 已儲存 ${n} 個 ID`,
     statusDeleted: '✅ 已刪除',
     statusInvalidId: (id) => `❌ ID 格式錯誤：${id}`,
-    langToggleLabel: '中 / EN'
+    statusParseErr: (detail) => `❌ 清單格式錯誤：${detail}`,
+    statusVocabBadLine: (line) => `❌ 詞庫無效標籤（最多 16 字元、不可空白/#）：${line}`,
+    langToggleLabel: '中 / EN',
+    idPlaceholder: '826c4ac1e004273_498281 #梗圖 #反應\n826cd8c8b004273_335245',
+    vocabPlaceholder: 'meme\nreaction\n搞笑',
+    errBadId: (id) => `${id || ''}`.trim() || '無效 ID',
+    errBadTag: (id, tag) => `${id}: #${tag} 無效`,
+    errTooManyTags: (id) => `${id}: 標籤超過 4 個`,
+    errDupId: (id) => `重複 ID: ${id}`,
+    errUnknown: '未知錯誤'
   },
   en: {
     headerSubtitle: 'Sticker list manager',
-    configTitle: 'Sticker ID settings',
-    configHint: 'One ID per line, images will be listed automatically after saving',
-    saveButton: 'Save ID list',
+    configTitle: 'Sticker IDs & tags',
+    configHint: 'One per line: ID then optional #tags (max 4 tags, 16 chars each)',
+    tagVocabTitle: 'Tag vocabulary (one per line)',
+    tagVocabHint: 'Right-click emote on channel or tile in panel to apply; max 4 tags per sticker',
+    saveButton: 'Save IDs & vocabulary',
     reminder: 'Tip: Please log in to DLive first and use this on a channel page',
-    footer: '🔥 Click "★" to mark favorite • Click "✕" to delete',
+    footer: '🔥 ★ favorite • ✕ delete • right-click to tag (page or panel)',
     favTitle: 'Favorite',
     delTitle: 'Delete',
     statusFavOn: '✅ Marked as favorite',
@@ -34,7 +49,16 @@ const I18N = {
     statusSavedCount: (n) => `✅ Saved ${n} IDs`,
     statusDeleted: '✅ Deleted',
     statusInvalidId: (id) => `❌ Invalid ID format: ${id}`,
-    langToggleLabel: 'EN / 中'
+    statusParseErr: (detail) => `❌ List parse error: ${detail}`,
+    statusVocabBadLine: (line) => `❌ Invalid vocab tag (max 16 chars, no spaces/#): ${line}`,
+    langToggleLabel: 'EN / 中',
+    idPlaceholder: '826c4ac1e004273_498281 #meme #reaction\n826cd8c8b004273_335245',
+    vocabPlaceholder: 'meme\nreaction\nfunny',
+    errBadId: (id) => `${id || ''}`.trim() || 'Invalid ID',
+    errBadTag: (id, tag) => `${id}: Invalid tag #${tag}`,
+    errTooManyTags: (id) => `${id}: More than 4 tags`,
+    errDupId: (id) => `Duplicate ID: ${id}`,
+    errUnknown: 'Unknown error'
   }
 };
 
@@ -57,6 +81,12 @@ function applyLanguage(lang) {
   const configHintEl = document.getElementById('configHint');
   if (configHintEl) configHintEl.textContent = t('configHint');
 
+  const tagVocabTitleEl = document.getElementById('tagVocabTitle');
+  if (tagVocabTitleEl) tagVocabTitleEl.textContent = t('tagVocabTitle');
+
+  const tagVocabHintEl = document.getElementById('tagVocabHint');
+  if (tagVocabHintEl) tagVocabHintEl.textContent = t('tagVocabHint');
+
   const saveBtn = document.getElementById('saveIdsBtn');
   if (saveBtn) saveBtn.textContent = t('saveButton');
 
@@ -70,9 +100,10 @@ function applyLanguage(lang) {
   if (langToggle) langToggle.textContent = t('langToggleLabel');
 
   const idListInput = document.getElementById('idListInput');
-  if (idListInput) {
-    idListInput.placeholder = '826c4ac1e004273_498281\n826cd8c8b004273_335245';
-  }
+  if (idListInput) idListInput.placeholder = t('idPlaceholder');
+
+  const tagVocabInput = document.getElementById('tagVocabInput');
+  if (tagVocabInput) tagVocabInput.placeholder = t('vocabPlaceholder');
 
   chrome.storage.sync.set({ uiLang: currentLang });
 }
@@ -84,7 +115,6 @@ function initLanguage() {
   });
 }
 
-// 預設貼圖
 const defaultStickers = [
   {
     name: 'test01',
@@ -110,7 +140,7 @@ function setStatus(text, color = '#28a745') {
   if (!text) return;
   setTimeout(() => {
     el.textContent = '';
-  }, 2000);
+  }, 2800);
 }
 
 function buildStickerFromId(id, index) {
@@ -121,11 +151,23 @@ function buildStickerFromId(id, index) {
   };
 }
 
+function parseStickerIdsWithTag(rawText) {
+  if (!TAG) {
+    const ids = (rawText || '')
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+    return {
+      rows: ids.filter((id) => /^[A-Za-z0-9_]+$/.test(id)).map((id) => ({ id, tags: [] })),
+      errors: []
+    };
+  }
+  return TAG.parseStickerIdsText(rawText);
+}
+
 function parseIdsFromText(rawText) {
-  return (rawText || '')
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean);
+  const { rows } = parseStickerIdsWithTag(rawText);
+  return rows.map((r) => r.id);
 }
 
 function idsToText(ids) {
@@ -137,12 +179,12 @@ function extractIdFromSticker(sticker) {
   return match?.[1] || null;
 }
 
-function sortIdsWithFavorites(ids, favoriteIds) {
+function sortRowsWithFavorites(rows, favoriteIds) {
   const fav = new Set(Array.isArray(favoriteIds) ? favoriteIds : []);
-  const unique = [...new Set(ids)];
-  const favIds = unique.filter((id) => fav.has(id));
-  const rest = unique.filter((id) => !fav.has(id));
-  return [...favIds, ...rest];
+  const list = Array.isArray(rows) ? rows : [];
+  const favRows = list.filter((r) => r?.id && fav.has(r.id));
+  const rest = list.filter((r) => r?.id && !fav.has(r.id));
+  return [...favRows, ...rest];
 }
 
 function removeUnknownFavorites(favoriteIds, ids) {
@@ -150,28 +192,72 @@ function removeUnknownFavorites(favoriteIds, ids) {
   return (favoriteIds || []).filter((id) => set.has(id));
 }
 
+function formatParseError(err) {
+  if (!err) return '';
+  if (err.error === 'bad_id') return t('errBadId', err.id);
+  if (err.error === 'bad_tag') return t('errBadTag', err.id, err.tag);
+  if (err.error === 'too_many_tags') return t('errTooManyTags', err.id);
+  if (err.error === 'dup_id') return t('errDupId', err.id);
+  return String(err.error || t('errUnknown'));
+}
+
+function validateVocabInput(rawText) {
+  if (!TAG) return { ok: true, text: rawText || '' };
+  const lines = String(rawText || '')
+    .split(/\r?\n/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  for (const line of lines) {
+    const label = TAG.normalizeTagToken(line);
+    if (!TAG.isValidTagLabel(label)) {
+      return { ok: false, line: line.slice(0, 40) };
+    }
+  }
+  return { ok: true, text: rawText || '' };
+}
+
+function mergeVocabWithRowTags(vocabRaw, rows) {
+  if (!TAG) return vocabRaw || '';
+  const list = TAG.parseTagVocabularyText(vocabRaw || '');
+  const seen = new Set(list.map((x) => String(x).toLowerCase()));
+  for (const row of Array.isArray(rows) ? rows : []) {
+    for (const tag of Array.isArray(row?.tags) ? row.tags : []) {
+      const label = TAG.normalizeTagToken(tag);
+      if (!TAG.isValidTagLabel(label)) continue;
+      const key = String(label).toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      list.push(label);
+    }
+  }
+  return list.join('\n');
+}
+
 function loadSettings() {
   const idListInput = document.getElementById('idListInput');
+  const tagVocabInput = document.getElementById('tagVocabInput');
   if (!idListInput) return;
 
-  chrome.storage.sync.get(['stickerIdsText', 'stickers', 'favoriteStickerIds'], (result) => {
-    // 新格式優先，舊格式則嘗試從 stickers 還原 ID 顯示
+  chrome.storage.local.get(['stickerIdsText', 'stickers', 'favoriteStickerIds', 'stickerTagVocabularyText'], (result) => {
+    if (tagVocabInput) {
+      tagVocabInput.value =
+        typeof result.stickerTagVocabularyText === 'string' ? result.stickerTagVocabularyText : '';
+    }
+
     if (typeof result.stickerIdsText === 'string') {
-      const ids = parseIdsFromText(result.stickerIdsText);
-      const sorted = sortIdsWithFavorites(ids, result.favoriteStickerIds);
-      idListInput.value = idsToText(sorted);
+      const { rows } = parseStickerIdsWithTag(result.stickerIdsText);
+      const sorted = sortRowsWithFavorites(rows, result.favoriteStickerIds);
+      idListInput.value = TAG ? TAG.serializeStickerRows(sorted) : idsToText(sorted.map((r) => r.id));
       return;
     }
 
     const stickers = Array.isArray(result.stickers) ? result.stickers : [];
     const ids = stickers.map(extractIdFromSticker).filter(Boolean);
-    const sorted = sortIdsWithFavorites(ids, result.favoriteStickerIds);
-    idListInput.value = idsToText(sorted);
+    const rows = ids.map((id) => ({ id, tags: [] }));
+    const sorted = sortRowsWithFavorites(rows, result.favoriteStickerIds);
+    idListInput.value = TAG ? TAG.serializeStickerRows(sorted) : idsToText(sorted.map((r) => r.id));
   });
 }
-
-loadSettings();
-initLanguage();
 
 const langToggleBtn = document.getElementById('langToggle');
 if (langToggleBtn) {
@@ -182,19 +268,20 @@ if (langToggleBtn) {
   });
 }
 
-// ===== 貼圖功能（圖片版）=====
 function loadStickers() {
-  chrome.storage.sync.get(['stickers', 'favoriteStickerIds'], (result) => {
+  chrome.storage.local.get(['stickers', 'favoriteStickerIds', 'stickerIdsText'], (result) => {
     const stickers = result.stickers || defaultStickers;
     const fav = Array.isArray(result.favoriteStickerIds) ? result.favoriteStickerIds : [];
-    displayStickers(stickers, fav);
+    const { rows } = parseStickerIdsWithTag(result.stickerIdsText || '');
+    const tagMap = TAG ? TAG.rowsToIdTagMap(rows) : {};
+    displayStickers(stickers, fav, tagMap);
   });
 }
 
-function displayStickers(stickers, favoriteIds = []) {
+function displayStickers(stickers, favoriteIds = [], idToTags = {}) {
   const grid = document.getElementById('stickerGrid');
   grid.innerHTML = '';
-  
+
   const favSet = new Set(favoriteIds);
   const sorted = [...stickers].sort((a, b) => {
     const ida = extractIdFromSticker(a);
@@ -209,8 +296,12 @@ function displayStickers(stickers, favoriteIds = []) {
     const item = document.createElement('div');
     item.className = 'sticker-item';
     if (id) item.setAttribute('data-id', id);
-    
-    // 有圖片的顯示圖片，沒圖片的顯示名稱
+
+    const tags = id && idToTags[id] && idToTags[id].length ? idToTags[id] : [];
+    const tagHtml = tags.length
+      ? `<div class="sticker-tags">${tags.map((x) => `<span class="tag-pill">#${String(x)}</span>`).join('')}</div>`
+      : '';
+
     if (sticker.imageUrl) {
       item.innerHTML = `
         <div style="text-align: center;">
@@ -218,7 +309,7 @@ function displayStickers(stickers, favoriteIds = []) {
                style="max-width: 50px; max-height: 50px; margin-bottom: 5px;" 
                alt="${sticker.name}"
                onerror="this.style.display='none'; this.parentElement.innerHTML='${sticker.name}';">
-          ${id ? `<div class="sticker-id">${id}</div>` : ''}
+          ${id ? `<div class="sticker-id">${id}</div>${tagHtml}` : ''}
         </div>
       `;
     } else {
@@ -228,7 +319,6 @@ function displayStickers(stickers, favoriteIds = []) {
       `;
     }
 
-    // actions: favorite + delete
     if (id) {
       const actions = document.createElement('div');
       actions.className = 'sticker-actions';
@@ -241,32 +331,44 @@ function displayStickers(stickers, favoriteIds = []) {
       actions.querySelector('.fav').addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
-        chrome.storage.sync.get(['favoriteStickerIds'], (r) => {
+        chrome.storage.local.get(['favoriteStickerIds', 'stickerIdsText'], (r) => {
           const current = Array.isArray(r.favoriteStickerIds) ? r.favoriteStickerIds : [];
           const set = new Set(current);
           if (set.has(id)) set.delete(id);
           else set.add(id);
           const next = [...set];
-          chrome.storage.sync.set({ favoriteStickerIds: next }, () => {
-            loadStickers();
-            loadSettings();
-            setStatus(set.has(id) ? t('statusFavOn') : t('statusFavOff'));
-          });
+          const { rows } = parseStickerIdsWithTag(r.stickerIdsText || '');
+          const sortedRows = sortRowsWithFavorites(rows, next);
+          const nextText = TAG ? TAG.serializeStickerRows(sortedRows) : idsToText(sortedRows.map((x) => x.id));
+          const stickersNext = sortedRows.map((row, index) => buildStickerFromId(row.id, index));
+          chrome.storage.local.set(
+            {
+              favoriteStickerIds: next,
+              stickerIdsText: nextText,
+              stickers: stickersNext
+            },
+            () => {
+              loadStickers();
+              loadSettings();
+              setStatus(set.has(id) ? t('statusFavOn') : t('statusFavOff'));
+            }
+          );
         });
       });
 
       actions.querySelector('.del').addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
-        chrome.storage.sync.get(['stickerIdsText', 'favoriteStickerIds'], (r) => {
-          const ids = parseIdsFromText(r.stickerIdsText || '');
-          const nextIds = ids.filter((x) => x !== id);
+        chrome.storage.local.get(['stickerIdsText', 'favoriteStickerIds'], (r) => {
+          const { rows } = parseStickerIdsWithTag(r.stickerIdsText || '');
+          const nextRows = rows.filter((x) => x.id !== id);
           const nextFav = (Array.isArray(r.favoriteStickerIds) ? r.favoriteStickerIds : []).filter((x) => x !== id);
-          const sortedIds = sortIdsWithFavorites(nextIds, nextFav);
-          const stickersNext = sortedIds.map((sid, index) => buildStickerFromId(sid, index));
-          chrome.storage.sync.set(
+          const sortedRows = sortRowsWithFavorites(nextRows, nextFav);
+          const nextText = TAG ? TAG.serializeStickerRows(sortedRows) : idsToText(sortedRows.map((x) => x.id));
+          const stickersNext = sortedRows.map((row, index) => buildStickerFromId(row.id, index));
+          chrome.storage.local.set(
             {
-              stickerIdsText: idsToText(sortedIds),
+              stickerIdsText: nextText,
               stickers: stickersNext,
               favoriteStickerIds: nextFav
             },
@@ -279,53 +381,92 @@ function displayStickers(stickers, favoriteIds = []) {
         });
       });
     }
-    
+
     grid.appendChild(item);
   });
 }
 
-// ===== 新增貼圖（只存 ID）= 新版本 =====
 document.getElementById('saveIdsBtn').addEventListener('click', () => {
   const idListInput = document.getElementById('idListInput');
+  const tagVocabInput = document.getElementById('tagVocabInput');
   const rawText = idListInput.value || '';
-  const ids = parseIdsFromText(rawText);
+  const vocabRaw = tagVocabInput ? tagVocabInput.value || '' : '';
 
-  if (!ids.length) {
-    chrome.storage.sync.set({ stickerIdsText: '', stickers: [], favoriteStickerIds: [] }, () => {
-      loadStickers();
-      setStatus(t('statusCleared'));
-    });
+  const vocabCheck = validateVocabInput(vocabRaw);
+  if (!vocabCheck.ok) {
+    setStatus(t('statusVocabBadLine', vocabCheck.line), '#dc3545');
     return;
   }
 
+  if (!rawText.trim()) {
+    chrome.storage.local.set(
+      {
+        stickerIdsText: '',
+        stickers: [],
+        favoriteStickerIds: [],
+        stickerTagVocabularyText: vocabRaw
+      },
+      () => {
+        loadStickers();
+        setStatus(t('statusCleared'));
+      }
+    );
+    return;
+  }
+
+  const { rows, errors } = parseStickerIdsWithTag(rawText);
+  if (errors.length) {
+    setStatus(t('statusParseErr', formatParseError(errors[0])), '#dc3545');
+    return;
+  }
+  const mergedVocabRaw = mergeVocabWithRowTags(vocabRaw, rows);
+
+  const ids = rows.map((r) => r.id);
   const invalidId = ids.find((id) => !/^[A-Za-z0-9_]+$/.test(id));
   if (invalidId) {
     setStatus(t('statusInvalidId', invalidId), '#dc3545');
     return;
   }
 
-  chrome.storage.sync.get(['favoriteStickerIds'], (r) => {
-    const uniqueIds = [...new Set(ids)];
-    const cleanedFav = removeUnknownFavorites(Array.isArray(r.favoriteStickerIds) ? r.favoriteStickerIds : [], uniqueIds);
-    const sortedIds = sortIdsWithFavorites(uniqueIds, cleanedFav);
-    const stickers = sortedIds.map((id, index) => buildStickerFromId(id, index));
+  chrome.storage.local.get(['favoriteStickerIds'], (r) => {
+    const uniqueRows = [];
+    const seen = new Set();
+    for (const row of rows) {
+      if (seen.has(row.id)) continue;
+      seen.add(row.id);
+      uniqueRows.push(row);
+    }
+    const cleanedFav = removeUnknownFavorites(Array.isArray(r.favoriteStickerIds) ? r.favoriteStickerIds : [], uniqueRows.map((x) => x.id));
+    const sortedRows = sortRowsWithFavorites(uniqueRows, cleanedFav);
+    const stickers = sortedRows.map((row, index) => buildStickerFromId(row.id, index));
+    const nextText = TAG ? TAG.serializeStickerRows(sortedRows) : idsToText(sortedRows.map((x) => x.id));
 
-    chrome.storage.sync.set(
+    chrome.storage.local.set(
       {
-        stickerIdsText: idsToText(sortedIds),
+        stickerIdsText: nextText,
         stickers,
-        favoriteStickerIds: cleanedFav
+        favoriteStickerIds: cleanedFav,
+        stickerTagVocabularyText: mergedVocabRaw
       },
       () => {
-        idListInput.value = idsToText(sortedIds);
+        idListInput.value = nextText;
+        if (tagVocabInput) tagVocabInput.value = mergedVocabRaw;
         loadStickers();
-        setStatus(t('statusSavedCount', sortedIds.length));
+        setStatus(t('statusSavedCount', sortedRows.length));
       }
     );
   });
 });
 
-// 已改用上方「ID 清單」作為唯一新增方式，因此不再提供「新增貼圖」按鈕。
-
-// 初始化
-loadStickers();
+(async function dlsqBootPopup() {
+  try {
+    if (typeof DLSQStickerStore !== 'undefined') {
+      await DLSQStickerStore.migrateFromSyncIfNeeded();
+    }
+  } catch (e) {
+    console.warn('DLSQ sticker migrate', e);
+  }
+  loadSettings();
+  initLanguage();
+  loadStickers();
+})();

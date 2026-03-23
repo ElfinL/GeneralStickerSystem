@@ -10,7 +10,7 @@
     }
     
     body {
-      width: 300px;
+      width: 360px;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: #0b0f14;
       color: rgba(255,255,255,0.9);
@@ -100,7 +100,7 @@
 
     .config-section textarea {
       width: 100%;
-      min-height: 92px;
+      min-height: 100px;
       padding: 8px;
       margin-top: 6px;
       border: 1px solid rgba(255,255,255,0.14);
@@ -217,6 +217,28 @@
       word-break: break-all;
       text-align: center;
     }
+
+    .sticker-tags {
+      margin-top: 4px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3px;
+      justify-content: center;
+      max-width: 100%;
+    }
+
+    .tag-pill {
+      font-size: 8px;
+      line-height: 1.2;
+      padding: 1px 4px;
+      border-radius: 999px;
+      background: rgba(120,190,255,0.16);
+      color: rgba(200,220,255,0.95);
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
     
     .sticker-code {
       font-size: 9px;
@@ -263,29 +285,36 @@
 <body>
   <div class="header">
     <div class="header-left">
-      <div class="header-title" id="titleText">🎨 DLive Sticker Quick V1.6</div>
-      <div class="header-subtitle" id="subtitleText">貼圖清單管理</div>
+      <div class="header-title" id="titleText">🎨 DLive Sticker Quick V1.9</div>
+      <div class="header-subtitle" id="subtitleText">Sticker list manager</div>
       <div class="header-author">
         by <a href="https://github.com/ElfinL" target="_blank" rel="noopener noreferrer">Elfin</a>
       </div>
     </div>
     <div class="header-right">
-      <button id="langToggle" class="lang-toggle">中 / EN</button>
+      <button id="langToggle" class="lang-toggle">EN / 中</button>
     </div>
   </div>
   
   <div class="config-section">
     <div id="configTitle" style="font-size: 12px; color: #ced4da; font-weight: 600;">
-      貼圖 ID 設定
+      Sticker IDs & tags
     </div>
     <div id="configHint" style="font-size: 11px; color: #868e96; margin-top: 5px;">
-      一行一個 ID，儲存後會自動列出圖片
+      One per line: ID then optional #tags (max 4 tags, 16 chars each)
     </div>
-    <textarea id="idListInput" placeholder="826c4ac1e004273_498281&#10;826cd8c8b004273_335245"></textarea>
-    <button id="saveIdsBtn">儲存 ID 清單</button>
+    <textarea id="idListInput" placeholder="826c4ac1e004273_498281 #meme #reaction&#10;826cd8c8b004273_335245"></textarea>
+    <div id="tagVocabTitle" style="font-size: 12px; color: #ced4da; font-weight: 600; margin-top: 12px;">
+      Tag vocabulary (one per line)
+    </div>
+    <div id="tagVocabHint" style="font-size: 11px; color: #868e96; margin-top: 4px;">
+      Right-click emote on channel or tile in panel to apply; max 4 tags per sticker
+    </div>
+    <textarea id="tagVocabInput" placeholder="meme&#10;reaction&#10;funny"></textarea>
+    <button id="saveIdsBtn">Save IDs & vocabulary</button>
     <div class="config-status" id="configStatus" style="margin-top:0px;"></div>
     <div id="reminderText" style="font-size: 11px; color: #4a90e2; margin-top: 5px;">
-      提醒：需要先在 DLive 登入；並在頻道頁使用
+      Tip: Please log in to DLive first and use this on a channel page
     </div>
   </div>
   
@@ -294,9 +323,11 @@
   </div>
   
   <div class="footer" id="footerText">
-    🔥 點「★」設常用 • 點「✕」刪除
+    🔥 ★ favorite • ✕ delete • right-click to tag (page or panel)
   </div>
 
+  <script src="stickerStorage.js"></script>
+  <script src="stickerTags.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>
