@@ -2,7 +2,28 @@
 (function initDlsqTags(global) {
   const MAX_TAG_LEN = 16;
   const MAX_TAGS_PER_STICKER = 4;
-  const ID_RE = /^[A-Za-z0-9_]+$/;
+  // 支援 DL- 前綴（DLive 貼圖）和 IM- 前綴（Imgur 圖片）
+  const DL_ID_RE = /^(?:DL-)?([A-Za-z0-9_]+)$/;
+  const IM_ID_RE = /^IM-[a-zA-Z0-9]+(?:\.(?:gif|png|jpg|jpeg|mp4))?$/i;
+
+  function isValidDLId(id) {
+    return DL_ID_RE.test(id);
+  }
+
+  function isValidIMId(id) {
+    return IM_ID_RE.test(id);
+  }
+
+  function normalizeId(id) {
+    if (!id) return id;
+    // IM 格式直接返回
+    if (id.startsWith('IM-')) return id;
+    // 已經有 DL- 前綴，直接返回
+    if (id.startsWith('DL-')) return id;
+    // 舊格式，添加 DL- 前綴
+    if (/^[A-Za-z0-9_]+$/.test(id)) return `DL-${id}`;
+    return id;
+  }
 
   function codePointLength(s) {
     return [...String(s || '')].length;
@@ -26,8 +47,24 @@
     if (!trimmed) return null;
     const parts = trimmed.split(/\s+/).filter(Boolean);
     if (!parts.length) return null;
-    const id = parts[0];
-    if (!ID_RE.test(id)) return { error: 'bad_id', id: id, raw: trimmed };
+    const rawId = parts[0];
+
+    // 判斷 ID 類型
+    let id;
+    if (rawId.startsWith('IM-')) {
+      // IM 格式驗證
+      if (!isValidIMId(rawId)) {
+        return { error: 'bad_id', id: rawId, raw: trimmed };
+      }
+      id = rawId;
+    } else {
+      // DL 格式：正規化並驗證
+      id = normalizeId(rawId);
+      if (!isValidDLId(id)) {
+        return { error: 'bad_id', id: rawId, raw: trimmed };
+      }
+    }
+
     const tags = [];
     const seen = new Set();
     for (let i = 1; i < parts.length; i++) {
@@ -73,7 +110,9 @@
     return list
       .map((r) => {
         const id = r?.id;
-        if (!id || !ID_RE.test(id)) return '';
+        if (!id) return '';
+        // IM 格式直接返回，DL 格式確保有前綴
+        const normalizedId = id.startsWith('IM-') ? id : (id.startsWith('DL-') ? id : `DL-${id}`);
         const uniq = [];
         const seen = new Set();
         for (const t of Array.isArray(r.tags) ? r.tags : []) {
@@ -85,8 +124,8 @@
           uniq.push(label);
           if (uniq.length >= MAX_TAGS_PER_STICKER) break;
         }
-        if (!uniq.length) return id;
-        return `${id} ${uniq.map((x) => `#${x}`).join(' ')}`;
+        if (!uniq.length) return normalizedId;
+        return `${normalizedId} ${uniq.map((x) => `#${x}`).join(' ')}`;
       })
       .filter(Boolean)
       .join('\n');
@@ -171,6 +210,9 @@
     tagCountsFromRows,
     normalizeTagToken,
     isValidTagLabel,
+    normalizeId,
+    isValidDLId,
+    isValidIMId,
     codePointLength
   });
 })(typeof self !== 'undefined' ? self : window);

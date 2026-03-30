@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="UTF-8">
   <style>
@@ -8,19 +9,19 @@
       padding: 0;
       box-sizing: border-box;
     }
-    
+
     body {
       width: 360px;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: #0b0f14;
-      color: rgba(255,255,255,0.9);
+      color: rgba(255, 255, 255, 0.9);
     }
-    
+
     .header {
       padding: 12px 14px;
-      background: linear-gradient(180deg, rgba(28,30,36,1), rgba(16,18,22,1));
-      color: rgba(255,255,255,0.92);
-      border-bottom: 1px solid rgba(255,255,255,0.08);
+      background: linear-gradient(180deg, rgba(28, 30, 36, 1), rgba(16, 18, 22, 1));
+      color: rgba(255, 255, 255, 0.92);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -31,7 +32,8 @@
       display: flex;
       flex-direction: column;
       gap: 2px;
-      max-width: 190px;
+      flex: 1;
+      min-width: 0;
     }
 
     .header-title {
@@ -40,8 +42,10 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      flex: 1;
+      min-width: 0;
     }
-    
+
     .header-subtitle {
       font-size: 11px;
       opacity: 0.9;
@@ -62,33 +66,154 @@
     }
 
     .header-right {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      flex-shrink: 0;
+      display: none;
     }
 
     .lang-toggle {
       padding: 4px 8px;
       border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.25);
-      background: rgba(10,12,16,0.85);
-      color: rgba(255,255,255,0.9);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: rgba(10, 12, 16, 0.85);
+      color: rgba(255, 255, 255, 0.9);
       font-size: 10px;
       cursor: pointer;
     }
 
-    .lang-toggle:hover {
-      background: rgba(120,190,255,0.18);
-      border-color: rgba(120,190,255,0.55);
+    .page-content {
+      display: none;
     }
-    
+
+    .page-content.active {
+      display: block;
+    }
+
+    /* 標題行（含中英切換） */
+    .header-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .header-author-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 2px;
+    }
+
+    /* 頁面切換按鈕組 */
+    .page-tabs {
+      display: flex;
+      gap: 4px;
+    }
+
+    .page-tab {
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(10, 12, 16, 0.7);
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .page-tab:hover {
+      background: rgba(120, 190, 255, 0.14);
+      border-color: rgba(120, 190, 255, 0.45);
+    }
+
+    .page-tab.active {
+      background: rgba(120, 190, 255, 0.35);
+      border-color: rgba(120, 190, 255, 0.7);
+      color: rgba(255, 255, 255, 0.95);
+    }
+
+    /* 中英切換按鈕（標題行用） */
+    .lang-toggle-inline {
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(10, 12, 16, 0.7);
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 10px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .lang-toggle-inline:hover {
+      background: rgba(120, 190, 255, 0.14);
+      border-color: rgba(120, 190, 255, 0.45);
+    }
+
+    /* DLive 設定頁樣式 */
+    .dlive-settings {
+      padding: 15px;
+      background: rgba(16, 18, 22, 0.98);
+      min-height: 200px;
+    }
+
+    .dlive-section {
+      margin-bottom: 20px;
+    }
+
+    .dlive-section-title {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.9);
+      font-weight: 600;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .dlive-btn-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .dlive-btn {
+      padding: 8px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 6px;
+      background: rgba(10, 12, 16, 0.88);
+      color: rgba(255, 255, 255, 0.88);
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .dlive-btn:hover {
+      background: rgba(120, 190, 255, 0.14);
+      border-color: rgba(120, 190, 255, 0.45);
+    }
+
+    .dlive-btn.active {
+      background: rgba(120, 190, 255, 0.35);
+      border-color: rgba(120, 190, 255, 0.7);
+    }
+
+    .dlive-status {
+      margin-top: 12px;
+      padding: 10px;
+      background: rgba(10, 12, 16, 0.95);
+      border-radius: 6px;
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.7);
+      min-height: 36px;
+      display: flex;
+      align-items: center;
+    }
+
     .config-section {
       padding: 15px;
-      background: rgba(16,18,22,0.98);
-      border-bottom: 1px solid rgba(255,255,255,0.08);
+      background: rgba(16, 18, 22, 0.98);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
-    
+
     .config-section input {
       width: 100%;
       padding: 8px;
@@ -103,17 +228,74 @@
       min-height: 100px;
       padding: 8px;
       margin-top: 6px;
-      border: 1px solid rgba(255,255,255,0.14);
+      border: 1px solid rgba(255, 255, 255, 0.14);
       border-radius: 4px;
       font-size: 12px;
       line-height: 1.35;
       resize: vertical;
       font-family: Consolas, "Courier New", monospace;
-      background: rgba(10,12,16,0.95);
-      color: rgba(255,255,255,0.92);
+      background: rgba(10, 12, 16, 0.95);
+      color: rgba(255, 255, 255, 0.92);
     }
-    .config-section textarea::placeholder { color: rgba(255,255,255,0.35); }
-    
+
+    .config-section textarea::placeholder {
+      color: rgba(255, 255, 255, 0.35);
+    }
+
+    .line-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 6px;
+      font-size: 11px;
+      line-height: 24px;
+      color: rgba(255, 255, 255, 0.55);
+    }
+
+    .goto-line {
+      display: grid !important;
+      grid-template-columns: auto auto !important;
+      gap: 4px !important;
+      align-items: center !important;
+    }
+
+    .goto-line input,
+    .goto-line button {
+      height: 24px !important;
+      min-height: 24px !important;
+      max-height: 24px !important;
+      padding: 0 8px !important;
+      font-size: 11px !important;
+      line-height: 24px !important;
+      box-sizing: border-box !important;
+      margin: 0 !important;
+      vertical-align: middle !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+
+    .goto-line input {
+      width: 80px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 3px;
+      background: rgba(10, 12, 16, 0.8);
+      color: rgba(255, 255, 255, 0.9);
+      text-align: center;
+      font-family: inherit;
+    }
+
+    .goto-line button {
+      background: rgba(31, 122, 236, 0.8);
+      color: white;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      font-family: inherit;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
     .config-section button {
       width: 100%;
       padding: 8px;
@@ -125,35 +307,36 @@
       font-size: 12px;
       margin-top: 5px;
     }
-    
+
     .config-section button:hover {
       background: #1a68c9;
     }
-    
+
     .config-status {
       font-size: 11px;
       color: #28a745;
       margin-top: 5px;
       text-align: center;
     }
-    
+
     .sticker-container {
       padding: 15px;
-      background: rgba(12,14,18,0.98);
+      background: rgba(12, 14, 18, 0.98);
     }
-    
+
     .sticker-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 10px;
       margin-bottom: 15px;
-      max-height: 180px; /* 約兩行 */
+      max-height: 180px;
+      /* 約兩行 */
       overflow-y: auto;
       padding-right: 2px;
     }
-    
+
     .sticker-item {
-      background: rgba(255,255,255,0.06);
+      background: rgba(255, 255, 255, 0.06);
       border: 0;
       border-radius: 8px;
       padding: 8px 5px;
@@ -161,7 +344,7 @@
       transition: all 0.2s;
       text-align: center;
       font-size: 12px;
-      color: rgba(255,255,255,0.88);
+      color: rgba(255, 255, 255, 0.88);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -169,12 +352,12 @@
       min-height: 80px;
       position: relative;
     }
-    
+
     .sticker-item:hover {
-      background: rgba(120,190,255,0.14);
+      background: rgba(120, 190, 255, 0.14);
       transform: translateY(-1px);
     }
-    
+
     .sticker-actions {
       position: absolute;
       top: 6px;
@@ -185,33 +368,33 @@
       gap: 6px;
       pointer-events: auto;
     }
-    
+
     .sticker-actions button {
       width: 22px;
       height: 22px;
       border-radius: 7px;
-      border: 1px solid rgba(255,255,255,0.14);
-      background: rgba(10,12,16,0.85);
-      color: rgba(255,255,255,0.85);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(10, 12, 16, 0.85);
+      color: rgba(255, 255, 255, 0.85);
       cursor: pointer;
       font-size: 12px;
       line-height: 1;
       padding: 0;
     }
-    
+
     .sticker-actions button:hover {
-      background: rgba(120,190,255,0.18);
-      border-color: rgba(120,190,255,0.45);
+      background: rgba(120, 190, 255, 0.18);
+      border-color: rgba(120, 190, 255, 0.45);
     }
-    
+
     .sticker-actions button.fav.on {
       color: #ffd43b;
-      border-color: rgba(255,212,59,0.55);
+      border-color: rgba(255, 212, 59, 0.55);
     }
 
     .sticker-id {
       font-size: 9px;
-      color: rgba(255,255,255,0.55);
+      color: rgba(255, 255, 255, 0.55);
       margin-top: 4px;
       line-height: 1.3;
       word-break: break-all;
@@ -232,28 +415,28 @@
       line-height: 1.2;
       padding: 1px 4px;
       border-radius: 999px;
-      background: rgba(120,190,255,0.16);
-      color: rgba(200,220,255,0.95);
+      background: rgba(120, 190, 255, 0.16);
+      color: rgba(200, 220, 255, 0.95);
       max-width: 100%;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-    
+
     .sticker-code {
       font-size: 9px;
-      color: rgba(255,255,255,0.45);
+      color: rgba(255, 255, 255, 0.45);
       margin-top: 4px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-    
+
     .add-section {
       border-top: 1px solid #e9ecef;
       padding-top: 12px;
     }
-    
+
     .add-btn {
       width: 100%;
       padding: 8px;
@@ -265,63 +448,134 @@
       cursor: pointer;
       transition: all 0.2s;
     }
-    
+
     .add-btn:hover {
       background: #e9ecef;
       border-color: #4a90e2;
       color: #4a90e2;
     }
-    
+
     .footer {
       padding: 10px;
-      background: rgba(16,18,22,0.98);
-      border-top: 1px solid rgba(255,255,255,0.08);
+      background: rgba(16, 18, 22, 0.98);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
       font-size: 10px;
-      color: rgba(255,255,255,0.5);
+      color: rgba(255, 255, 255, 0.5);
       text-align: center;
+    }
+
+    /* DLive 頁面時隱藏 footer 文字但保持佔位 */
+    #dlivePage.active~.footer {
+      visibility: hidden;
     }
   </style>
 </head>
+
 <body>
   <div class="header">
     <div class="header-left">
-      <div class="header-title" id="titleText">🎨 DLive Sticker Quick V1.9</div>
-      <div class="header-subtitle" id="subtitleText">Sticker list manager</div>
-      <div class="header-author">
-        by <a href="https://github.com/ElfinL" target="_blank" rel="noopener noreferrer">Elfin</a>
+      <!-- 標題行：標題 + 中英切換 -->
+      <div class="header-title-row">
+        <div class="header-title" id="titleText">🎨 General Sticker System (GSS)</div>
+        <button id="langToggle" class="lang-toggle-inline">EN / 中</button>
+      </div>
+      <div class="header-subtitle" id="subtitleText">通用貼圖系統 / Sticker list manager</div>
+      <!-- 作者行：作者 + 頁面切換 -->
+      <div class="header-author-row">
+        <div class="header-author">
+          by <a href="https://github.com/ElfinL" target="_blank" rel="noopener noreferrer">Elfin</a>
+        </div>
+        <div class="page-tabs">
+          <button id="tabSticker" class="page-tab active">🎨 貼圖</button>
+          <button id="tabDlive" class="page-tab">⚙️ DLive</button>
+        </div>
       </div>
     </div>
-    <div class="header-right">
-      <button id="langToggle" class="lang-toggle">EN / 中</button>
+  </div>
+
+  <!-- 主頁面：貼圖管理 -->
+  <div id="mainPage" class="page-content active">
+    <div class="config-section">
+      <div id="configTitle" style="font-size: 12px; color: #ced4da; font-weight: 600;">
+        Sticker IDs & tags
+      </div>
+      <div id="configHint" style="font-size: 11px; color: #868e96; margin-top: 5px;">
+        One per line: DL-xxx or IM-xxx, then optional #tags (max 4 tags, 16 chars each)
+      </div>
+      <textarea id="idListInput" autocomplete="off"
+        placeholder="DL-826c4ac1e004273_498281 #meme #reaction&#10;IM-ha3eTC7.gif #funny&#10;DL-826cd8c8b004273_335245&#10;IM-abc1234.png"></textarea>
+      <div class="line-info">
+        <span id="lineInfoText">第 1 行 / 共 1 行</span>
+        <div class="goto-line">
+          <input type="text" id="gotoLineInput" placeholder="跳转到行">
+          <button id="gotoLineBtn">跳转</button>
+        </div>
+      </div>
+      <div id="tagVocabTitle" style="font-size: 12px; color: #ced4da; font-weight: 600; margin-top: 12px;">
+        Tag vocabulary (one per line)
+      </div>
+      <div id="tagVocabHint" style="font-size: 11px; color: #868e96; margin-top: 4px;">
+        Right-click emote on channel or tile in panel to apply; max 4 tags per sticker
+      </div>
+      <textarea id="tagVocabInput" placeholder="meme&#10;reaction&#10;funny"></textarea>
+      <button id="saveIdsBtn">Save IDs & vocabulary</button>
+      <div class="config-status" id="configStatus" style="margin-top:0px;"></div>
+      <div id="reminderText" style="font-size: 11px; color: #4a90e2; margin-top: 5px;">
+        Tip: Please log in to DLive first and use this on a channel page
+      </div>
+    </div>
+
+    <div class="sticker-container">
+      <div class="sticker-grid" id="stickerGrid"></div>
     </div>
   </div>
-  
-  <div class="config-section">
-    <div id="configTitle" style="font-size: 12px; color: #ced4da; font-weight: 600;">
-      Sticker IDs & tags
-    </div>
-    <div id="configHint" style="font-size: 11px; color: #868e96; margin-top: 5px;">
-      One per line: ID then optional #tags (max 4 tags, 16 chars each)
-    </div>
-    <textarea id="idListInput" placeholder="826c4ac1e004273_498281 #meme #reaction&#10;826cd8c8b004273_335245"></textarea>
-    <div id="tagVocabTitle" style="font-size: 12px; color: #ced4da; font-weight: 600; margin-top: 12px;">
-      Tag vocabulary (one per line)
-    </div>
-    <div id="tagVocabHint" style="font-size: 11px; color: #868e96; margin-top: 4px;">
-      Right-click emote on channel or tile in panel to apply; max 4 tags per sticker
-    </div>
-    <textarea id="tagVocabInput" placeholder="meme&#10;reaction&#10;funny"></textarea>
-    <button id="saveIdsBtn">Save IDs & vocabulary</button>
-    <div class="config-status" id="configStatus" style="margin-top:0px;"></div>
-    <div id="reminderText" style="font-size: 11px; color: #4a90e2; margin-top: 5px;">
-      Tip: Please log in to DLive first and use this on a channel page
+  <!-- 主頁面結束 -->
+
+  <!-- DLive 設定頁 -->
+  <div id="dlivePage" class="page-content">
+    <div class="dlive-settings">
+      <!-- 區塊 1: 劇院模式 -->
+      <div class="dlive-section">
+        <div class="dlive-section-title">🎭 劇院模式</div>
+        <div class="dlive-btn-grid">
+          <button class="dlive-btn" id="btnTheater13">🎭 劇院模式</button>
+          <button class="dlive-btn" id="btnTestZoomReset">🔄 縮放重置</button>
+          <button class="dlive-btn" id="btnTestZoomOut">🔍- 縮小10%</button>
+          <button class="dlive-btn" id="btnTestZoomIn">🔍+ 放大10%</button>
+        </div>
+      </div>
+
+      <!-- 區塊 2: 聊天室控制 -->
+      <div class="dlive-section">
+        <div class="dlive-section-title">💬 聊天室控制</div>
+        <div class="dlive-btn-grid">
+          <button class="dlive-btn" id="btnChatNarrow">💬 聊天室變窄</button>
+          <button class="dlive-btn" id="btnChatHidden">🚫 隱藏聊天室</button>
+          <button class="dlive-btn" id="btnChatOverlayFix1">🎬 浮動聊天室</button>
+        </div>
+      </div>
+
+      <!-- 區塊 3: 元素控制 -->
+      <div class="dlive-section">
+        <div class="dlive-section-title">👁️ 元素控制</div>
+        <div class="dlive-btn-grid">
+          <button class="dlive-btn" id="btnNavbar">📌 隱藏頂部欄</button>
+          <button class="dlive-btn" id="btnTitleFix1">👁️ 隱藏標題</button>
+          <button class="dlive-btn" id="btnDonation">💰 隱藏課金區</button>
+          <button class="dlive-btn" id="btnSidebar">📁 隱藏側邊欄</button>
+          <button class="dlive-btn" id="btnAboutFix1">📦 隱藏下方區</button>
+          <button class="dlive-btn" id="btnTestBlackFix1">🖤 黑色背景</button>
+        </div>
+      </div>
+
+      <!-- 狀態顯示 -->
+      <div class="dlive-status" id="dliveStatus">
+        ℹ️ 需要先在 DLive 頻道頁面才能使用這些功能
+      </div>
     </div>
   </div>
-  
-  <div class="sticker-container">
-    <div class="sticker-grid" id="stickerGrid"></div>
-  </div>
-  
+  <!-- DLive 設定頁結束 -->
+
   <div class="footer" id="footerText">
     🔥 ★ favorite • ✕ delete • right-click to tag (page or panel)
   </div>
@@ -330,4 +584,5 @@
   <script src="stickerTags.js"></script>
   <script src="popup.js"></script>
 </body>
+
 </html>

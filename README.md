@@ -1,4 +1,4 @@
-# 🎨 DLive Sticker Quick
+# 🎨 General Sticker System (GSS) / 通用貼圖系統
 
 [中文](#中文) | [English](#english)
 
@@ -20,14 +20,16 @@
 2. You'll see a 🎨 button in the chat area
 3. Click to open the sticker panel and send stickers
 
-### Manage Stickers
+### Manage Stickers & Tags
 - Click the 🎨 icon in toolbar to open manager
-- Paste sticker IDs (one per line)
+- Paste sticker IDs (one per line, e.g., `id #tag1 #tag2`)
+- Right-click any sticker in the panel to apply tags or favorite/hide
 - Click "★" to favorite
 - Click "✕" to delete
+- Click "👁️" to hide (Manage hidden stickers in "Hidden" tab)
 
 ### Right-click Quick Add
-- Right-click on any sticker → Add to Sticker Quick
+- Right-click on any sticker → Add to General Sticker System
 
 ## 👤 Author
 **Elfin** · [GitHub](https://github.com/ElfinL)
@@ -50,14 +52,16 @@
 2. 聊天室會多一個 🎨 按鈕
 3. 點開就可以選貼圖送出
 
-### 管理貼圖
+### 管理貼圖與標籤
 - 點工具列 🎨 打開管理介面
-- 貼上貼圖 ID（一行一個）
+- 貼上貼圖 ID（一行一個，格式：`id #標籤1 #標籤2`）
+- 在面板內對貼圖點右鍵，可快速套用標籤或設為常用/隱藏
 - 點「★」設常用
 - 點「✕」刪除
+- 點「👁️」隱藏（可在「隱藏」分頁中永久刪除）
 
 ### 右鍵快速新增
-- 對貼圖按右鍵 → 新增到 Sticker Quick
+- 對貼圖按右鍵 → 新增到通用貼圖系統
 
 ## 👤 作者
 **Elfin** · [GitHub](https://github.com/ElfinL)

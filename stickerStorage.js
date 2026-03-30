@@ -45,7 +45,6 @@
               }
               chrome.storage.sync.remove(STICKER_KEYS, () => {
                 const err3 = chrome.runtime.lastError;
-                if (err3) console.warn('DLSQ: sync.remove', err3.message);
                 resolve();
               });
             });

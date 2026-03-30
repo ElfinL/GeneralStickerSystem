@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "DLive Sticker Quick",
-  "version": "2.0",
+  "name": "General Sticker System (GSS)",
+  "version": "4.0",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
@@ -9,18 +9,14 @@
   },
   "description": "Save sticker IDs and send them as chat messages with one click.",
   "permissions": [
-    "activeTab",
     "storage"
   ],
   "host_permissions": [
-    "https://dlive.tv/*",
-    "https://www.dlive.tv/*",
-    "https://*.dlive.tv/*",
-    "https://graphigo.prd.dlive.tv/*"
+    "https://*.dlive.tv/*"
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "DLive Sticker Quick",
+    "default_title": "General Sticker System (GSS)",
     "default_icon": {
       "16": "icons/icon16.png",
       "48": "icons/icon48.png",
@@ -34,7 +30,21 @@
         "https://www.dlive.tv/*",
         "https://*.dlive.tv/*"
       ],
-      "js": ["stickerStorage.js", "stickerTags.js", "content.js"]
+      "js": [
+        "stickerStorage.js",
+        "stickerTags.js",
+        "content.js"
+      ]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "icons/*.png"
+      ],
+      "matches": [
+        "https://*.dlive.tv/*"
+      ]
     }
   ]
 }
