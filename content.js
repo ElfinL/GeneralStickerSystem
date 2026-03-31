@@ -101,12 +101,10 @@ try {
 }
 
 // ========= 零寬字符隱藏訊息功能 =========
-// 方案B: 使用4種零寬字符表示2bit (00,01,10,11)
+// 方案C: 只使用2種零寬字符表示1bit (Twitch會過濾U+FEFF和U+200D)
 const ZW_CHARS = {
-  '00': '\u200B', // 零寬空格
-  '01': '\u200C', // 零寬非連接符
-  '10': '\u200D', // 零寬連接符
-  '11': '\uFEFF'  // 零寬不換行空格
+  '0': '\u200B', // 零寬空格 = 0
+  '1': '\u200C'  // 零寬非連接符 = 1
 };
 const ZW_REVERSE = Object.fromEntries(Object.entries(ZW_CHARS).map(([k, v]) => [v, k]));
 
@@ -115,12 +113,11 @@ function encodeToZeroWidth(str) {
   const bytes = new TextEncoder().encode(str);
   let encoded = '';
   for (const byte of bytes) {
-    // 每個byte分成4個2bit組
+    // 每個byte轉成8個bit，每個bit用一個零寬字符表示
     const b = byte.toString(2).padStart(8, '0');
-    encoded += ZW_CHARS[b.slice(0, 2)];
-    encoded += ZW_CHARS[b.slice(2, 4)];
-    encoded += ZW_CHARS[b.slice(4, 6)];
-    encoded += ZW_CHARS[b.slice(6, 8)];
+    for (const bit of b) {
+      encoded += ZW_CHARS[bit];
+    }
   }
   return encoded;
 }
@@ -129,8 +126,8 @@ function encodeToZeroWidth(str) {
 function decodeFromZeroWidth(zwStr) {
   let bits = '';
   for (const char of zwStr) {
-    const bits2 = ZW_REVERSE[char];
-    if (bits2) bits += bits2;
+    const bit = ZW_REVERSE[char];
+    if (bit) bits += bit;
   }
   // 每8bit一組轉成byte
   const bytes = [];
@@ -349,6 +346,29 @@ function ensureStyles() {
       font-size: 11px;
       color: rgba(255,255,255,0.72);
       min-height: 14px;
+    }
+
+    /* ===== Chat Button (聊天室輸入框按鈕) ===== */
+    #${UI.btnId} {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      margin: 0 4px;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      transition: background 0.15s ease;
+    }
+    #${UI.btnId}:hover {
+      background: rgba(120,190,255,0.2);
+    }
+    #${UI.btnId} img {
+      display: block;
+      width: 20px;
+      height: 20px;
     }
 
     /* ===== Right-click context menu (add sticker ID) ===== */
@@ -2260,13 +2280,26 @@ async function refreshPanelStickers() {
       const code = s.code;
       togglePanel(false);
 
-      // IM 類型使用隱藏訊息發送，DL 類型直接發送
-      if (s.isIM) {
+      // 在 Twitch 上，DL/IM 都直接發送明文 ID；在 DLive 上，DL 直接發送，IM 使用零寬編碼
+      if (s.isIM && isDLive()) {
+        // 只在 DLive 使用零寬編碼
         sendHiddenMessage(code).catch((e) => {
           showSendFailureToast(e?.message || e);
         });
       } else {
-        sendChatMessage(code).catch((e) => {
+        // Twitch 或 DLive 的 DL：直接發送
+        let sendCode = code;
+        if (isTwitch() && code.startsWith(':emote/mine/dlive/')) {
+          // 從 :emote/mine/dlive/xxx: 提取 ID 並轉換為 DL-xxx
+          const match = code.match(/:emote\/mine\/dlive\/([a-zA-Z0-9_]+):/);
+          if (match) {
+            sendCode = `DL-${match[1]}`;
+          }
+        } else if (isTwitch() && code.startsWith('IM-')) {
+          // IM 圖在 Twitch 直接發送 IM-xxx 格式（去掉副檔名）
+          sendCode = code.replace(/\.(gif|png|jpg|jpeg|mp4)$/i, '');
+        }
+        sendChatMessage(sendCode).catch((e) => {
           showSendFailureToast(e?.message || e);
         });
       }
@@ -2286,8 +2319,25 @@ async function refreshPanelStickers() {
 }
 
 function findChatContainer() {
-  // 參考你給的插件：.chatroom-input 是常見插入點
-  return document.querySelector('.chatroom-input');
+  // DLive: .chatroom-input
+  // Twitch: 需要找到包含輸入框和表情按鈕的容器
+  const selectors = [
+    '.chatroom-input',                           // DLive
+    '[data-a-target="chat-input-container"]',   // Twitch
+    '.chat-input__container',                    // Twitch alternate
+    '.chat-input-container',                     // Twitch alternate
+    '.chat-input__textarea',                     // Twitch textarea container
+    '[class*="chat-input"]',                      // Generic fallback
+  ];
+
+  for (const selector of selectors) {
+    const el = document.querySelector(selector);
+    if (el) {
+      console.log('找到聊天室輸入框:', selector);
+      return el;
+    }
+  }
+  return null;
 }
 
 function ensureChatButton() {
@@ -2304,8 +2354,8 @@ function ensureChatButton() {
     btn.title = 'GSS 通用貼圖系統';
     const iconImg = document.createElement('img');
     iconImg.src = chrome.runtime.getURL('icons/icon16.png');
-    iconImg.style.width = '20px';
-    iconImg.style.height = '20px';
+    iconImg.style.width = '24px';
+    iconImg.style.height = '24px';
     iconImg.style.display = 'block';
     btn.appendChild(iconImg);
     btn.addEventListener('click', (e) => {
@@ -2313,7 +2363,40 @@ function ensureChatButton() {
       e.stopPropagation();
       togglePanel();
     });
-    chat.appendChild(btn);
+
+    // 根據平台調整按鈕插入位置
+    if (isTwitch()) {
+      // 查找笑臉表情按鈕
+      const emojiBtn = document.querySelector('[data-a-target="emote-picker-button"]');
+
+      if (emojiBtn) {
+        // 找到笑臉按鈕的父容器（div.bkOPih 或類似的容器）
+        let container = emojiBtn.parentElement;
+
+        // 如果父容器存在，直接在其中插入
+        if (container) {
+          // 設置按鈕樣式
+          btn.style.cssText = '';
+          btn.style.background = 'transparent';
+          btn.style.border = 'none';
+          btn.style.cursor = 'pointer';
+          btn.style.padding = '4px';
+          btn.style.marginLeft = '4px';
+          btn.style.width = '30px';
+          btn.style.height = '30px';
+          btn.style.display = 'inline-flex';
+          btn.style.alignItems = 'center';
+          btn.style.justifyContent = 'center';
+          btn.style.verticalAlign = 'middle';
+
+          // 插入到笑臉按鈕之後
+          emojiBtn.after(btn);
+        }
+      }
+    } else {
+      // DLive: 直接附加到聊天輸入框
+      chat.appendChild(btn);
+    }
   }
 
   return true;
@@ -2513,6 +2596,12 @@ async function resolveStreamerUsername() {
 }
 
 async function sendChatMessage(message, retries = 2) {
+  // 根據平台使用不同的發送方式
+  if (isTwitch()) {
+    return await sendTwitchChatMessage(message);
+  }
+
+  // DLive 原有的發送邏輯
   const streamer = await resolveStreamerUsername();
 
   const mutation = `
@@ -2572,6 +2661,72 @@ async function sendChatMessage(message, retries = 2) {
   throw lastErr || new Error('發送失敗');
 }
 
+// Twitch 聊天發送功能 - 只填充輸入框，不自動發送（避免 React DOM 衝突）
+async function sendTwitchChatMessage(message) {
+  // 找到 Twitch 的聊天輸入框
+  const chatInput = document.querySelector('textarea[data-a-target="chat-input"], div[data-a-target="chat-input"], .chat-wysiwyg-input__editor, [contenteditable="true"][data-a-target="chat-input"]');
+
+  if (!chatInput) {
+    throw new Error('找不到 Twitch 聊天輸入框');
+  }
+
+  const isContentEditable = chatInput.isContentEditable;
+
+  // ========== 第一步：方法2風格（focus → 清空 → blur → focus）==========
+  chatInput.focus();
+
+  if (isContentEditable) {
+    chatInput.textContent = '';
+  } else {
+    chatInput.value = '';
+  }
+
+  chatInput.blur();
+  chatInput.focus();
+
+  await sleep(10);
+
+  // ========== 第二步：方法9風格（beforeinput → 設值 → input）==========
+  if (isContentEditable) {
+    const beforeInput = new InputEvent('beforeinput', {
+      bubbles: true,
+      cancelable: true,
+      inputType: 'insertText',
+      data: message
+    });
+    chatInput.dispatchEvent(beforeInput);
+
+    chatInput.textContent = message;
+
+    const inputEvent = new InputEvent('input', {
+      bubbles: true,
+      inputType: 'insertText',
+      data: message
+    });
+    chatInput.dispatchEvent(inputEvent);
+  } else {
+    const beforeInput = new InputEvent('beforeinput', {
+      bubbles: true,
+      cancelable: true,
+      inputType: 'insertText',
+      data: message
+    });
+    chatInput.dispatchEvent(beforeInput);
+
+    chatInput.value = message;
+
+    const inputEvent = new InputEvent('input', {
+      bubbles: true,
+      inputType: 'insertText',
+      data: message
+    });
+    chatInput.dispatchEvent(inputEvent);
+  }
+
+  // 不自動發送，讓用戶手動按 Enter
+  return true;
+}
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   // 處理來自 popup 的 DLive 控制命令
   if (request.type === 'DLIVE_CONTROL') {
@@ -2593,8 +2748,30 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   return true;
 });
 
+// ==================== 平台檢測 ====================
+function getCurrentPlatform() {
+  const hostname = window.location.hostname;
+  if (hostname.includes('twitch.tv')) return 'twitch';
+  if (hostname.includes('dlive.tv')) return 'dlive';
+  return 'unknown';
+}
+
+function isDLive() {
+  return getCurrentPlatform() === 'dlive';
+}
+
+function isTwitch() {
+  return getCurrentPlatform() === 'twitch';
+}
+
 // ==================== DLive 控制命令處理器 ====================
 function handleDliveControlCommand(command, sendResponse) {
+  // Twitch 平台不支援 UI 調整功能（Twitch 劇院模式已經做得很好）
+  if (isTwitch()) {
+    sendResponse({ success: false, message: 'ℹ️ Twitch 平台不支援畫面調整功能' });
+    return;
+  }
+
   try {
     switch (command) {
       // 元素控制
@@ -2953,11 +3130,13 @@ function scanAndReplaceIMImages() {
   const textNodes = [];
   let node;
   while (node = walker.nextNode()) {
-    // 跳過已處理過的節點
+    // 跳過已處理過的節點 和 聊天輸入框
     if (node.parentElement?.closest('.dlsq-im-replaced, img, video, script, style, textarea')) continue;
+    // 跳過 Twitch/DLive 聊天輸入框（避免在輸入框中轉換圖片）
+    if (node.parentElement?.closest('[data-a-target="chat-input"], .chat-wysiwyg-input__editor, [contenteditable="true"], .chatroom-input')) continue;
     const text = node.textContent;
-    // 檢查常規 IM- 或零寬字符
-    if (text.includes('IM-') || /[\u200B\u200C\u200D\uFEFF]/.test(text)) {
+    // 檢查常規 IM- 或零寬字符或 DL- 或 Twitch emote 格式
+    if (text.includes('IM-') || text.includes('DL-') || text.includes(':emote/mine/dlive/') || /[\u200B\u200C\u200D\uFEFF]/.test(text)) {
       textNodes.push(node);
     }
   }
@@ -2966,49 +3145,84 @@ function scanAndReplaceIMImages() {
     const text = textNode.textContent;
 
     // 先嘗試解碼零寬字符
-    let hiddenImId = null;
+    let hiddenStickerId = null;
+    let isDLSticker = false;
     const zwChars = text.match(/[\u200B\u200C\u200D\uFEFF]/g);
     if (zwChars && zwChars.length >= 8) {
       try {
         const decoded = decodeFromZeroWidth(zwChars.join(''));
         if (decoded && decoded.startsWith('IM-')) {
-          hiddenImId = decoded;
+          hiddenStickerId = decoded;
+        } else if (decoded && decoded.startsWith('DL-')) {
+          hiddenStickerId = decoded;
+          isDLSticker = true;
         }
       } catch (e) {
         // 解碼失敗，繼續正常處理
       }
     }
 
-    // 如果找到隱藏的 IM-ID，直接替換整個文本節點
-    if (hiddenImId && !textNode.parentElement?.closest('.dlsq-hidden-decoded')) {
-      const url = DKIP.decode(hiddenImId);
-      if (url) {
-        const isVideo = /\.mp4$/i.test(url);
-        const wrapper = document.createElement('span');
-        wrapper.className = 'dlsq-im-replaced dlsq-hidden-decoded';
+    // 如果找到隱藏的貼圖ID，直接替換整個文本節點
+    if (hiddenStickerId && !textNode.parentElement?.closest('.dlsq-hidden-decoded')) {
+      const wrapper = document.createElement('span');
+      wrapper.className = 'dlsq-im-replaced dlsq-hidden-decoded';
 
-        if (isVideo) {
-          const video = document.createElement('video');
-          video.src = url;
-          video.className = 'dlsq-im-replaced';
-          video.muted = true;
-          video.autoplay = true;
-          video.loop = true;
-          video.playsInline = true;
-          video.style.cssText = 'max-width: 120px; max-height: 120px; border-radius: 8px; cursor: default; display: block; margin: 4px 0; border: 2px solid transparent;';
-          wrapper.appendChild(video);
-        } else {
-          const img = document.createElement('img');
-          img.src = url;
-          img.className = 'dlsq-im-replaced';
-          img.style.cssText = 'max-width: 120px; max-height: 120px; border-radius: 8px; cursor: default; display: block; margin: 4px 0; border: 2px solid transparent;';
-          wrapper.appendChild(img);
+      if (isDLSticker) {
+        // DL 貼圖：顯示實際圖片
+        const dlId = hiddenStickerId.slice(3); // 去掉 "DL-" 前綴
+        const img = document.createElement('img');
+        img.src = `https://images.prd.dlivecdn.com/emote/${dlId}`;
+        img.alt = hiddenStickerId;
+        img.className = 'dlsq-im-replaced';
+        img.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 8px; cursor: default; display: block; margin: 4px 0; border: 2px solid transparent; object-fit: contain;';
+        wrapper.appendChild(img);
+      } else {
+        // IM 貼圖：顯示圖片
+        const url = DKIP.decode(hiddenStickerId);
+        if (url) {
+          const isVideo = /\.mp4$/i.test(url);
+          if (isVideo) {
+            const video = document.createElement('video');
+            video.src = url;
+            video.className = 'dlsq-im-replaced';
+            video.muted = true;
+            video.autoplay = true;
+            video.loop = true;
+            video.playsInline = true;
+            video.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 8px; cursor: default; display: block; margin: 4px 0; border: 2px solid transparent;';
+            wrapper.appendChild(video);
+          } else {
+            const img = document.createElement('img');
+            img.src = url;
+            img.className = 'dlsq-im-replaced';
+            img.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 8px; cursor: default; display: block; margin: 4px 0; border: 2px solid transparent;';
+            wrapper.appendChild(img);
+          }
         }
+      }
 
-        const parent = textNode.parentNode;
-        parent.replaceChild(wrapper, textNode);
+      // 使用 replaceWith 代替 replaceChild，更兼容 React
+      try {
+        // 額外檢查：確保節點還在 DOM 中且沒有被 React 移除
+        if (!textNode.parentNode || !document.contains(textNode)) {
+          return; // 節點已被移除，跳過
+        }
+        textNode.replaceWith(wrapper);
+      } catch (e) {
+        // 如果 replaceWith 失敗，嘗試 insertBefore + remove
+        try {
+          const parent = textNode.parentNode;
+          if (parent && document.contains(textNode)) {
+            parent.insertBefore(wrapper, textNode);
+            parent.removeChild(textNode);
+          }
+        } catch (e2) {
+          // 節點可能已被 React 移除，忽略錯誤
+        }
+      }
 
-        // 等待圖片加載完成後再滾動
+      // 等待圖片加載完成後再滾動（僅 IM 貼圖需要）
+      if (!isDLSticker) {
         const mediaEl = wrapper.querySelector('img, video');
         if (mediaEl) {
           const doScroll = () => {
@@ -3056,9 +3270,73 @@ function scanAndReplaceIMImages() {
             mediaEl.onload = () => setTimeout(doScroll, 500);
           }
         }
-
-        return; // 已處理，跳過常規 IM- 檢查
       }
+
+      return; // 已處理，跳過常規 IM- 檢查
+    }
+
+    // 檢查明文 DL- ID 或 Twitch emote 格式 :emote/mine/dlive/xxx:
+    const dlRegex = /DL-[a-zA-Z0-9_]+|:emote\/mine\/dlive\/([a-zA-Z0-9_]+):/gi;
+    let dlMatch;
+    let dlLastIndex = 0;
+    const dlFragments = [];
+
+    while ((dlMatch = dlRegex.exec(text)) !== null) {
+      const fullMatch = dlMatch[0];
+      const emoteId = dlMatch[1]; // 如果是 emote 格式，這是捕獲組中的 ID
+
+      if (dlMatch.index > dlLastIndex) {
+        dlFragments.push(document.createTextNode(text.slice(dlLastIndex, dlMatch.index)));
+      }
+
+      if (emoteId) {
+        // Twitch emote 格式 :emote/mine/dlive/xxx: - 顯示實際圖片
+        const img = document.createElement('img');
+        img.src = `https://images.prd.dlivecdn.com/emote/${emoteId}`;
+        img.alt = `DL-${emoteId}`;
+        img.className = 'dlsq-im-replaced';
+        img.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 8px; cursor: default; display: inline-block; vertical-align: middle; margin: 4px; border: 2px solid transparent; object-fit: contain;';
+        dlFragments.push(img);
+      } else {
+        // 純文字 DL-xxx 格式 - 也顯示為實際圖片
+        const dlId = fullMatch.slice(3); // 去掉 "DL-" 前綴
+        const img = document.createElement('img');
+        img.src = `https://images.prd.dlivecdn.com/emote/${dlId}`;
+        img.alt = fullMatch;
+        img.className = 'dlsq-im-replaced';
+        img.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 8px; cursor: default; display: inline-block; vertical-align: middle; margin: 4px; border: 2px solid transparent; object-fit: contain;';
+        dlFragments.push(img);
+      }
+
+      dlLastIndex = dlRegex.lastIndex;
+    }
+
+    if (dlLastIndex < text.length) {
+      dlFragments.push(document.createTextNode(text.slice(dlLastIndex)));
+    }
+
+    if (dlFragments.length > 1 || (dlFragments.length === 1 && dlFragments[0].tagName === 'IMG')) {
+      const wrapper = document.createElement('span');
+      wrapper.className = 'dlsq-im-replaced';
+      dlFragments.forEach(f => wrapper.appendChild(f));
+
+      // 使用 replaceWith 代替 replaceChild
+      try {
+        if (textNode.parentNode) {
+          textNode.replaceWith(wrapper);
+        }
+      } catch (e) {
+        try {
+          const parent = textNode.parentNode;
+          if (parent) {
+            parent.insertBefore(wrapper, textNode);
+            parent.removeChild(textNode);
+          }
+        } catch (e2) {
+          // 忽略錯誤
+        }
+      }
+      return; // 已處理 DL，跳過 IM- 檢查
     }
 
     // 常規 IM- 檢查
@@ -3086,13 +3364,13 @@ function scanAndReplaceIMImages() {
           video.autoplay = true;
           video.loop = true;
           video.playsInline = true;
-          video.style.cssText = 'max-width: 200px; max-height: 200px; border-radius: 8px; cursor: default; display: inline-block; vertical-align: middle; margin: 4px; border: 2px solid transparent;';
+          video.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 8px; cursor: default; display: inline-block; vertical-align: middle; margin: 4px; border: 2px solid transparent;';
           fragments.push(video);
         } else {
           const img = document.createElement('img');
           img.src = url;
           img.className = 'dlsq-im-replaced';
-          img.style.cssText = 'max-width: 200px; max-height: 200px; border-radius: 8px; cursor: default; display: inline-block; vertical-align: middle; margin: 4px; border: 2px solid transparent;';
+          img.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 8px; cursor: default; display: inline-block; vertical-align: middle; margin: 4px; border: 2px solid transparent;';
           fragments.push(img);
         }
       } else {
@@ -3107,11 +3385,26 @@ function scanAndReplaceIMImages() {
     }
 
     if (fragments.length > 1 || (fragments.length === 1 && (fragments[0].tagName === 'IMG' || fragments[0].tagName === 'VIDEO'))) {
-      const parent = textNode.parentNode;
       const wrapper = document.createElement('span');
       wrapper.className = 'dlsq-im-replaced';
       fragments.forEach(f => wrapper.appendChild(f));
-      parent.replaceChild(wrapper, textNode);
+
+      // 使用 replaceWith 代替 replaceChild，更兼容 React
+      try {
+        if (textNode.parentNode) {
+          textNode.replaceWith(wrapper);
+        }
+      } catch (e) {
+        try {
+          const parent = textNode.parentNode;
+          if (parent) {
+            parent.insertBefore(wrapper, textNode);
+            parent.removeChild(textNode);
+          }
+        } catch (e2) {
+          // 忽略錯誤
+        }
+      }
     }
   });
 }
@@ -3139,10 +3432,34 @@ function initIMFeature() {
   // 定期掃描聊天室顯示 IM 圖片
   setInterval(scanAndReplaceIMImages, 1500);
 
-  // 監聽 DOM 變化
-  const observer = new MutationObserver(() => {
-    scanAndReplaceIMImages();
+  // 監聽 DOM 變化 - 使用防抖動避免與 React 衝突
+  let mutationTimeout = null;
+  const observer = new MutationObserver((mutations) => {
+    // 清除之前的計時器
+    if (mutationTimeout) {
+      clearTimeout(mutationTimeout);
+    }
+
+    // 延遲執行，讓 React 先完成渲染
+    mutationTimeout = setTimeout(() => {
+      mutationTimeout = null;
+      // 檢查是否有新訊息相關的變化
+      const hasNewMessages = mutations.some(m => {
+        return Array.from(m.addedNodes).some(n => {
+          return n.nodeType === Node.ELEMENT_NODE && (
+            n.matches?.('[class*="message"], [data-testid*="message"]') ||
+            n.querySelector?.('[class*="message"], [data-testid*="message"]')
+          );
+        });
+      });
+
+      // 只有當有新訊息時才執行掃描
+      if (hasNewMessages) {
+        scanAndReplaceIMImages();
+      }
+    }, 100); // 100ms 延遲讓 React 完成渲染
   });
+
   observer.observe(document.body, { childList: true, subtree: true });
 
   // 右鍵 imgur 圖片：使用跟 DL 一樣的選單（添加到常用、標籤等）

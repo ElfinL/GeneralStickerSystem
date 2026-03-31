@@ -1,6 +1,6 @@
 # 🎨 General Sticker System (GSS) / 通用貼圖系統
 
-A Chrome extension for DLive to manage and send custom stickers with theater mode and fullscreen chat features.
+A Chrome extension for DLive and Twitch to manage and send custom stickers with theater mode and fullscreen chat features.
 
 [中文](#中文) | [English](#english)
 
@@ -18,7 +18,7 @@ A Chrome extension for DLive to manage and send custom stickers with theater mod
 
 ## 📖 How to Use
 
-1. Go to any DLive channel (login first)
+1. Go to any DLive or Twitch channel (login first)
 2. You'll see a sticker button in the chat area
 3. Click to open the sticker panel and send stickers
 
@@ -62,7 +62,7 @@ This extension does not collect, store, or transmit any user data. All data (sti
 <a name="中文"></a>
 # 🎨 通用貼圖系統 (GSS)
 
-適用於 DLive 的 Chrome 擴充功能，提供貼圖管理、劇院模式與全螢幕聊天功能。
+適用於 DLive 和 Twitch 的 Chrome 擴充功能，提供貼圖管理、劇院模式與全螢幕聊天功能。
 
 ## 📦 安裝方法
 
@@ -75,7 +75,7 @@ This extension does not collect, store, or transmit any user data. All data (sti
 
 ## 📖 怎麼用
 
-1. 去 DLive 任一頻道（要先登入）
+1. 去 DLive 或 Twitch 任一頻道（要先登入）
 2. 聊天室會多一個貼圖按鈕
 3. 點開就可以選貼圖送出
 

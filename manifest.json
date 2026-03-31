@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "General Sticker System (GSS)",
-  "version": "4.0",
+  "version": "4.1",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
@@ -12,7 +12,8 @@
     "storage"
   ],
   "host_permissions": [
-    "https://*.dlive.tv/*"
+    "https://*.dlive.tv/*",
+    "https://*.twitch.tv/*"
   ],
   "action": {
     "default_popup": "popup.html",
@@ -28,7 +29,10 @@
       "matches": [
         "https://dlive.tv/*",
         "https://www.dlive.tv/*",
-        "https://*.dlive.tv/*"
+        "https://*.dlive.tv/*",
+        "https://twitch.tv/*",
+        "https://www.twitch.tv/*",
+        "https://*.twitch.tv/*"
       ],
       "js": [
         "stickerStorage.js",
@@ -43,7 +47,8 @@
         "icons/*.png"
       ],
       "matches": [
-        "https://*.dlive.tv/*"
+        "https://*.dlive.tv/*",
+        "https://*.twitch.tv/*"
       ]
     }
   ]

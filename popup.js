@@ -11,7 +11,7 @@ const I18N = {
     tagVocabTitle: '標籤詞庫（一行一個）',
     tagVocabHint: '頻道頁右鍵貼圖或面板內右鍵可套用；每張最多 4 個標籤',
     saveButton: '儲存 ID 清單與詞庫',
-    reminder: '提醒：需要先在 DLive 登入；並在頻道頁使用',
+    reminder: '提醒：需要先在 DLive 或 Twitch 登入；並在頻道頁使用',
     footer: '',
     favTitle: '常用',
     delTitle: '刪除',
@@ -50,7 +50,7 @@ const I18N = {
     dliveSidebar: '📁 隱藏側邊欄',
     dliveAbout: '📦 隱藏下方區',
     dliveBlackBg: '🖤 黑色背景',
-    dliveStatusHint: 'ℹ️ 需要先在 DLive 頻道頁面才能使用這些功能'
+    dliveStatusHint: 'ℹ️ 這些功能只在 DLive 頻道頁面有效'
   },
   en: {
     headerSubtitle: 'Sticker list manager',
@@ -59,7 +59,7 @@ const I18N = {
     tagVocabTitle: 'Tag vocabulary (one per line)',
     tagVocabHint: 'Right-click emote on channel or tile in panel to apply tags; max 4 tags per sticker',
     saveButton: 'Save IDs & vocabulary',
-    reminder: 'Tip: Log in to DLive first and use this on a channel page',
+    reminder: 'Tip: Log in to DLive or Twitch first and use this on a channel page',
     footer: '',
     favTitle: 'Favorite',
     delTitle: 'Delete',
@@ -99,7 +99,7 @@ const I18N = {
     dliveSidebar: '📁 Hide Sidebar',
     dliveAbout: '📦 Hide About',
     dliveBlackBg: '🖤 Black Bg',
-    dliveStatusHint: 'ℹ️ Use on DLive channel page'
+    dliveStatusHint: 'ℹ️ These features only work on DLive channel pages'
   }
 };
 
@@ -657,7 +657,7 @@ document.getElementById('saveIdsBtn').addEventListener('click', () => {
     const version = manifest?.version || '3.0';
     const titleEl = document.getElementById('titleText');
     if (titleEl) {
-      titleEl.textContent = '🎨 General Sticker System (GSS) V' + version;
+      titleEl.innerHTML = '<img src="icons/icon16.png" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;"> General Sticker System (GSS) V' + version;
     }
   } catch (e) {
     // Version load error
@@ -750,6 +750,24 @@ function initLineInfo() {
   }, 200);
 }
 
+// ==================== 平台檢測 ====================
+function getCurrentPlatform(callback) {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    if (!tabs[0]) {
+      callback('unknown');
+      return;
+    }
+    const url = tabs[0].url || '';
+    if (url.includes('twitch.tv')) {
+      callback('twitch');
+    } else if (url.includes('dlive.tv')) {
+      callback('dlive');
+    } else {
+      callback('unknown');
+    }
+  });
+}
+
 // ==================== 頁面切換功能 ====================
 let currentPage = 'main'; // 'main' 或 'dlive'
 
@@ -760,6 +778,21 @@ function initPageToggle() {
   const dlivePage = document.getElementById('dlivePage');
 
   if (!tabSticker || !tabDlive || !mainPage || !dlivePage) return;
+
+  // 檢測當前平台並調整 UI
+  getCurrentPlatform((platform) => {
+    if (platform === 'twitch') {
+      // Twitch 平台：隱藏 DLive 設定頁，因為 Twitch 劇院模式已經做得很好
+      tabDlive.style.display = 'none';
+      // 更新提醒文字
+      const reminderText = document.getElementById('reminderText');
+      if (reminderText) {
+        reminderText.textContent = currentLang === 'en'
+          ? 'Tip: Use on DLive or Twitch channel pages'
+          : '提醒：需要先在 DLive 或 Twitch 登入；並在頻道頁使用';
+      }
+    }
+  });
 
   function switchToPage(page) {
     currentPage = page;
