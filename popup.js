@@ -148,11 +148,9 @@ function loadSettings() {
     // 更新行號顯示
     updateLineInfo();
 
-    // 重置光標到開頭（使用 requestAnimationFrame 確保在渲染完成後）
+    // 重置到開頭（不移除焦點，避免自動選中輸入框）
     requestAnimationFrame(() => {
       setTimeout(() => {
-        idListInput.blur();
-        idListInput.focus();
         idListInput.setSelectionRange(0, 0);
         idListInput.scrollTop = 0;
         updateLineInfo();
@@ -529,9 +527,8 @@ function initLineInfo() {
     });
   }
 
-  // 初始更新 - 將光標設置到第一行開頭（使用較長延遲確保瀏覽器行為完成後）
+  // 初始更新 - 不移除焦點，避免自動選中輸入框
   setTimeout(() => {
-    textarea.focus();
     textarea.setSelectionRange(0, 0);
     textarea.scrollTop = 0;
     updateLineInfo();

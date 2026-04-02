@@ -2282,8 +2282,8 @@ async function refreshPanelStickers() {
             sendCode = `DL-${match[1]}`;
           }
         } else if (isTwitch() && code.startsWith('IM-')) {
-          // IM 圖在 Twitch 直接發送 IM-xxx 格式（去掉副檔名）
-          sendCode = code.replace(/\.(gif|png|jpg|jpeg|mp4)$/i, '');
+          // 【Twitch 格式】IM-xxx.gif → IM-xxx-gif（用 - 代替 .）
+          sendCode = code.replace(/\.(gif|png|jpg|jpeg|mp4)$/i, '-$1');
         }
         sendChatMessage(sendCode).catch((e) => {
           showSendFailureToast(e?.message || e);
@@ -2319,7 +2319,6 @@ function findChatContainer() {
   for (const selector of selectors) {
     const el = document.querySelector(selector);
     if (el) {
-      console.log('找到聊天室輸入框:', selector);
       return el;
     }
   }
@@ -2648,32 +2647,23 @@ async function sendChatMessage(message, retries = 2) {
 }
 
 // Twitch 聊天發送功能 - 只填充輸入框，不自動發送（避免 React DOM 衝突）
+// 【最保守策略】只觸發事件，讓 React 自己處理 DOM 更新
 async function sendTwitchChatMessage(message) {
-  // 找到 Twitch 的聊天輸入框
-  const chatInput = document.querySelector('textarea[data-a-target="chat-input"], div[data-a-target="chat-input"], .chat-wysiwyg-input__editor, [contenteditable="true"][data-a-target="chat-input"]');
+  // 【關鍵保護】設置標誌，暫停 IM 轉圖掃描
+  isSendingMessage = true;
 
-  if (!chatInput) {
-    throw new Error('找不到 Twitch 聊天輸入框');
-  }
+  try {
+    // 找到 Twitch 的聊天輸入框
+    const chatInput = document.querySelector('[data-a-target="chat-input"], .chat-wysiwyg-input__editor, [contenteditable="true"]');
 
-  const isContentEditable = chatInput.isContentEditable;
+    if (!chatInput) {
+      throw new Error('找不到 Twitch 聊天輸入框');
+    }
 
-  // ========== 第一步：方法2風格（focus → 清空 → blur → focus）==========
-  chatInput.focus();
+    // 聚焦輸入框
+    chatInput.focus();
 
-  if (isContentEditable) {
-    chatInput.textContent = '';
-  } else {
-    chatInput.value = '';
-  }
-
-  chatInput.blur();
-  chatInput.focus();
-
-  await sleep(10);
-
-  // ========== 第二步：方法9風格（beforeinput → 設值 → input）==========
-  if (isContentEditable) {
+    // 【關鍵】觸發 beforeinput 事件，讓 React 準備接收輸入
     const beforeInput = new InputEvent('beforeinput', {
       bubbles: true,
       cancelable: true,
@@ -2682,35 +2672,44 @@ async function sendTwitchChatMessage(message) {
     });
     chatInput.dispatchEvent(beforeInput);
 
-    chatInput.textContent = message;
+    // 【關鍵】使用 execCommand 讓瀏覽器處理插入，React 應該能正確響應
+    const success = document.execCommand('insertText', false, message);
 
+    if (!success) {
+      // execCommand 失敗，嘗試另一種方式：創建一個臨時的 paste 事件
+      try {
+        const dt = new DataTransfer();
+        dt.setData('text/plain', message);
+        const pasteEvent = new ClipboardEvent('paste', {
+          bubbles: true,
+          cancelable: true,
+          clipboardData: dt
+        });
+        chatInput.dispatchEvent(pasteEvent);
+      } catch (e) {
+        // 忽略錯誤
+      }
+    }
+
+    // 【關鍵】觸發 input 事件，通知 React 值已改變
     const inputEvent = new InputEvent('input', {
       bubbles: true,
       inputType: 'insertText',
       data: message
     });
     chatInput.dispatchEvent(inputEvent);
-  } else {
-    const beforeInput = new InputEvent('beforeinput', {
-      bubbles: true,
-      cancelable: true,
-      inputType: 'insertText',
-      data: message
-    });
-    chatInput.dispatchEvent(beforeInput);
 
-    chatInput.value = message;
+    // 觸發 change 事件（某些 React 組件會監聽）
+    chatInput.dispatchEvent(new Event('change', { bubbles: true }));
 
-    const inputEvent = new InputEvent('input', {
-      bubbles: true,
-      inputType: 'insertText',
-      data: message
-    });
-    chatInput.dispatchEvent(inputEvent);
+    // 不自動發送，讓用戶手動按 Enter
+    return true;
+  } finally {
+    // 【關鍵保護】延遲清除標誌
+    setTimeout(() => {
+      isSendingMessage = false;
+    }, 500);
   }
-
-  // 不自動發送，讓用戶手動按 Enter
-  return true;
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -3834,20 +3833,54 @@ function handleDliveControlCommand(command, sendResponse) {
 }
 
 const DKIP = {
-  // 編碼：imgur URL → IM-xxx
-  encode(url) {
-    const match = url.match(/(?:i\.)?imgur\.com\/([a-zA-Z0-9]+(?:\.(?:gif|png|jpg|jpeg|mp4))?)/i);
+  // 編碼：imgur URL → IM-xxx（Twitch 格式：IM-id-gif 或 IM-id-mp4，不用點號）
+  encode(url, useTwitchFormat = false) {
+    const match = url.match(/(?:i\.)?imgur\.com\/([a-zA-Z0-9]+)(?:\.(gif|png|jpg|jpeg|mp4))?/i);
     if (!match || match[1].length < 5) return null;
-    return `IM-${match[1]}`;
+    const id = match[1];
+    const ext = match[2] || 'gif'; // 默認 gif
+    if (useTwitchFormat) {
+      // Twitch 格式：IM-ha3eTC7-gif（用 - 代替 .）
+      return `IM-${id}-${ext}`;
+    }
+    // 標準格式：IM-ha3eTC7.gif
+    return ext === 'gif' ? `IM-${id}` : `IM-${id}.${ext}`;
   },
 
-  // 解碼：IM-xxx → 圖片URL
+  // 解碼：IM-xxx → 圖片URL（支援兩種格式：IM-id.gif 和 IM-id-gif）
   decode(text) {
     if (!text || !text.startsWith('IM-')) return null;
-    const id = text.slice(3);
-    if (!id || id.length < 5) return null;
-    const hasExt = /\.(gif|png|jpg|jpeg|mp4)$/i.test(id);
-    return hasExt ? `https://i.imgur.com/${id}` : `https://i.imgur.com/${id}.gif`;
+    const idPart = text.slice(3); // 去掉 "IM-"
+    if (!idPart || idPart.length < 5) return null;
+
+    // 檢查新格式 IM-ha3eTC7-gif（用 - 分隔，支持 ID 中包含 -）
+    // 從末尾找最後一個 - 後的擴展名
+    const lastDashIndex = idPart.lastIndexOf('-');
+    if (lastDashIndex > 0) {
+      const possibleExt = idPart.slice(lastDashIndex + 1).toLowerCase();
+      if (['gif', 'png', 'jpg', 'jpeg', 'mp4'].includes(possibleExt)) {
+        const id = idPart.slice(0, lastDashIndex);
+        return `https://i.imgur.com/${id}.${possibleExt}`;
+      }
+    }
+
+    // 檢查舊格式 IM-ha3eTC7.gif（用 . 分隔）
+    const lastDotIndex = idPart.lastIndexOf('.');
+    if (lastDotIndex > 0) {
+      const possibleExt = idPart.slice(lastDotIndex + 1).toLowerCase();
+      if (['gif', 'png', 'jpg', 'jpeg', 'mp4'].includes(possibleExt)) {
+        return `https://i.imgur.com/${idPart}`;
+      }
+    }
+
+    // 無後綴，默認 .gif
+    return `https://i.imgur.com/${idPart}.gif`;
+  },
+
+  // 判斷是否視頻（支援兩種格式）
+  isVideo(text) {
+    if (!text) return false;
+    return /-mp4$/i.test(text) || /.mp4$/i.test(text);
   },
 
   isValid(text) {
@@ -3870,7 +3903,8 @@ function scanAndReplaceIMImages() {
     // 跳過已處理過的節點 和 聊天輸入框
     if (node.parentElement?.closest('.dlsq-im-replaced, img, video, script, style, textarea')) continue;
     // 跳過 Twitch/DLive 聊天輸入框（避免在輸入框中轉換圖片）
-    if (node.parentElement?.closest('[data-a-target="chat-input"], .chat-wysiwyg-input__editor, [contenteditable="true"], .chatroom-input')) continue;
+    // 【加強】添加更多 Twitch 輸入框相關選擇器
+    if (node.parentElement?.closest('[data-a-target="chat-input"], [data-a-target="chat-input-container"], .chat-wysiwyg-input__editor, [contenteditable="true"], .chatroom-input, .chat-input, [class*="chat-input"]')) continue;
     const text = node.textContent;
     // 檢查常規 IM- 或零寬字符或 DL- 或 Twitch emote 格式
     if (text.includes('IM-') || text.includes('DL-') || text.includes(':emote/mine/dlive/') || /[\u200B\u200C\u200D\uFEFF]/.test(text)) {
@@ -4076,7 +4110,7 @@ function scanAndReplaceIMImages() {
       return; // 已處理 DL，跳過 IM- 檢查
     }
 
-    // 常規 IM- 檢查
+    // 常規 IM- 檢查（DLive 用舊格式：IM-id.gif 或 IM-id）
     const regex = /IM-[a-zA-Z0-9]+(?:\.(?:gif|png|jpg|jpeg|mp4))?/gi;
 
     let match;
@@ -4158,60 +4192,290 @@ function getImageUrlFromTarget(target) {
   return null;
 }
 
-function extractImgurId(url) {
+function extractImgurId(url, useTwitchFormat = false) {
   if (!url) return null;
-  const match = url.match(/(?:i\.)?imgur\.com\/([a-zA-Z0-9]+(?:\.(?:gif|png|jpg|jpeg|mp4))?)/i);
-  return match?.[1] || null;
+  const match = url.match(/(?:i\.)?imgur\.com\/([a-zA-Z0-9]+)(?:\.(gif|png|jpg|jpeg|mp4))?/i);
+  if (!match) return null;
+  const id = match[1];
+  const ext = match[2] || 'gif'; // 默認 gif
+  if (useTwitchFormat) {
+    // Twitch 格式：IM-ha3eTC7-gif（用 - 代替 .）
+    return `${id}-${ext}`;
+  }
+  // 標準格式：ha3eTC7.gif
+  return ext === 'gif' ? id : `${id}.${ext}`;
 }
 
 // 初始化 IM 功能
+// 全局標誌：是否正在發送消息（用於暫停 IM 轉圖掃描）
+let isSendingMessage = false;
+
 function initIMFeature() {
-  // 定期掃描聊天室顯示 IM 圖片
-  setInterval(scanAndReplaceIMImages, 1500);
+  // 【修復】DLive 和 Twitch 分開處理
+  const isTwitchPage = window.location.hostname.includes('twitch.tv');
 
-  // 監聽 DOM 變化 - 使用防抖動避免與 React 衝突
-  let mutationTimeout = null;
-  const observer = new MutationObserver((mutations) => {
-    // 清除之前的計時器
-    if (mutationTimeout) {
-      clearTimeout(mutationTimeout);
-    }
+  if (!isTwitchPage) {
+    // ===== DLive 頁面：完整 IM 轉圖功能 =====
+    setInterval(() => {
+      if (!isSendingMessage) scanAndReplaceIMImages();
+    }, 1500);
 
-    // 延遲執行，讓 React 先完成渲染
-    mutationTimeout = setTimeout(() => {
-      mutationTimeout = null;
-      // 檢查是否有新訊息相關的變化
-      const hasNewMessages = mutations.some(m => {
-        return Array.from(m.addedNodes).some(n => {
-          return n.nodeType === Node.ELEMENT_NODE && (
-            n.matches?.('[class*="message"], [data-testid*="message"]') ||
-            n.querySelector?.('[class*="message"], [data-testid*="message"]')
-          );
-        });
+    const chatContainer = document.querySelector('.chat-list, .chat-scroll-area, [class*="chat-list"], [class*="message-list"]');
+    if (chatContainer) {
+      let mutationTimeout = null;
+      const observer = new MutationObserver((mutations) => {
+        if (isSendingMessage) return;
+        if (mutationTimeout) clearTimeout(mutationTimeout);
+        mutationTimeout = setTimeout(() => {
+          mutationTimeout = null;
+          const hasNewMessages = mutations.some(m => {
+            return Array.from(m.addedNodes).some(n => {
+              return n.nodeType === Node.ELEMENT_NODE && (
+                n.matches?.('[class*="message"]') ||
+                n.querySelector?.('[class*="message"]')
+              );
+            });
+          });
+          if (hasNewMessages) scanAndReplaceIMImages();
+        }, 100);
       });
+      observer.observe(chatContainer, { childList: true, subtree: true });
+    }
+  } else {
+    // ===== Twitch 頁面：只處理聊天消息列表，完全避開輸入框區域 =====
+    // 延遲啟動，等待頁面完全渲染
+    setTimeout(() => {
+      initTwitchIMFeature();
+    }, 2000);
+  }
 
-      // 只有當有新訊息時才執行掃描
-      if (hasNewMessages) {
-        scanAndReplaceIMImages();
-      }
-    }, 100); // 100ms 延遲讓 React 完成渲染
-  });
-
-  observer.observe(document.body, { childList: true, subtree: true });
-
-  // 右鍵 imgur 圖片：使用跟 DL 一樣的選單（添加到常用、標籤等）
+  // 右鍵 imgur 圖片選單（所有頁面）
   document.addEventListener('contextmenu', (e) => {
     const url = getImageUrlFromTarget(e.target);
     if (!url || !extractImgurId(url)) return;
-
-    // 只處理 imgur 圖片
     e.preventDefault();
-
-    const id = 'IM-' + extractImgurId(url);
-
-    // 使用跟 DL 一樣的選單
+    // 【Twitch 格式】使用 -gif 格式（用 - 代替 .）
+    const isTwitchPage = window.location.hostname.includes('twitch.tv');
+    const id = 'IM-' + extractImgurId(url, isTwitchPage);
     showContextMenuAt(e.clientX, e.clientY, id, e.target);
   }, true);
+}
+
+// ===== Twitch 專用的 IM 轉圖功能 =====
+function initTwitchIMFeature() {
+  // 只查找 Twitch 聊天消息列表（不是輸入框）
+  const chatList = document.querySelector('.chat-list, [data-a-target="chat-list"], .chat-scroll-area, [class*="chat-list"]');
+  if (!chatList) {
+    return;
+  }
+
+  // 只在聊天列表內掃描，不掃描整個 body
+  setInterval(() => {
+    if (!isSendingMessage) {
+      scanTwitchChatMessages(chatList);
+    }
+  }, 2000); // Twitch 用較長間隔，減少衝突
+
+  // 只在聊天列表上監聽變化
+  let mutationTimeout = null;
+  const observer = new MutationObserver((mutations) => {
+    // 發送消息期間暫停
+    if (isSendingMessage) return;
+
+    // 檢查是否有新增消息
+    const hasNewMessages = mutations.some(m => {
+      return Array.from(m.addedNodes).some(n => {
+        return n.nodeType === Node.ELEMENT_NODE && (
+          n.matches?.('[class*="chat-line"], [data-a-target="chat-line-message"], [class*="message"]') ||
+          n.querySelector?.('[class*="chat-line"], [data-a-target="chat-line-message"]')
+        );
+      });
+    });
+
+    if (hasNewMessages) {
+      if (mutationTimeout) clearTimeout(mutationTimeout);
+      mutationTimeout = setTimeout(() => {
+        mutationTimeout = null;
+        scanTwitchChatMessages(chatList);
+      }, 200);
+    }
+  });
+
+  observer.observe(chatList, { childList: true, subtree: true });
+}
+
+// Twitch 專用的聊天消息掃描
+function scanTwitchChatMessages(chatContainer) {
+  // 只查找聊天消息行，不查找輸入框
+  const messageElements = chatContainer.querySelectorAll('[class*="chat-line"], [data-a-target="chat-line-message"], .chat-message');
+
+  messageElements.forEach(msgEl => {
+    // 【關鍵】跳過任何靠近輸入框的元素
+    if (msgEl.closest('[data-a-target="chat-input"], [class*="chat-input"], [contenteditable="true"]')) {
+      return;
+    }
+
+    // 跳過已處理過的（檢查是否已有轉換後的圖片或標記）
+    if (msgEl.querySelector('.gss-im-replaced, .gss-im-image, .gss-im-converted')) return;
+    if (msgEl.dataset.gssImProcessed) return;
+
+    // 查找消息中的文本節點
+    const walker = document.createTreeWalker(
+      msgEl,
+      NodeFilter.SHOW_TEXT,
+      null,
+      false
+    );
+
+    const textNodes = [];
+    let node;
+    while (node = walker.nextNode()) {
+      const text = node.textContent;
+      // 檢查 IM- 或 DL- 格式
+      if (text.includes('IM-') || text.includes('DL-') || /[\u200B\u200C\u200D\uFEFF]/.test(text)) {
+        // 確保不是輸入框內的節點
+        if (!node.parentElement?.closest('[contenteditable="true"], [data-a-target="chat-input"]')) {
+          textNodes.push(node);
+        }
+      }
+    }
+
+    // 處理找到的文本節點
+    textNodes.forEach(textNode => {
+      processTwitchIMTextNode(textNode, msgEl);
+    });
+
+    // 標記已處理
+    if (textNodes.length > 0) {
+      msgEl.dataset.gssImProcessed = 'true';
+    }
+  });
+}
+
+// 處理 Twitch 聊天消息中的 IM 文本
+function processTwitchIMTextNode(textNode, messageEl) {
+  const text = textNode.textContent;
+
+  // 檢查零寬字符（隱藏貼圖）
+  const zwChars = text.match(/[\u200B\u200C\u200D\uFEFF]/g);
+  if (zwChars && zwChars.length >= 8) {
+    try {
+      const decoded = decodeFromZeroWidth(zwChars.join(''));
+      if (decoded && (decoded.startsWith('IM-') || decoded.startsWith('DL-'))) {
+        // 創建圖片元素替換文字
+        const img = createIMImage(decoded);
+        if (img) {
+          // 使用更安全的方式：隱藏原文字，插入圖片
+          const span = document.createElement('span');
+          span.className = 'gss-im-image';
+          span.appendChild(img);
+
+          try {
+            textNode.parentNode.insertBefore(span, textNode);
+            textNode.parentNode.removeChild(textNode);
+            // 【修復】給父元素添加標記，防止 React 重渲染後重複處理
+            textNode.parentNode.classList.add('gss-im-converted');
+          } catch (e) {
+            // 忽略錯誤
+          }
+        }
+      }
+    } catch (e) {
+      // 忽略解碼錯誤
+    }
+    return;
+  }
+
+  // 【Twitch 專用】合併匹配 IM 和 DL 格式，避免重複替換問題
+  const combinedRegex = /(IM-[a-zA-Z0-9-]+-(?:gif|png|jpg|jpeg|mp4))|(DL-[a-zA-Z0-9_]+)/gi;
+  const matches = [];
+  let m;
+  while ((m = combinedRegex.exec(text)) !== null) {
+    if (m[1]) {
+      matches.push({ type: 'IM', id: m[1], index: m.index, length: m[1].length });
+    } else if (m[2]) {
+      matches.push({ type: 'DL', id: m[2], index: m.index, length: m[2].length });
+    }
+  }
+
+  if (matches.length === 0) return;
+
+  // 從後向前替換，避免索引偏移
+  matches.reverse().forEach(match => {
+    const img = createIMImage(match.id);
+    if (img && textNode.parentNode) {
+      try {
+        const before = text.slice(0, match.index);
+        const after = text.slice(match.index + match.length);
+
+        const fragment = document.createDocumentFragment();
+        if (before) fragment.appendChild(document.createTextNode(before));
+        fragment.appendChild(img);
+        if (after) fragment.appendChild(document.createTextNode(after));
+
+        textNode.parentNode.replaceChild(fragment, textNode);
+        // 【修復】給父元素添加標記，防止 React 重渲染後重複處理
+        if (textNode.parentNode) {
+          textNode.parentNode.classList.add('gss-im-converted');
+        }
+        // 更新 textNode 為 after 部分，以便下一個替換
+        if (after && textNode.parentNode) {
+          const newNodes = Array.from(textNode.parentNode.childNodes);
+          const afterNode = newNodes.find(n => n.nodeType === Node.TEXT_NODE && n.textContent === after);
+          if (afterNode) {
+            textNode = afterNode;
+            text = after;
+          }
+        }
+      } catch (e) {
+        // 忽略錯誤
+      }
+    }
+  });
+}
+
+// 創建 IM 圖片/視頻元素（根據類型自動選擇 img 或 video）
+function createIMImage(imId) {
+  const isDL = imId.startsWith('DL-');
+
+  if (isDL) {
+    const dlId = imId.slice(3);
+    const img = document.createElement('img');
+    img.src = `https://images.prd.dlivecdn.com/emote/${dlId}`;
+    img.alt = imId;
+    img.className = 'gss-im-replaced';
+    img.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 8px; cursor: default; display: inline-block; vertical-align: middle; margin: 4px; border: 2px solid transparent; object-fit: contain;';
+    return img;
+  }
+
+  // IM 貼圖：先解碼 URL 判斷類型
+  const url = DKIP.decode(imId);
+  if (!url) return null;
+
+  // 檢查是否為視頻（.mp4）
+  const isVideo = /\.mp4$/i.test(url) || imId.toLowerCase().endsWith('-mp4') || imId.toLowerCase().endsWith('.mp4');
+
+  if (isVideo) {
+    // 創建 video 元素
+    const video = document.createElement('video');
+    video.src = url;
+    video.alt = imId;
+    video.className = 'gss-im-replaced';
+    video.muted = true;
+    video.autoplay = true;
+    video.loop = true;
+    video.playsInline = true;
+    video.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 8px; cursor: default; display: inline-block; vertical-align: middle; margin: 4px; border: 2px solid transparent; object-fit: contain;';
+    return video;
+  } else {
+    // 創建 img 元素
+    const img = document.createElement('img');
+    img.src = url;
+    img.alt = imId;
+    img.className = 'gss-im-replaced';
+    img.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 8px; cursor: default; display: inline-block; vertical-align: middle; margin: 4px; border: 2px solid transparent; object-fit: contain;';
+    return img;
+  }
 }
 
 function findTitleArea() {
@@ -4227,9 +4491,7 @@ function findTitleArea() {
 
   for (const selector of selectors) {
     const el = document.querySelector(selector);
-    // 不檢查 offsetHeight，這樣即使元素被隱藏也能找到
     if (el) {
-      console.log('找到標題區:', selector, el.className);
       return el;
     }
   }
@@ -4244,7 +4506,6 @@ function findTitleArea() {
       && div.offsetHeight > 30
       && div.offsetHeight < 300
       && style.display !== 'none') {
-      console.log('找到標題區(文字匹配):', div.className, '高度:', div.offsetHeight);
       return div;
     }
   }
