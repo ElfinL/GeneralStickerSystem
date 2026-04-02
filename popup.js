@@ -44,6 +44,15 @@ function parseStickerIdsWithTag(rawText) {
       const parts = line.split(/\s+/).filter(Boolean);
       if (!parts.length) continue;
       const rawId = parts[0];
+      // IM 格式：將 -gif, -png, -jpg, -jpeg, -mp4 結尾替換為 . 點格式
+      if (rawId.startsWith('IM-')) {
+        const id = rawId.replace(/-(gif|png|jpg|jpeg|mp4)$/i, '.$1');
+        // 驗證 IM ID 格式（必須有點號擴展名）
+        if (!/^IM-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4)$/i.test(id)) continue;
+        const tags = parts.slice(1).filter(p => p.startsWith('#')).map(p => p.slice(1));
+        rows.push({ id, tags });
+        continue;
+      }
       // 自動轉換舊 ID 格式
       const id = rawId.startsWith('DL-') ? rawId : `DL-${rawId}`;
       // 驗證 ID 格式（支援 DL- 前綴）

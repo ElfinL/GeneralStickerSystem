@@ -4,7 +4,7 @@
   const MAX_TAGS_PER_STICKER = 4;
   // 支援 DL- 前綴（DLive 貼圖）和 IM- 前綴（Imgur 圖片）
   const DL_ID_RE = /^(?:DL-)?([A-Za-z0-9_]+)$/;
-  const IM_ID_RE = /^IM-[a-zA-Z0-9]+(?:\.(?:gif|png|jpg|jpeg|mp4))?$/i;
+  const IM_ID_RE = /^IM-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4)$/i;
 
   function isValidDLId(id) {
     return DL_ID_RE.test(id);
@@ -16,8 +16,10 @@
 
   function normalizeId(id) {
     if (!id) return id;
-    // IM 格式直接返回
-    if (id.startsWith('IM-')) return id;
+    // IM 格式：將 -gif, -png, -jpg, -jpeg, -mp4 結尾替換為 . 點格式
+    if (id.startsWith('IM-')) {
+      return id.replace(/-(gif|png|jpg|jpeg|mp4)$/i, '.$1');
+    }
     // 已經有 DL- 前綴，直接返回
     if (id.startsWith('DL-')) return id;
     // 舊格式，添加 DL- 前綴
@@ -52,11 +54,11 @@
     // 判斷 ID 類型
     let id;
     if (rawId.startsWith('IM-')) {
-      // IM 格式驗證
-      if (!isValidIMId(rawId)) {
+      // IM 格式：先正規化再驗證
+      id = normalizeId(rawId);
+      if (!isValidIMId(id)) {
         return { error: 'bad_id', id: rawId, raw: trimmed };
       }
-      id = rawId;
     } else {
       // DL 格式：正規化並驗證
       id = normalizeId(rawId);

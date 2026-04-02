@@ -1753,6 +1753,13 @@ function showContextMenuAt(x, y, id, targetElement) {
 function extractEmoteIdFromSrc(src) {
   if (!src) return null;
   const s = String(src);
+
+  // Imgur 圖片 URL：i.imgur.com/xxx.gif → IM-xxx.gif
+  const imgurMatch = s.match(/i\.imgur\.com\/([a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4))/i);
+  if (imgurMatch) {
+    return `IM-${imgurMatch[1]}`;
+  }
+
   const patterns = [
     /\/emote\/([A-Za-z0-9_]+)(?:[/?#]|$)/i,
     /\/emotes\/([A-Za-z0-9_]+)(?:[/?#]|$)/i,
@@ -1853,9 +1860,17 @@ async function writeStickerRows(rows, favoriteIds) {
 }
 
 async function toggleFavoriteIdInStorage(id) {
-  const trimmed = String(id || '').trim();
-  // 支援 DL- 前綴（新格式）和純英數字（舊格式）
-  if (!/^(?:DL-)?[A-Za-z0-9_]+$/.test(trimmed)) {
+  let trimmed = String(id || '').trim();
+
+  // IM 格式：將 -gif, -png, -jpg, -jpeg, -mp4 結尾替換為 . 點格式
+  if (trimmed.startsWith('IM-')) {
+    trimmed = trimmed.replace(/-(gif|png|jpg|jpeg|mp4)$/i, '.$1');
+  }
+
+  // 支援 DL- 前綴（DLive 貼圖）和 IM- 前綴（Imgur 圖片）
+  const isValidDL = /^(?:DL-)?[A-Za-z0-9_]+$/.test(trimmed);
+  const isValidIM = /^IM-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4)$/i.test(trimmed);
+  if (!isValidDL && !isValidIM) {
     throw new Error(`ID 格式不正確：${trimmed}`);
   }
 
@@ -1874,9 +1889,17 @@ async function toggleFavoriteIdInStorage(id) {
 }
 
 async function addStickerIdToStorage(id) {
-  const trimmed = String(id || '').trim();
-  // 支援 DL- 前綴（新格式）和純英數字（舊格式）
-  if (!/^(?:DL-)?[A-Za-z0-9_]+$/.test(trimmed)) {
+  let trimmed = String(id || '').trim();
+
+  // IM 格式：將 -gif, -png, -jpg, -jpeg, -mp4 結尾替換為 . 點格式
+  if (trimmed.startsWith('IM-')) {
+    trimmed = trimmed.replace(/-(gif|png|jpg|jpeg|mp4)$/i, '.$1');
+  }
+
+  // 支援 DL- 前綴（DLive 貼圖）和 IM- 前綴（Imgur 圖片）
+  const isValidDL = /^(?:DL-)?[A-Za-z0-9_]+$/.test(trimmed);
+  const isValidIM = /^IM-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4)$/i.test(trimmed);
+  if (!isValidDL && !isValidIM) {
     throw new Error(`ID 格式不正確：${trimmed}`);
   }
 
@@ -1895,9 +1918,17 @@ async function addStickerIdToStorage(id) {
 }
 
 async function removeStickerIdFromStorage(id) {
-  const trimmed = String(id || '').trim();
-  // 支援 DL- 前綴（新格式）和純英數字（舊格式）
-  if (!/^(?:DL-)?[A-Za-z0-9_]+$/.test(trimmed)) {
+  let trimmed = String(id || '').trim();
+
+  // IM 格式：將 -gif, -png, -jpg, -jpeg, -mp4 結尾替換為 . 點格式
+  if (trimmed.startsWith('IM-')) {
+    trimmed = trimmed.replace(/-(gif|png|jpg|jpeg|mp4)$/i, '.$1');
+  }
+
+  // 支援 DL- 前綴（DLive 貼圖）和 IM- 前綴（Imgur 圖片）
+  const isValidDL = /^(?:DL-)?[A-Za-z0-9_]+$/.test(trimmed);
+  const isValidIM = /^IM-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4)$/i.test(trimmed);
+  if (!isValidDL && !isValidIM) {
     throw new Error(`ID 格式不正確：${trimmed}`);
   }
 
@@ -1913,10 +1944,16 @@ async function removeStickerIdFromStorage(id) {
 
 async function applyTagToStickerIdInStorage(id, tagLabel) {
   if (!TAG) throw new Error('標籤模組未載入');
-  const trimmed = String(id || '').trim();
+  let trimmed = String(id || '').trim();
+
+  // IM 格式：將 -gif, -png, -jpg, -jpeg, -mp4 結尾替換為 . 點格式
+  if (trimmed.startsWith('IM-')) {
+    trimmed = trimmed.replace(/-(gif|png|jpg|jpeg|mp4)$/i, '.$1');
+  }
+
   // 支援 DL- 前綴（DLive 貼圖）和 IM- 前綴（Imgur 圖片）
   const isValidDL = /^(?:DL-)?[A-Za-z0-9_]+$/.test(trimmed);
-  const isValidIM = /^IM-[a-zA-Z0-9]+(?:\.(?:gif|png|jpg|jpeg|mp4))?$/i.test(trimmed);
+  const isValidIM = /^IM-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4)$/i.test(trimmed);
   if (!isValidDL && !isValidIM) {
     throw new Error(`ID 格式不正確：${trimmed}`);
   }
