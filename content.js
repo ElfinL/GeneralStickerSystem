@@ -6,6 +6,22 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // ========= 語言設定 =========
 let currentLang = 'zh';
 
+// 支援的語言列表
+const SUPPORTED_LANGS = ['zh', 'zh-CN', 'en', 'ja', 'ko'];
+
+// 語言對應表：將 i18n.js 的語言代碼映射到 content.js 的語言代碼
+const LANG_MAP = {
+  'zh-TW': 'zh',
+  'zh-CN': 'zh-CN',
+  'en': 'en',
+  'ja': 'ja',
+  'ko': 'ko'
+};
+
+function getContentLang(uiLang) {
+  return LANG_MAP[uiLang] || 'zh';
+}
+
 const UI_I18N = {
   zh: {
     addToQuick: '新增到 GSS',
@@ -35,6 +51,34 @@ const UI_I18N = {
     permDelete: '從清單永久刪除…',
     uncategorizedTab: (n) => `未分類 (${n})`
   },
+  'zh-CN': {
+    addToQuick: '添加到 GSS',
+    fav: '标记常用（★）',
+    unfav: '取消常用（★）',
+    hide: '隐藏',
+    unhide: '取消隐藏',
+    tags: '标签',
+    zoomImage: '放大图片',
+    added: (n) => `✅ 已添加（共 ${n} 个）`,
+    exists: (n) => `ℹ️ 已存在（共 ${n} 个）`,
+    favMarked: '✅ 已标记常用（★）',
+    favUnmarked: '✅ 已取消常用',
+    hidden: `✅ 已隐藏（到「隐藏」分页可永久删除）`,
+    unhidden: '✅ 已取消隐藏',
+    removeTag: (tag) => `✅ 已移除 #${tag}`,
+    addTag: (tag) => `✅ 已添加 #${tag}`,
+    deleted: (n) => `✅ 已从清单删除（剩 ${n} 个）`,
+    notInList: 'ℹ️ 清单内没有此 ID',
+    loading: '加载中…',
+    all: '全部 / ALL',
+    dl: 'DL',
+    im: 'IM',
+    hiddenTab: (n) => `隐藏 (${n})`,
+    notInListMsg: '不在清单内',
+    emptyVocabMsg: '词库为空时仍可用上方「常用／隐藏」；要套用其他 #标签请到 popup 建立词库',
+    permDelete: '从清单永久删除…',
+    uncategorizedTab: (n) => `未分类 (${n})`
+  },
   en: {
     addToQuick: 'Add to GSS',
     fav: 'Mark as Favorite (★)',
@@ -62,6 +106,62 @@ const UI_I18N = {
     emptyVocabMsg: 'When vocabulary is empty, you can still use "Favorite/Hide" above; to apply other #tags, add them in popup',
     permDelete: 'Permanently delete from list…',
     uncategorizedTab: (n) => `Uncategorized (${n})`
+  },
+  ja: {
+    addToQuick: 'GSSに追加',
+    fav: 'お気に入り登録（★）',
+    unfav: 'お気に入り解除（★）',
+    hide: '非表示',
+    unhide: '非表示解除',
+    tags: 'タグ',
+    zoomImage: '画像を拡大',
+    added: (n) => `✅ 追加しました（計 ${n} 個）`,
+    exists: (n) => `ℹ️ 既に存在します（計 ${n} 個）`,
+    favMarked: '✅ お気に入りに追加しました（★）',
+    favUnmarked: '✅ お気に入りから削除しました',
+    hidden: `✅ 非表示にしました（「非表示」タブで完全削除可能）`,
+    unhidden: '✅ 非表示を解除しました',
+    removeTag: (tag) => `✅ #${tag} を削除しました`,
+    addTag: (tag) => `✅ #${tag} を追加しました`,
+    deleted: (n) => `✅ リストから削除しました（残り ${n} 個）`,
+    notInList: 'ℹ️ リストにこの ID がありません',
+    loading: '読み込み中…',
+    all: '全て / ALL',
+    dl: 'DL',
+    im: 'IM',
+    hiddenTab: (n) => `非表示 (${n})`,
+    notInListMsg: 'リストにありません',
+    emptyVocabMsg: '辞書が空でも「お気に入り／非表示」は使用可能；その他の #タグ を追加するには popup で辞書を作成してください',
+    permDelete: 'リストから完全に削除…',
+    uncategorizedTab: (n) => `未分類 (${n})`
+  },
+  ko: {
+    addToQuick: 'GSS에 추가',
+    fav: '즐겨찾기 등록（★）',
+    unfav: '즐겨찾기 해제（★）',
+    hide: '숨기기',
+    unhide: '숨기기 해제',
+    tags: '태그',
+    zoomImage: '이미지 확대',
+    added: (n) => `✅ 추가되었습니다（총 ${n} 개）`,
+    exists: (n) => `ℹ️ 이미 존재합니다（총 ${n} 개）`,
+    favMarked: '✅ 즐겨찾기에 추가되었습니다（★）',
+    favUnmarked: '✅ 즐겨찾기에서 제거되었습니다',
+    hidden: `✅ 숨김 처리되었습니다（"숨김" 탭에서 완전 삭제 가능）`,
+    unhidden: '✅ 숨김 해제되었습니다',
+    removeTag: (tag) => `✅ #${tag} 삭제됨`,
+    addTag: (tag) => `✅ #${tag} 추가됨`,
+    deleted: (n) => `✅ 목록에서 삭제되었습니다（남은 ${n} 개）`,
+    notInList: 'ℹ️ 목록에 이 ID가 없습니다',
+    loading: '로딩 중…',
+    all: '전체 / ALL',
+    dl: 'DL',
+    im: 'IM',
+    hiddenTab: (n) => `숨김 (${n})`,
+    notInListMsg: '목록에 없음',
+    emptyVocabMsg: '사전이 비어있어도 "즐겨찾기／숨김"은 사용 가능；다른 #태그 를 추가하려면 popup에서 사전을 만드세요',
+    permDelete: '목록에서 영구 삭제…',
+    uncategorizedTab: (n) => `미분류 (${n})`
   }
 };
 
@@ -75,7 +175,7 @@ function t(key, ...args) {
 function initLanguage() {
   try {
     chrome.storage.sync.get(['uiLang'], (result) => {
-      currentLang = result.uiLang === 'en' ? 'en' : 'zh';
+      currentLang = getContentLang(result.uiLang);
     });
   } catch (e) {
     // Extension context invalidated
@@ -86,7 +186,7 @@ function initLanguage() {
 try {
   chrome.storage.onChanged.addListener((changes, areaName) => {
     if (areaName === 'sync' && changes.uiLang) {
-      currentLang = changes.uiLang.newValue === 'en' ? 'en' : 'zh';
+      currentLang = getContentLang(changes.uiLang.newValue);
       // 刷新面板以更新語言
       const panel = document.getElementById(UI.panelId);
       if (panel?.classList.contains('open')) {
@@ -151,19 +251,6 @@ async function sendHiddenMessage(message, visibleMarker = ' ') {
   } catch (err) {
     showSendFailureToast(`發送失敗: ${err.message}`);
     return false;
-  }
-}
-
-// 聊天室自動滾動到底部
-function scrollChatToBottom() {
-  // 嘗試找到聊天室消息容器
-  const container = document.querySelector('[data-testid="chat-message-list"], .chat-message-list, .message-list, .chatroom-messages, [class*="chat"] [class*="list"], [class*="Chat"]');
-
-  if (container?.lastElementChild) {
-    // 使用 scrollIntoView(false) - 用戶確認此方法有效
-    container.lastElementChild.scrollIntoView(false);
-  } else if (container) {
-    container.scrollTop = container.scrollHeight;
   }
 }
 
@@ -524,77 +611,6 @@ function ensureStyles() {
       transition: none;
     }
 
-    /* ===== Video Resize Handle ===== */
-    .dlsq-resize-wrapper {
-      position: relative !important;
-      display: inline-block !important;
-    }
-    .dlsq-resize-handle {
-      position: absolute !important;
-      bottom: 0 !important;
-      right: 0 !important;
-      width: 20px !important;
-      height: 20px !important;
-      background: linear-gradient(135deg, transparent 50%, rgba(120,190,255,0.9) 50%) !important;
-      cursor: se-resize !important;
-      z-index: 999999 !important;
-      border-radius: 0 0 4px 0 !important;
-    }
-    .dlsq-resize-handle:hover {
-      background: linear-gradient(135deg, transparent 50%, rgba(120,190,255,1) 50%) !important;
-    }
-    .dlsq-resize-handle::after {
-      content: "";
-      position: absolute;
-      right: 3px;
-      bottom: 3px;
-      width: 8px;
-      height: 8px;
-      border-right: 2px solid #fff;
-      border-bottom: 2px solid #fff;
-    }
-
-    /* ===== Video Resize Controls ===== */
-    .dlsq-video-resize-container {
-      position: relative;
-      resize: both;
-      overflow: hidden;
-      min-width: 200px;
-      min-height: 150px;
-    }
-    .dlsq-video-resize-container video {
-      width: 100% !important;
-      height: 100% !important;
-      object-fit: contain !important;
-    }
-    .dlsq-video-controls {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      display: flex;
-      gap: 8px;
-      z-index: 10000;
-      opacity: 0;
-      transition: none;
-    }
-    .dlsq-video-resize-container:hover .dlsq-video-controls {
-      opacity: 1;
-    }
-    .dlsq-video-btn {
-      background: rgba(0,0,0,0.7);
-      border: 1px solid rgba(255,255,255,0.3);
-      color: #fff;
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 12px;
-      cursor: pointer;
-      backdrop-filter: blur(4px);
-    }
-    .dlsq-video-btn:hover {
-      background: rgba(120,190,255,0.4);
-      border-color: rgba(120,190,255,0.6);
-    }
-
     /* ===== DLive Layout Compress Styles ===== */
     .dlsq-donation-hidden {
       display: none !important;
@@ -608,32 +624,6 @@ function ensureStyles() {
     }
     .dlsq-title-hidden-fix1 {
       display: none !important;
-    }
-    .dlsq-stream-layout .dplayer {
-      height: calc(100vh - 100px) !important;
-    }
-
-    /* ===== Stream Layout Reorder Mode ===== */
-    .dlsq-reorder-mode {
-      display: flex !important;
-      flex-direction: column !important;
-    }
-    .dlsq-reorder-mode .dlsq-video-section {
-      order: 1 !important;
-      flex: 1 !important;
-      height: 70vh !important;
-    }
-    .dlsq-reorder-mode .dlsq-donation-section {
-      order: 2 !important;
-      height: 60px !important;
-      min-height: 60px !important;
-      overflow: hidden !important;
-    }
-    .dlsq-reorder-mode .dlsq-title-section {
-      order: 3 !important;
-      height: 40px !important;
-      min-height: 40px !important;
-      overflow: hidden !important;
     }
 
     /* ===== Chat Room Control (聊天室控制) ===== */
@@ -711,13 +701,6 @@ function ensureStyles() {
     .dlsq-extra-hidden {
       display: none !important;
     }
-    /* Hide elements that overlay on video */
-    .like-button-container,
-    .like-button,
-    .stream-chatroom-like,
-    .d-btn.border-radius-3 {
-      display: none !important;
-    }
     /* Hide Vuetify dialog overlays that block video - disabled as it hides video */
     /* .v-dialog__content { display: none !important; } */
     /* Hide DPlayer gift animations only, keep mask and bezel for controls */
@@ -760,33 +743,6 @@ function ensureStyles() {
     .dlsq-video-expanded .position-absolute,
     .dlsq-video-expanded .width-100 {
       padding: 0 !important;
-    }
-    .dlsq-resize-handle {
-      position: relative;
-      height: 6px;
-      background: rgba(120,190,255,0.3);
-      cursor: row-resize;
-      z-index: 99999;
-      transition: none;
-    }
-    .dlsq-resize-handle:hover {
-      background: rgba(120,190,255,0.6);
-    }
-    .dlsq-resize-handle::before {
-      content: '';
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      width: 30px;
-      height: 2px;
-      background: rgba(255,255,255,0.5);
-      border-radius: 1px;
-    }
-    .dlsq-resize-mode .dlsq-video-section,
-    .dlsq-resize-mode .dlsq-donation-section,
-    .dlsq-resize-mode .dlsq-title-section {
-      position: relative;
     }
   `;
 }
@@ -940,11 +896,26 @@ async function refreshTagTabs() {
 
   mkTab(t('all'), '__all__');
   mkTab(t('uncategorizedTab', uncategorizedCount), PANEL_FILTER_UNCATEGORIZED);
+
+  // 收集當前類型下存在的標籤
+  const existingLabels = new Set();
   for (const lab of tabLabels) {
     if (String(lab).toLowerCase() === hiddenKey) continue;
     const c = counts[lab] || 0;
     mkTab(`${lab} (${c})`, lab);
+    existingLabels.add(String(lab).toLowerCase());
   }
+
+  // 如果當前選中的標籤不在新類型下，仍然創建一個計數為0的按鈕以保持選中狀態
+  const currentTag = panelFilterTag;
+  if (currentTag &&
+    currentTag !== '__all__' &&
+    currentTag !== PANEL_FILTER_HIDDEN &&
+    currentTag !== PANEL_FILTER_UNCATEGORIZED &&
+    !existingLabels.has(String(currentTag).toLowerCase())) {
+    mkTab(`${currentTag} (0)`, currentTag);
+  }
+
   mkTab(t('hiddenTab', hiddenCount), PANEL_FILTER_HIDDEN);
 }
 
@@ -1042,8 +1013,8 @@ function createPanelIfNeeded() {
   tabAll.addEventListener('click', async () => {
     panelFilterType = 'all';
     updatePanelTypeTabs();
-    applyStickerTypeFilter();
     await refreshTagTabs();
+    applyTagFilter();
   });
 
   const tabDL = document.createElement('button');
@@ -1060,8 +1031,8 @@ function createPanelIfNeeded() {
   tabDL.addEventListener('click', async () => {
     panelFilterType = 'DL';
     updatePanelTypeTabs();
-    applyStickerTypeFilter();
     await refreshTagTabs();
+    applyTagFilter();
   });
 
   const tabIM = document.createElement('button');
@@ -1078,8 +1049,8 @@ function createPanelIfNeeded() {
   tabIM.addEventListener('click', async () => {
     panelFilterType = 'IM';
     updatePanelTypeTabs();
-    applyStickerTypeFilter();
     await refreshTagTabs();
+    applyTagFilter();
   });
 
   tabsContainer.appendChild(tabAll);
@@ -2129,11 +2100,26 @@ async function refreshPanelStickers() {
       return !r?.tags?.length || r.tags.length === 0;
     }).length;
     mkTab(t('uncategorizedTab', uncategorizedCount), PANEL_FILTER_UNCATEGORIZED);
+
+    // 收集當前類型下存在的標籤
+    const existingLabels = new Set();
     for (const lab of tabLabels) {
       if (String(lab).toLowerCase() === hiddenKey) continue;
       const c = counts[lab] || 0;
       mkTab(`${lab} (${c})`, lab);
+      existingLabels.add(String(lab).toLowerCase());
     }
+
+    // 如果當前選中的標籤不在新類型下，仍然創建一個計數為0的按鈕以保持選中狀態
+    const currentTag = panelFilterTag;
+    if (currentTag &&
+      currentTag !== '__all__' &&
+      currentTag !== PANEL_FILTER_HIDDEN &&
+      currentTag !== PANEL_FILTER_UNCATEGORIZED &&
+      !existingLabels.has(String(currentTag).toLowerCase())) {
+      mkTab(`${currentTag} (0)`, currentTag);
+    }
+
     mkTab(t('hiddenTab', hiddenCount), PANEL_FILTER_HIDDEN);
   }
 
@@ -2824,15 +2810,31 @@ function handleDliveControlCommand(command, sendResponse) {
           }
         }
 
-        // 【修正】背景處理
+        // 【修正】背景處理 - 帶備份和恢復
         const appElementsFix1 = document.querySelectorAll('.application, .application--wrap, #genius, .bg-grey-darken-5, .height-100.bg-grey-darken-7');
         appElementsFix1.forEach(el => {
           if (hasHiddenClassFix1) {
-            // 顯示時恢復背景
-            el.style.removeProperty('background-color');
-            el.style.removeProperty('background');
+            // 顯示時恢復背景（使用備份的值）
+            if (el.dataset.dlsqOriginalBgColor) {
+              el.style.setProperty('background-color', el.dataset.dlsqOriginalBgColor, 'important');
+              delete el.dataset.dlsqOriginalBgColor;
+            } else {
+              el.style.removeProperty('background-color');
+            }
+            if (el.dataset.dlsqOriginalBg) {
+              el.style.setProperty('background', el.dataset.dlsqOriginalBg, 'important');
+              delete el.dataset.dlsqOriginalBg;
+            } else {
+              el.style.removeProperty('background');
+            }
           } else {
-            // 隱藏時設定透明背景
+            // 隱藏時備份並設定透明背景
+            if (!el.dataset.dlsqOriginalBgColor) {
+              el.dataset.dlsqOriginalBgColor = el.style.getPropertyValue('background-color') || '';
+            }
+            if (!el.dataset.dlsqOriginalBg) {
+              el.dataset.dlsqOriginalBg = el.style.getPropertyValue('background') || '';
+            }
             el.style.setProperty('background-color', 'transparent', 'important');
             el.style.setProperty('background', 'transparent', 'important');
           }
@@ -2855,25 +2857,60 @@ function handleDliveControlCommand(command, sendResponse) {
       }
 
       case 'toggleNavbar': {
+        // 【修復版】同時執行導航欄隱藏 + flex-box 高度調整（帶備份）
         const navbar = findNavbar();
+        const flexBox = document.querySelector('.flex-box.dl-flex-row');
+
         if (!navbar) {
           sendResponse({ success: false, message: '❌ 找不到頂部導航' });
           return;
         }
-        navbar.classList.toggle('dlsq-navbar-hidden');
-        const isHidden = navbar.classList.contains('dlsq-navbar-hidden');
 
-        // 調整 flex-box 高度
-        const flexBox = document.querySelector('.flex-box.dl-flex-row');
-        if (flexBox) {
-          if (isHidden) {
-            flexBox.style.setProperty('height', '100vh', 'important');
-          } else {
-            flexBox.style.removeProperty('height');
+        // 檢查當前狀態：是否已經是隱藏+100vh模式
+        const isNavbarHidden = navbar.classList.contains('dlsq-navbar-hidden');
+        const isFullViewport = flexBox && flexBox.offsetHeight >= window.innerHeight - 10;
+
+        if (isNavbarHidden && isFullViewport) {
+          // ===== 恢復模式 =====
+          // 1. 恢復導航欄
+          navbar.classList.remove('dlsq-navbar-hidden');
+
+          // 2. 恢復 flex-box 高度（使用備份）
+          if (flexBox) {
+            const originalHeight = flexBox.dataset.dlsqOriginalHeight;
+            if (originalHeight) {
+              flexBox.style.setProperty('height', originalHeight, 'important');
+            } else {
+              flexBox.style.setProperty('height', 'calc(100% - 60px)', 'important');
+            }
+            delete flexBox.dataset.dlsqOriginalHeight;
           }
-        }
 
-        sendResponse({ success: true, message: isHidden ? '✅ 已隱藏頂部欄' : '已顯示頂部欄', active: isHidden });
+          sendResponse({
+            success: true,
+            message: `✅ 已恢復顯示 (高度: ${flexBox?.dataset.dlsqOriginalHeight || 'calc(100% - 60px)'})`,
+            active: false
+          });
+        } else {
+          // ===== 隱藏模式 =====
+          // 1. 隱藏導航欄
+          navbar.classList.add('dlsq-navbar-hidden');
+
+          // 2. 備份並設置 flex-box 高度
+          if (flexBox) {
+            const currentHeight = flexBox.style.getPropertyValue('height');
+            if (currentHeight && currentHeight !== '100vh') {
+              flexBox.dataset.dlsqOriginalHeight = currentHeight;
+            }
+            flexBox.style.setProperty('height', '100vh', 'important');
+          }
+
+          sendResponse({
+            success: true,
+            message: `✅ 已隱藏導航並設置 100vh`,
+            active: true
+          });
+        }
         break;
       }
 
@@ -2929,36 +2966,6 @@ function handleDliveControlCommand(command, sendResponse) {
       }
 
       // 劇院模式 - 調用完整實現函數
-      case 'toggleTheaterMode2': {
-        const mockBtn = {
-          textContent: theaterMode2Active ? '🎭 關閉劇院2' : '🎭 劇院模式2',
-          style: { background: theaterMode2Active ? 'rgba(255, 100, 100, 0.6)' : 'rgba(255, 100, 100, 0.25)' }
-        };
-        toggleTheaterMode2(mockBtn);
-        sendResponse({
-          success: true,
-          message: theaterMode2Active ? '✅ 劇院模式2已啟用' : '已關閉劇院模式2',
-          active: theaterMode2Active,
-          buttonId: 'btnTheater2'
-        });
-        return true;
-      }
-
-      case 'toggleTheaterMode22': {
-        const mockBtn = {
-          textContent: theaterMode22Active ? '🎭 關閉劇院22' : '🎭 劇院模式22',
-          style: { background: theaterMode22Active ? 'rgba(255, 100, 255, 0.6)' : 'rgba(255, 100, 100, 0.25)' }
-        };
-        toggleTheaterMode22(mockBtn);
-        sendResponse({
-          success: true,
-          message: theaterMode22Active ? '✅ 劇院模式22已啟用' : '已關閉劇院模式22',
-          active: theaterMode22Active,
-          buttonId: 'btnTheater22'
-        });
-        return true;
-      }
-
       case 'toggleTheaterMode13': {
         // 創建虛擬按鈕對象來調用 toggleTheaterMode13（async 函數）
         const mockBtn = {
@@ -3088,6 +3095,735 @@ function handleDliveControlCommand(command, sendResponse) {
         break;
       }
 
+      // ==================== 隱藏頂部欄分解測試 ====================
+      case 'toggleNavbarTest1': {
+        // 測試1: 僅隱藏/顯示導航欄（只操作 class）
+        const navbar = findNavbar();
+        if (!navbar) {
+          sendResponse({ success: false, message: '❌ 找不到頂部導航' });
+          return;
+        }
+        navbar.classList.toggle('dlsq-navbar-hidden');
+        const isHidden = navbar.classList.contains('dlsq-navbar-hidden');
+        sendResponse({ success: true, message: isHidden ? '✅ 僅隱藏導航欄 (class)' : '僅顯示導航欄 (class)', active: isHidden });
+        break;
+      }
+
+      case 'toggleNavbarTest2': {
+        // 測試2: 僅調整 flex-box 高度
+        const flexBox = document.querySelector('.flex-box.dl-flex-row');
+        if (!flexBox) {
+          sendResponse({ success: false, message: '❌ 找不到 flex-box' });
+          return;
+        }
+        // 使用 computedStyle 檢查實際高度是否為 100vh（通過比較 offsetHeight 和 window.innerHeight）
+        const computedHeight = window.getComputedStyle(flexBox).height;
+        const isFullViewport = flexBox.offsetHeight >= window.innerHeight - 10; // 允許 10px 誤差
+        if (isFullViewport) {
+          flexBox.style.removeProperty('height');
+          sendResponse({ success: true, message: '已移除 flex-box height', active: false });
+        } else {
+          flexBox.style.setProperty('height', '100vh', 'important');
+          sendResponse({ success: true, message: '✅ 設置 flex-box height: 100vh', active: true });
+        }
+        break;
+      }
+
+      case 'toggleNavbarTest3': {
+        // 測試3: 僅調整聊天室高度
+        const chatArea = findChatArea();
+        if (!chatArea) {
+          sendResponse({ success: false, message: '❌ 找不到聊天室' });
+          return;
+        }
+        const currentHeight = chatArea.style.getPropertyValue('height');
+        if (currentHeight === '100vh') {
+          chatArea.style.removeProperty('height');
+          chatArea.style.removeProperty('max-height');
+          sendResponse({ success: true, message: '已移除聊天室 height', active: false });
+        } else {
+          chatArea.style.setProperty('height', '100vh', 'important');
+          sendResponse({ success: true, message: '✅ 設置聊天室 height: 100vh', active: true });
+        }
+        break;
+      }
+
+      case 'toggleNavbarTest4': {
+        // 測試4: 強制重排（reflow）
+        const flexBox = document.querySelector('.flex-box.dl-flex-row');
+        if (!flexBox) {
+          sendResponse({ success: false, message: '❌ 找不到 flex-box' });
+          return;
+        }
+        // 觸發重排
+        flexBox.style.height = flexBox.style.height;
+        void flexBox.offsetHeight;
+        setTimeout(() => {
+          flexBox.style.removeProperty('height');
+          sendResponse({ success: true, message: '✅ 已執行強制重排', active: false });
+        }, 0);
+        return true; // 異步響應
+      }
+
+      case 'toggleNavbarTest5': {
+        // 測試5: 完整功能（當前 toggleNavbar 的實現）
+        const navbar = findNavbar();
+        if (!navbar) {
+          sendResponse({ success: false, message: '❌ 找不到頂部導航' });
+          return;
+        }
+        navbar.classList.toggle('dlsq-navbar-hidden');
+        const isHidden = navbar.classList.contains('dlsq-navbar-hidden');
+
+        // 調整 flex-box 高度
+        const flexBox = document.querySelector('.flex-box.dl-flex-row');
+        if (flexBox) {
+          if (isHidden) {
+            flexBox.style.setProperty('height', '100vh', 'important');
+          } else {
+            flexBox.style.removeProperty('height');
+            // 【修正】強制重排以恢復原始佈局
+            flexBox.style.height = flexBox.style.height;
+            setTimeout(() => {
+              flexBox.style.removeProperty('height');
+            }, 0);
+          }
+        }
+
+        // 【修正】同時調整聊天室容器
+        const chatArea = findChatArea();
+        if (chatArea) {
+          if (isHidden) {
+            chatArea.style.setProperty('height', '100vh', 'important');
+          } else {
+            chatArea.style.removeProperty('height');
+            chatArea.style.removeProperty('max-height');
+          }
+        }
+
+        sendResponse({ success: true, message: isHidden ? '✅ 已隱藏頂部欄 (完整)' : '已顯示頂部欄 (完整)', active: isHidden });
+        break;
+      }
+
+      // ==================== 問題診斷測試按鈮 ====================
+      case 'toggleNavbarTest6': {
+        // 測試6: 檢查屬性值 - 回報 getPropertyValue 的實際值
+        const flexBox = document.querySelector('.flex-box.dl-flex-row');
+        if (!flexBox) {
+          sendResponse({ success: false, message: '❌ 找不到 flex-box' });
+          return;
+        }
+        const propValue = flexBox.style.getPropertyValue('height');
+        const hasHeightAttr = flexBox.hasAttribute('style');
+        const styleCssText = flexBox.style.cssText;
+        sendResponse({
+          success: true,
+          message: `getPropertyValue: "${propValue}" | hasAttribute: ${hasHeightAttr} | cssText: "${styleCssText}"`
+        });
+        break;
+      }
+
+      case 'toggleNavbarTest7': {
+        // 測試7: 檢查計算樣式 - 回報 getComputedStyle 的實際值
+        const flexBox = document.querySelector('.flex-box.dl-flex-row');
+        if (!flexBox) {
+          sendResponse({ success: false, message: '❌ 找不到 flex-box' });
+          return;
+        }
+        const computedStyle = window.getComputedStyle(flexBox);
+        const computedHeight = computedStyle.height;
+        const offsetHeight = flexBox.offsetHeight;
+        const windowHeight = window.innerHeight;
+        sendResponse({
+          success: true,
+          message: `computed: ${computedHeight} | offset: ${offsetHeight}px | window: ${windowHeight}px`
+        });
+        break;
+      }
+
+      case 'toggleNavbarTest8': {
+        // 測試8: 比較高度 - 切換並顯示高度變化
+        const flexBox = document.querySelector('.flex-box.dl-flex-row');
+        if (!flexBox) {
+          sendResponse({ success: false, message: '❌ 找不到 flex-box' });
+          return;
+        }
+        const before = flexBox.offsetHeight;
+        // 切換
+        const computedHeight = window.getComputedStyle(flexBox).height;
+        const isFullViewport = flexBox.offsetHeight >= window.innerHeight - 10;
+        if (isFullViewport) {
+          flexBox.style.removeProperty('height');
+        } else {
+          flexBox.style.setProperty('height', '100vh', 'important');
+        }
+        const after = flexBox.offsetHeight;
+        sendResponse({
+          success: true,
+          message: `切換前: ${before}px → 切換後: ${after}px | computed: ${computedHeight}`,
+          active: !isFullViewport
+        });
+        break;
+      }
+
+      case 'toggleNavbarTest9': {
+        // 測試9: 直接設置空值 - 測試 style.height = '' 的效果
+        const flexBox = document.querySelector('.flex-box.dl-flex-row');
+        if (!flexBox) {
+          sendResponse({ success: false, message: '❌ 找不到 flex-box' });
+          return;
+        }
+        const before = flexBox.offsetHeight;
+        // 直接設置空字符串
+        flexBox.style.height = '';
+        const after = flexBox.offsetHeight;
+        sendResponse({
+          success: true,
+          message: `height='' 前: ${before}px → 後: ${after}px`
+        });
+        break;
+      }
+
+      case 'toggleNavbarTest10': {
+        // 測試10: 清空再恢復 - 測試清空 cssText 再恢復的效果
+        const flexBox = document.querySelector('.flex-box.dl-flex-row');
+        if (!flexBox) {
+          sendResponse({ success: false, message: '❌ 找不到 flex-box' });
+          return;
+        }
+        const before = flexBox.offsetHeight;
+        const originalCssText = flexBox.style.cssText;
+        // 清空所有 inline styles
+        flexBox.style.cssText = '';
+        void flexBox.offsetHeight; // 強制重排
+        // 恢復（但不包括 height）
+        if (originalCssText.includes('height')) {
+          // 如果有 height，只恢復其他屬性
+          const newCssText = originalCssText.replace(/height:\s*[^;]+;?/gi, '');
+          flexBox.style.cssText = newCssText;
+        }
+        const after = flexBox.offsetHeight;
+        sendResponse({
+          success: true,
+          message: `清空再恢復: ${before}px → ${after}px | 原始css: "${originalCssText.substring(0, 50)}..."`
+        });
+        break;
+      }
+
+      // ==================== 2號按鈮修復版 ====================
+      case 'toggleNavbarTest2Fix': {
+        // 修復版: 帶備份的 flex-box 高度切換
+        const flexBox = document.querySelector('.flex-box.dl-flex-row');
+        if (!flexBox) {
+          sendResponse({ success: false, message: '❌ 找不到 flex-box' });
+          return;
+        }
+
+        // 檢查是否已經是 100vh 模式（通過比較高度）
+        const isFullViewport = flexBox.offsetHeight >= window.innerHeight - 10;
+
+        if (isFullViewport) {
+          // 恢復：使用備份的原始值，而不是直接 removeProperty
+          const originalHeight = flexBox.dataset.dlsqOriginalHeight;
+          if (originalHeight) {
+            flexBox.style.setProperty('height', originalHeight, 'important');
+            sendResponse({ success: true, message: `✅ 恢復原始高度: ${originalHeight}`, active: false });
+          } else {
+            // 沒有備份，嘗試硬編碼 DLive 的默認值
+            flexBox.style.setProperty('height', 'calc(100% - 60px)', 'important');
+            sendResponse({ success: true, message: '✅ 恢復默認: calc(100% - 60px)', active: false });
+          }
+          // 清除備份
+          delete flexBox.dataset.dlsqOriginalHeight;
+        } else {
+          // 設置 100vh：先備份原始值
+          const currentHeight = flexBox.style.getPropertyValue('height');
+          if (currentHeight && currentHeight !== '100vh') {
+            flexBox.dataset.dlsqOriginalHeight = currentHeight;
+          }
+          flexBox.style.setProperty('height', '100vh', 'important');
+          sendResponse({ success: true, message: `✅ 設置 100vh (備份: ${currentHeight || 'none'})`, active: true });
+        }
+        break;
+      }
+
+      // ==================== 1號+2號修復組合 ====================
+      case 'toggleNavbarTestCombo': {
+        // 組合版: 同時執行導航欄隱藏 + flex-box 高度調整（帶備份）
+        const navbar = findNavbar();
+        const flexBox = document.querySelector('.flex-box.dl-flex-row');
+
+        if (!navbar) {
+          sendResponse({ success: false, message: '❌ 找不到頂部導航' });
+          return;
+        }
+        if (!flexBox) {
+          sendResponse({ success: false, message: '❌ 找不到 flex-box' });
+          return;
+        }
+
+        // 檢查當前狀態：是否已經是隱藏+100vh模式
+        const isNavbarHidden = navbar.classList.contains('dlsq-navbar-hidden');
+        const isFullViewport = flexBox.offsetHeight >= window.innerHeight - 10;
+
+        if (isNavbarHidden && isFullViewport) {
+          // ===== 恢復模式 =====
+          // 1. 恢復導航欄
+          navbar.classList.remove('dlsq-navbar-hidden');
+
+          // 2. 恢復 flex-box 高度（使用備份）
+          const originalHeight = flexBox.dataset.dlsqOriginalHeight;
+          if (originalHeight) {
+            flexBox.style.setProperty('height', originalHeight, 'important');
+          } else {
+            flexBox.style.setProperty('height', 'calc(100% - 60px)', 'important');
+          }
+          delete flexBox.dataset.dlsqOriginalHeight;
+
+          sendResponse({
+            success: true,
+            message: `✅ 已恢復顯示 (高度: ${originalHeight || 'calc(100% - 60px)'})`,
+            active: false
+          });
+        } else {
+          // ===== 隱藏模式 =====
+          // 1. 隱藏導航欄
+          navbar.classList.add('dlsq-navbar-hidden');
+
+          // 2. 備份並設置 flex-box 高度
+          const currentHeight = flexBox.style.getPropertyValue('height');
+          if (currentHeight && currentHeight !== '100vh') {
+            flexBox.dataset.dlsqOriginalHeight = currentHeight;
+          }
+          flexBox.style.setProperty('height', '100vh', 'important');
+
+          sendResponse({
+            success: true,
+            message: `✅ 已隱藏導航並設置 100vh (備份: ${currentHeight || 'none'})`,
+            active: true
+          });
+        }
+        break;
+      }
+
+      // ==================== 劇院模式（修復版）====================
+      case 'toggleTheaterCombo': {
+        // 狀態變量（使用 dataset 儲存在 body 上）
+        if (!document.body.dataset.theaterComboActive) {
+          document.body.dataset.theaterComboActive = 'false';
+        }
+        const isActive = document.body.dataset.theaterComboActive === 'true';
+
+        if (!isActive) {
+          // ===== 啟用劇院模式 =====
+
+          // 1. 隱藏課金區
+          const donationArea = findDonationArea();
+          if (donationArea) {
+            donationArea.classList.add('dlsq-donation-hidden');
+          }
+
+          // 2. 隱藏標題
+          const titleArea = findTitleArea();
+          if (titleArea) {
+            titleArea.classList.add('dlsq-title-hidden-fix1');
+          }
+
+          // 3. 隱藏下方區 + 【關鍵】透明背景處理
+          const aboutPanels = document.querySelectorAll('.about-panel');
+          aboutPanels.forEach(panel => panel.classList.add('dlsq-about-hidden'));
+          const mobilePage = document.querySelector('.mobile-page');
+          if (mobilePage) {
+            mobilePage.classList.add('dlsq-video-expanded');
+          }
+          // 【修正】透明背景處理（來自 toggleAboutFix1）
+          const appElements = document.querySelectorAll('.application, .application--wrap, #genius, .bg-grey-darken-5, .height-100.bg-grey-darken-7');
+          appElements.forEach(el => {
+            if (!el.dataset.originalAppBg) {
+              el.dataset.originalAppBg = el.style.background || '';
+              el.dataset.originalAppBgColor = el.style.backgroundColor || '';
+            }
+            el.style.setProperty('background-color', 'transparent', 'important');
+            el.style.setProperty('background', 'transparent', 'important');
+          });
+
+          // 4. 隱藏側邊欄
+          const sidebar = findSidebar();
+          if (sidebar) {
+            sidebar.classList.add('dlsq-sidebar-hidden');
+          }
+
+          // 5. 隱藏頂部欄 + 調整 flex-box（帶備份）
+          const navbar = findNavbar();
+          const flexBox = document.querySelector('.flex-box.dl-flex-row');
+          if (navbar) {
+            navbar.classList.add('dlsq-navbar-hidden');
+          }
+          if (flexBox) {
+            const currentHeight = flexBox.style.getPropertyValue('height');
+            if (currentHeight && currentHeight !== '100vh') {
+              flexBox.dataset.dlsqOriginalHeight = currentHeight;
+            }
+            flexBox.style.setProperty('height', '100vh', 'important');
+          }
+
+          // 6. 浮動聊天室（儲存原始樣式）
+          const chatArea = findChatArea();
+          if (chatArea) {
+            if (!chatArea.dataset.originalCssText) {
+              chatArea.dataset.originalCssText = chatArea.style.cssText;
+            }
+            chatArea.classList.add('dlsq-chat-overlay');
+            const topContributors = document.querySelector('.top-contributors');
+            if (topContributors) {
+              topContributors.style.setProperty('box-shadow', 'none', 'important');
+            }
+          }
+
+          // 7. 黑色背景
+          const bgCandidates = ['.bg-grey-darken-6', '[class*="grey-darken"]', '.flex-all-center', '.height-100.bg-grey-darken-6'];
+          bgCandidates.forEach(sel => {
+            const el = document.querySelector(sel);
+            if (el && !el.dataset.originalBgColor) {
+              el.dataset.originalBgColor = el.style.backgroundColor || '';
+              el.dataset.originalBg = el.style.background || '';
+              el.style.setProperty('background-color', '#000', 'important');
+              el.style.setProperty('background', '#000', 'important');
+            }
+          });
+          if (!document.body.dataset.originalBgColor) {
+            document.body.dataset.originalBgColor = document.body.style.backgroundColor || '';
+          }
+          if (!document.documentElement.dataset.originalBgColor) {
+            document.documentElement.dataset.originalBgColor = document.documentElement.style.backgroundColor || '';
+          }
+          document.body.style.setProperty('background-color', '#000', 'important');
+          document.documentElement.style.setProperty('background-color', '#000', 'important');
+
+          document.body.dataset.theaterComboActive = 'true';
+          sendResponse({ success: true, message: '✅ 劇院模式（修復版）已啟用', active: true });
+        } else {
+          // ===== 關閉劇院模式 =====
+
+          // 1. 恢復課金區
+          const donationArea = findDonationArea();
+          if (donationArea) {
+            donationArea.classList.remove('dlsq-donation-hidden');
+          }
+
+          // 2. 恢復標題
+          const titleArea = findTitleArea();
+          if (titleArea) {
+            titleArea.classList.remove('dlsq-title-hidden-fix1');
+          }
+
+          // 3. 恢復下方區 + 【關鍵】恢復背景
+          const aboutPanels = document.querySelectorAll('.about-panel');
+          aboutPanels.forEach(panel => panel.classList.remove('dlsq-about-hidden'));
+          const mobilePage = document.querySelector('.mobile-page');
+          if (mobilePage) {
+            mobilePage.classList.remove('dlsq-video-expanded');
+          }
+          // 【修正】恢復透明背景
+          const appElements = document.querySelectorAll('.application, .application--wrap, #genius, .bg-grey-darken-5, .height-100.bg-grey-darken-7');
+          appElements.forEach(el => {
+            if (el.dataset.originalAppBg) {
+              el.style.background = el.dataset.originalAppBg;
+              delete el.dataset.originalAppBg;
+            } else {
+              el.style.removeProperty('background');
+            }
+            if (el.dataset.originalAppBgColor) {
+              el.style.backgroundColor = el.dataset.originalAppBgColor;
+              delete el.dataset.originalAppBgColor;
+            } else {
+              el.style.removeProperty('background-color');
+            }
+          });
+
+          // 4. 恢復側邊欄
+          const sidebar = findSidebar();
+          if (sidebar) {
+            sidebar.classList.remove('dlsq-sidebar-hidden');
+          }
+
+          // 5. 恢復頂部欄 + flex-box（使用備份）
+          const navbar = findNavbar();
+          const flexBox = document.querySelector('.flex-box.dl-flex-row');
+          if (navbar) {
+            navbar.classList.remove('dlsq-navbar-hidden');
+          }
+          if (flexBox) {
+            const originalHeight = flexBox.dataset.dlsqOriginalHeight;
+            if (originalHeight) {
+              flexBox.style.setProperty('height', originalHeight, 'important');
+            } else {
+              flexBox.style.setProperty('height', 'calc(100% - 60px)', 'important');
+            }
+            delete flexBox.dataset.dlsqOriginalHeight;
+          }
+
+          // 6. 恢復聊天室
+          const chatArea = findChatArea();
+          if (chatArea) {
+            chatArea.classList.remove('dlsq-chat-overlay');
+            if (chatArea.dataset.originalCssText) {
+              chatArea.style.cssText = chatArea.dataset.originalCssText;
+              delete chatArea.dataset.originalCssText;
+            }
+            const topContributors = document.querySelector('.top-contributors');
+            if (topContributors) {
+              topContributors.style.removeProperty('box-shadow');
+            }
+          }
+
+          // 7. 恢復背景
+          const bgCandidates = ['.bg-grey-darken-6', '[class*="grey-darken"]', '.flex-all-center', '.height-100.bg-grey-darken-6'];
+          bgCandidates.forEach(sel => {
+            const el = document.querySelector(sel);
+            if (el) {
+              if (el.dataset.originalBgColor) {
+                el.style.backgroundColor = el.dataset.originalBgColor;
+                delete el.dataset.originalBgColor;
+              } else {
+                el.style.removeProperty('background-color');
+              }
+              if (el.dataset.originalBg) {
+                el.style.background = el.dataset.originalBg;
+                delete el.dataset.originalBg;
+              } else {
+                el.style.removeProperty('background');
+              }
+            }
+          });
+          if (document.body.dataset.originalBgColor) {
+            document.body.style.backgroundColor = document.body.dataset.originalBgColor;
+            delete document.body.dataset.originalBgColor;
+          } else {
+            document.body.style.removeProperty('background-color');
+          }
+          if (document.documentElement.dataset.originalBgColor) {
+            document.documentElement.style.backgroundColor = document.documentElement.dataset.originalBgColor;
+            delete document.documentElement.dataset.originalBgColor;
+          } else {
+            document.documentElement.style.removeProperty('background-color');
+          }
+
+          document.body.dataset.theaterComboActive = 'false';
+          sendResponse({ success: true, message: '✅ 劇院模式（修復版）已關閉', active: false });
+        }
+        break;
+      }
+
+      // ==================== 劇院模式（透明背景版）====================
+      case 'toggleTheaterComboFix': {
+        // 狀態變量（使用 dataset 儲存在 body 上）
+        if (!document.body.dataset.theaterComboFixActive) {
+          document.body.dataset.theaterComboFixActive = 'false';
+        }
+        const isActive = document.body.dataset.theaterComboFixActive === 'true';
+
+        if (!isActive) {
+          // ===== 啟用劇院模式（透明背景版）=====
+
+          // 1. 隱藏課金區
+          const donationArea = findDonationArea();
+          if (donationArea) {
+            donationArea.classList.add('dlsq-donation-hidden');
+          }
+
+          // 2. 隱藏標題
+          const titleArea = findTitleArea();
+          if (titleArea) {
+            titleArea.classList.add('dlsq-title-hidden-fix1');
+          }
+
+          // 3. 隱藏下方區 + 【關鍵】透明背景處理
+          const aboutPanels = document.querySelectorAll('.about-panel');
+          aboutPanels.forEach(panel => panel.classList.add('dlsq-about-hidden'));
+          const mobilePage = document.querySelector('.mobile-page');
+          if (mobilePage) {
+            mobilePage.classList.add('dlsq-video-expanded');
+          }
+          // 【修正】透明背景處理（來自 toggleAboutFix1）
+          const appElements = document.querySelectorAll('.application, .application--wrap, #genius, .bg-grey-darken-5, .height-100.bg-grey-darken-7');
+          appElements.forEach(el => {
+            if (!el.dataset.originalAppBg) {
+              el.dataset.originalAppBg = el.style.background || '';
+              el.dataset.originalAppBgColor = el.style.backgroundColor || '';
+            }
+            el.style.setProperty('background-color', 'transparent', 'important');
+            el.style.setProperty('background', 'transparent', 'important');
+          });
+
+          // 4. 隱藏側邊欄
+          const sidebar = findSidebar();
+          if (sidebar) {
+            sidebar.classList.add('dlsq-sidebar-hidden');
+          }
+
+          // 5. 隱藏頂部欄 + 調整 flex-box（帶備份）
+          const navbar = findNavbar();
+          const flexBox = document.querySelector('.flex-box.dl-flex-row');
+          if (navbar) {
+            navbar.classList.add('dlsq-navbar-hidden');
+          }
+          if (flexBox) {
+            const currentHeight = flexBox.style.getPropertyValue('height');
+            if (currentHeight && currentHeight !== '100vh') {
+              flexBox.dataset.dlsqOriginalHeight = currentHeight;
+            }
+            flexBox.style.setProperty('height', '100vh', 'important');
+          }
+
+          // 6. 浮動聊天室（儲存原始樣式）
+          const chatArea = findChatArea();
+          if (chatArea) {
+            if (!chatArea.dataset.originalCssText) {
+              chatArea.dataset.originalCssText = chatArea.style.cssText;
+            }
+            chatArea.classList.add('dlsq-chat-overlay');
+            const topContributors = document.querySelector('.top-contributors');
+            if (topContributors) {
+              topContributors.style.setProperty('box-shadow', 'none', 'important');
+            }
+          }
+
+          // 7. 黑色背景
+          const bgCandidates = ['.bg-grey-darken-6', '[class*="grey-darken"]', '.flex-all-center', '.height-100.bg-grey-darken-6'];
+          bgCandidates.forEach(sel => {
+            const el = document.querySelector(sel);
+            if (el && !el.dataset.originalBgColor) {
+              el.dataset.originalBgColor = el.style.backgroundColor || '';
+              el.dataset.originalBg = el.style.background || '';
+              el.style.setProperty('background-color', '#000', 'important');
+              el.style.setProperty('background', '#000', 'important');
+            }
+          });
+          if (!document.body.dataset.originalBgColor) {
+            document.body.dataset.originalBgColor = document.body.style.backgroundColor || '';
+          }
+          if (!document.documentElement.dataset.originalBgColor) {
+            document.documentElement.dataset.originalBgColor = document.documentElement.style.backgroundColor || '';
+          }
+          document.body.style.setProperty('background-color', '#000', 'important');
+          document.documentElement.style.setProperty('background-color', '#000', 'important');
+
+          document.body.dataset.theaterComboFixActive = 'true';
+          sendResponse({ success: true, message: '✅ 劇院模式（透明背景版）已啟用', active: true });
+        } else {
+          // ===== 關閉劇院模式（透明背景版）=====
+
+          // 1. 恢復課金區
+          const donationArea = findDonationArea();
+          if (donationArea) {
+            donationArea.classList.remove('dlsq-donation-hidden');
+          }
+
+          // 2. 恢復標題
+          const titleArea = findTitleArea();
+          if (titleArea) {
+            titleArea.classList.remove('dlsq-title-hidden-fix1');
+          }
+
+          // 3. 恢復下方區 + 【關鍵】恢復背景
+          const aboutPanels = document.querySelectorAll('.about-panel');
+          aboutPanels.forEach(panel => panel.classList.remove('dlsq-about-hidden'));
+          const mobilePage = document.querySelector('.mobile-page');
+          if (mobilePage) {
+            mobilePage.classList.remove('dlsq-video-expanded');
+          }
+          // 【修正】恢復透明背景
+          const appElements = document.querySelectorAll('.application, .application--wrap, #genius, .bg-grey-darken-5, .height-100.bg-grey-darken-7');
+          appElements.forEach(el => {
+            if (el.dataset.originalAppBg) {
+              el.style.background = el.dataset.originalAppBg;
+              delete el.dataset.originalAppBg;
+            } else {
+              el.style.removeProperty('background');
+            }
+            if (el.dataset.originalAppBgColor) {
+              el.style.backgroundColor = el.dataset.originalAppBgColor;
+              delete el.dataset.originalAppBgColor;
+            } else {
+              el.style.removeProperty('background-color');
+            }
+          });
+
+          // 4. 恢復側邊欄
+          const sidebar = findSidebar();
+          if (sidebar) {
+            sidebar.classList.remove('dlsq-sidebar-hidden');
+          }
+
+          // 5. 恢復頂部欄 + flex-box（使用備份）
+          const navbar = findNavbar();
+          const flexBox = document.querySelector('.flex-box.dl-flex-row');
+          if (navbar) {
+            navbar.classList.remove('dlsq-navbar-hidden');
+          }
+          if (flexBox) {
+            const originalHeight = flexBox.dataset.dlsqOriginalHeight;
+            if (originalHeight) {
+              flexBox.style.setProperty('height', originalHeight, 'important');
+            } else {
+              flexBox.style.setProperty('height', 'calc(100% - 60px)', 'important');
+            }
+            delete flexBox.dataset.dlsqOriginalHeight;
+          }
+
+          // 6. 恢復聊天室
+          const chatArea = findChatArea();
+          if (chatArea) {
+            chatArea.classList.remove('dlsq-chat-overlay');
+            if (chatArea.dataset.originalCssText) {
+              chatArea.style.cssText = chatArea.dataset.originalCssText;
+              delete chatArea.dataset.originalCssText;
+            }
+            const topContributors = document.querySelector('.top-contributors');
+            if (topContributors) {
+              topContributors.style.removeProperty('box-shadow');
+            }
+          }
+
+          // 7. 恢復背景
+          const bgCandidates = ['.bg-grey-darken-6', '[class*="grey-darken"]', '.flex-all-center', '.height-100.bg-grey-darken-6'];
+          bgCandidates.forEach(sel => {
+            const el = document.querySelector(sel);
+            if (el) {
+              if (el.dataset.originalBgColor) {
+                el.style.backgroundColor = el.dataset.originalBgColor;
+                delete el.dataset.originalBgColor;
+              } else {
+                el.style.removeProperty('background-color');
+              }
+              if (el.dataset.originalBg) {
+                el.style.background = el.dataset.originalBg;
+                delete el.dataset.originalBg;
+              } else {
+                el.style.removeProperty('background');
+              }
+            }
+          });
+          if (document.body.dataset.originalBgColor) {
+            document.body.style.backgroundColor = document.body.dataset.originalBgColor;
+            delete document.body.dataset.originalBgColor;
+          } else {
+            document.body.style.removeProperty('background-color');
+          }
+          if (document.documentElement.dataset.originalBgColor) {
+            document.documentElement.style.backgroundColor = document.documentElement.dataset.originalBgColor;
+            delete document.documentElement.dataset.originalBgColor;
+          } else {
+            document.documentElement.style.removeProperty('background-color');
+          }
+
+          document.body.dataset.theaterComboFixActive = 'false';
+          sendResponse({ success: true, message: '✅ 劇院模式（透明背景版）已關閉', active: false });
+        }
+        break;
+      }
+
       default:
         sendResponse({ success: false, message: '❌ 未知命令' });
         break;
@@ -3096,6 +3832,7 @@ function handleDliveControlCommand(command, sendResponse) {
     sendResponse({ success: false, message: '❌ 執行錯誤: ' + e.message });
   }
 }
+
 const DKIP = {
   // 編碼：imgur URL → IM-xxx
   encode(url) {
@@ -3477,1478 +4214,6 @@ function initIMFeature() {
   }, true);
 }
 
-// ==================== 面板視頻拉伸控制（修改佈局版本）====================
-let videoStretchActive = false;
-let layoutOriginalStyles = null;
-let resizeDivider = null;
-
-function toggleVideoStretchMode(btn) {
-  const layoutContainer = findLayoutContainer();
-  if (!layoutContainer) {
-    setPanelStatus('❌ 找不到佈局容器', '#dc3545');
-    return;
-  }
-
-  if (!videoStretchActive) {
-    // 保存原始佈局
-    layoutOriginalStyles = {
-      display: layoutContainer.style.display,
-      gridTemplateColumns: layoutContainer.style.gridTemplateColumns,
-      gridTemplateRows: layoutContainer.style.gridTemplateRows,
-      parentDisplay: layoutContainer.parentElement?.style.display
-    };
-
-    // 找到視頻區和聊天區
-    const videoSection = findVideoSection();
-    const chatSection = findChatSection();
-
-    if (!videoSection || !chatSection) {
-      setPanelStatus('❌ 找不到視頻區或聊天區', '#dc3545');
-      return;
-    }
-
-    // 啟用拉伸模式
-    enableLayoutResize(layoutContainer, videoSection, chatSection);
-
-    videoStretchActive = true;
-    btn.textContent = '🔧 關閉拉伸';
-    btn.style.background = 'rgba(120,190,255,0.4)';
-    setPanelStatus('✅ 已啟用拉伸模式，拖動中間分隔條調整寬度', '#28a745');
-  } else {
-    // 關閉拉伸模式
-    disableLayoutResize();
-
-    videoStretchActive = false;
-    btn.textContent = '🔧 拉伸視頻';
-    btn.style.background = '';
-    setPanelStatus('已關閉拉伸模式', '#adb5bd');
-  }
-}
-
-function findLayoutContainer() {
-  // DLive 使用 .application.app 作為主容器 (Flex 佈局)
-  const selectors = [
-    '.application.app',
-    '.fixed-v-content',
-    '.theme--dark',
-    // 備選
-    'body > div[class*="app"]',
-    '#app',
-    '#__layout',
-    // 找包含 dplayer 和 chatroom 的容器
-    'body'
-  ];
-
-  for (const selector of selectors) {
-    const el = document.querySelector(selector);
-    if (el) {
-      const style = window.getComputedStyle(el);
-      // DLive 主容器是 flex
-      if (style.display === 'flex' || style.display === 'grid') {
-        console.log('找到佈局容器:', selector, el.className);
-        return el;
-      }
-    }
-  }
-
-  // 如果都找不到，找包含 dplayer 和 chatroom-right 的共同父元素
-  const dplayer = document.querySelector('.dplayer');
-  const chatroom = document.querySelector('.chatroom-right');
-  if (dplayer && chatroom) {
-    // 往上找共同父元素
-    let dparent = dplayer.parentElement;
-    while (dparent) {
-      if (dparent.contains(chatroom)) {
-        console.log('找到共同父容器:', dparent.className);
-        return dparent;
-      }
-      dparent = dparent.parentElement;
-    }
-  }
-
-  return null;
-}
-
-function findVideoSection() {
-  // DLive 視頻區
-  const selectors = [
-    '.dplayer',  // DPlayer 主容器
-    '.height-100:has(.dplayer)',  // 包含 dplayer 的 height-100
-    '[class*="position-absolute"]:has(.dplayer)',  // 絕對定位層
-  ];
-
-  for (const selector of selectors) {
-    try {
-      const el = document.querySelector(selector);
-      if (el) {
-        console.log('找到視頻區:', selector, el.className);
-        return el;
-      }
-    } catch (e) {
-      // :has() 可能不被支持，忽略錯誤
-    }
-  }
-
-  // 備選：直接找 dplayer
-  const dplayer = document.querySelector('.dplayer');
-  if (dplayer) {
-    // 返回 dplayer 的祖父元素（通常是主佈局的子項）
-    const grandparent = dplayer.parentElement?.parentElement;
-    if (grandparent) {
-      console.log('找到視頻區(備選):', grandparent.className);
-      return grandparent;
-    }
-    return dplayer;
-  }
-
-  return null;
-}
-
-function findChatSection() {
-  // DLive 聊天室
-  const selectors = [
-    '.chatroom-right',
-    '.chatroom',
-    '[class*="chatroom"]',
-    '.flex-fixed:has([class*="chat"])',
-  ];
-
-  for (const selector of selectors) {
-    try {
-      const el = document.querySelector(selector);
-      if (el) {
-        console.log('找到聊天室:', selector, el.className);
-        return el;
-      }
-    } catch (e) {
-      // 忽略錯誤
-    }
-  }
-
-  return null;
-}
-
-function enableLayoutResize(container, videoSection, chatSection) {
-  const containerStyle = window.getComputedStyle(container);
-  const isGrid = containerStyle.display === 'grid';
-
-  if (isGrid) {
-    // 獲取當前 grid 比例
-    const currentCols = containerStyle.gridTemplateColumns;
-    const hasSidebar = currentCols.includes('px') || currentCols.includes('rem');
-
-    // 修改為可調整的 fr 單位
-    container.style.gridTemplateColumns = '1fr 320px';
-  } else {
-    // Flex 佈局
-    container.style.display = 'grid';
-    container.style.gridTemplateColumns = '1fr 320px';
-  }
-
-  // 確保視頻區可以撐開
-  videoSection.style.minWidth = '0';
-  videoSection.style.width = '100%';
-  videoSection.style.height = '100%';
-
-  // 創建分隔條
-  createResizeDivider(container, videoSection, chatSection);
-}
-
-function createResizeDivider(container, videoSection, chatSection) {
-  const divider = document.createElement('div');
-  divider.id = 'dlsq-resize-divider';
-  divider.style.cssText = `
-    position: fixed !important;
-    top: 0 !important;
-    bottom: 0 !important;
-    width: 8px !important;
-    background: rgba(120,190,255,0.5) !important;
-    cursor: col-resize !important;
-    z-index: 999999 !important;
-    transition: none !important;
-  `;
-
-  // 計算初始位置（視頻區右邊緣）
-  const videoRect = videoSection.getBoundingClientRect();
-  divider.style.left = (videoRect.right - 4) + 'px';
-
-  // 拖拽功能
-  let isDragging = false;
-  let startX = 0;
-  let startVideoWidth = 0;
-
-  divider.addEventListener('mousedown', (e) => {
-    isDragging = true;
-    startX = e.clientX;
-    startVideoWidth = videoSection.offsetWidth;
-    divider.style.background = 'rgba(120,190,255,0.9)';
-    e.preventDefault();
-  });
-
-  document.addEventListener('mousemove', (e) => {
-    if (!isDragging) return;
-
-    const delta = e.clientX - startX;
-    const newVideoWidth = Math.max(400, startVideoWidth + delta);
-    const containerWidth = container.offsetWidth;
-    const chatWidth = Math.max(200, containerWidth - newVideoWidth - 20);
-    const videoFr = newVideoWidth / (newVideoWidth + chatWidth);
-    const chatFr = chatWidth / (newVideoWidth + chatWidth);
-
-    // 更新 grid 比例
-    container.style.gridTemplateColumns = `${videoFr}fr ${chatWidth}px`;
-
-    // 更新分隔條位置
-    const newVideoRect = videoSection.getBoundingClientRect();
-    divider.style.left = (newVideoRect.right - 4) + 'px';
-  });
-
-  document.addEventListener('mouseup', () => {
-    if (isDragging) {
-      isDragging = false;
-      divider.style.background = 'rgba(120,190,255,0.5)';
-    }
-  });
-
-  // 懸停效果
-  divider.addEventListener('mouseenter', () => {
-    if (!isDragging) divider.style.background = 'rgba(120,190,255,0.7)';
-  });
-  divider.addEventListener('mouseleave', () => {
-    if (!isDragging) divider.style.background = 'rgba(120,190,255,0.5)';
-  });
-
-  document.body.appendChild(divider);
-  resizeDivider = divider;
-
-  // 監聽視窗大小變化更新位置
-  const updatePosition = () => {
-    if (!resizeDivider) return;
-    const rect = videoSection.getBoundingClientRect();
-    resizeDivider.style.left = (rect.right - 4) + 'px';
-  };
-  window.addEventListener('resize', updatePosition);
-  divider._updatePosition = updatePosition;
-}
-
-function disableLayoutResize() {
-  if (resizeDivider) {
-    window.removeEventListener('resize', resizeDivider._updatePosition);
-    resizeDivider.remove();
-    resizeDivider = null;
-  }
-}
-
-function resetVideoStretchMode(btn) {
-  disableLayoutResize();
-
-  const container = findLayoutContainer();
-  if (container && layoutOriginalStyles) {
-    container.style.display = layoutOriginalStyles.display;
-    container.style.gridTemplateColumns = layoutOriginalStyles.gridTemplateColumns;
-    container.style.gridTemplateRows = layoutOriginalStyles.gridTemplateRows;
-  }
-
-  videoStretchActive = false;
-  btn.textContent = '🔧 拉伸視頻';
-  btn.style.background = '';
-  setPanelStatus('✅ 已重置佈局', '#28a745');
-}
-
-function findVideoContainer() {
-  // DLive 使用 DPlayer 播放器，找到其容器
-  const selectors = [
-    // DPlayer 主要容器
-    '.dplayer-video-wrap',
-    '.dplayer',
-    '[class*="dplayer"]',
-    // DLive 特定容器
-    '[class*="stream-room"]',
-    '[class*="stream-player"]',
-    '[class*="video-section"]',
-    '[class*="player-wrapper"]',
-    // 備選：video 元素及其父容器
-    'video',
-  ];
-
-  for (const selector of selectors) {
-    const el = document.querySelector(selector);
-    if (el) {
-      // 如果是 dplayer-video-wrap，返回其父容器（更大的 DPlayer 容器）
-      if (el.classList?.contains('dplayer-video-wrap')) {
-        return el.parentElement || el;
-      }
-      // 如果是 video 元素，往上找 2-3 層找到可調整的容器
-      if (el.tagName === 'VIDEO') {
-        // 嘗試找到 dplayer 或更大的容器
-        let parent = el.parentElement;
-        for (let i = 0; i < 3 && parent; i++) {
-          if (parent.classList?.contains('dplayer') ||
-            parent.className?.includes('player') ||
-            parent.className?.includes('stream')) {
-            return parent;
-          }
-          parent = parent.parentElement;
-        }
-        return el.parentElement || el;
-      }
-      return el;
-    }
-  }
-  return null;
-}
-
-// ==================== 隱藏課金區和標題區功能 ====================
-let donationHidden = false;
-let titleHidden = false;
-let titleHiddenFix1 = false;
-let extraHidden = false;
-let aboutHidden = false;
-let aboutHiddenFix1 = false;
-let chatNarrowActive = false;
-let chatHiddenActive = false;
-let chatOverlayActive = false;
-let chatOverlayActiveFix1 = false;
-let sidebarHidden = false;
-let navbarHidden = false;
-let theaterMode13Active = false;
-let blackBgActiveFix1 = false;
-
-function toggleDonationArea(btn) {
-  const donationArea = findDonationArea();
-  if (!donationArea) {
-    setPanelStatus('❌ 找不到課金區', '#dc3545');
-    return;
-  }
-
-  if (!donationHidden) {
-    // 隱藏課金區
-    donationArea.classList.add('dlsq-donation-hidden');
-    donationHidden = true;
-    btn.textContent = '🔧 顯示課金區';
-    btn.style.background = 'rgba(120,190,255,0.4)';
-    setPanelStatus('✅ 已隱藏課金區', '#28a745');
-  } else {
-    // 顯示課金區
-    donationArea.classList.remove('dlsq-donation-hidden');
-    donationHidden = false;
-    btn.textContent = '🔧 隱藏課金區';
-    btn.style.background = '';
-    setPanelStatus('已顯示課金區', '#adb5bd');
-  }
-}
-
-function toggleTitleAreaFix1(btn) {
-  const titleArea = findTitleArea();
-  if (!titleArea) {
-    setPanelStatus('❌ 找不到標題區', '#dc3545');
-    return;
-  }
-
-  if (!titleHiddenFix1) {
-    // 隱藏標題區（簡化版）
-    titleArea.classList.add('dlsq-title-hidden-fix1');
-    titleHiddenFix1 = true;
-    btn.textContent = '👁️ 顯示標題';
-    btn.style.background = 'rgba(120,190,255,0.4)';
-    setPanelStatus('✅ 已隱藏標題區', '#28a745');
-  } else {
-    // 顯示標題區
-    titleArea.classList.remove('dlsq-title-hidden-fix1');
-    titleHiddenFix1 = false;
-    btn.textContent = '👁️ 隱藏標題';
-    btn.style.background = '';
-    setPanelStatus('已顯示標題區', '#adb5bd');
-  }
-}
-
-function toggleLowerAreasFix1(btn) {
-  // 修正版：隱藏實況主簡介面板 + 啟用影片擴展模式，並正確恢復背景
-  const aboutPanels = document.querySelectorAll('.about-panel');
-  const hasAboutPanels = aboutPanels.length > 0;
-
-  if (!hasAboutPanels) {
-    setPanelStatus('❌ 找不到實況主簡介面板', '#dc3545');
-    return;
-  }
-
-  if (!aboutHiddenFix1) {
-    // 隱藏實況主簡介面板
-    aboutPanels.forEach(panel => panel.classList.add('dlsq-about-hidden'));
-
-    // 啟用影片擴展模式
-    const mobilePage = document.querySelector('.mobile-page');
-    if (mobilePage) {
-      mobilePage.classList.add('dlsq-video-expanded');
-    }
-
-    // 強制設定背景透明（消除黑邊）
-    const appElements = document.querySelectorAll('.application, .application--wrap, #genius, .bg-grey-darken-5, .height-100.bg-grey-darken-7');
-    appElements.forEach(el => {
-      el.style.setProperty('background-color', 'transparent', 'important');
-      el.style.setProperty('background', 'transparent', 'important');
-    });
-
-    aboutHiddenFix1 = true;
-    btn.textContent = '📦 顯示下方區';
-    btn.style.background = 'rgba(120,190,255,0.4)';
-    setPanelStatus('✅ 已隱藏簡介面板並啟用影片擴展', '#28a745');
-  } else {
-    // 顯示簡介面板
-    aboutPanels.forEach(panel => panel.classList.remove('dlsq-about-hidden'));
-
-    // 關閉影片擴展模式
-    const mobilePage = document.querySelector('.mobile-page');
-    if (mobilePage) {
-      mobilePage.classList.remove('dlsq-video-expanded');
-    }
-
-    // 【修正】恢復背景
-    const appElements = document.querySelectorAll('.application, .application--wrap, #genius, .bg-grey-darken-5, .height-100.bg-grey-darken-7');
-    appElements.forEach(el => {
-      el.style.removeProperty('background-color');
-      el.style.removeProperty('background');
-    });
-
-    aboutHiddenFix1 = false;
-    btn.textContent = '📦 隱藏下方區';
-    btn.style.background = '';
-    setPanelStatus('已顯示簡介面板', '#adb5bd');
-  }
-}
-
-function findExtraArea() {
-  // 找到課金區
-  const donationArea = findDonationArea();
-  if (!donationArea) return null;
-
-  // 返回課金區的下一個兄弟元素（額外區域）
-  return donationArea.nextElementSibling;
-}
-
-function findChatArea() {
-  const selectors = ['.chatroom-right', '[class*="chatroom"]', '.chat-room', '.chat-container'];
-  for (const selector of selectors) {
-    const el = document.querySelector(selector);
-    if (el) return el;
-  }
-  return null;
-}
-
-function toggleChatNarrow(btn) {
-  const chatArea = findChatArea();
-  if (!chatArea) {
-    setPanelStatus('❌ 找不到聊天室', '#dc3545');
-    return;
-  }
-
-  if (!chatNarrowActive) {
-    chatArea.classList.add('dlsq-chat-narrow');
-    chatNarrowActive = true;
-    btn.textContent = '💬 恢復寬度';
-    btn.style.background = 'rgba(120,190,255,0.4)';
-    setPanelStatus('✅ 聊天室已變窄 (160px)', '#28a745');
-  } else {
-    chatArea.classList.remove('dlsq-chat-narrow');
-    chatNarrowActive = false;
-    btn.textContent = '💬 聊天室變窄';
-    btn.style.background = '';
-    setPanelStatus('已恢復聊天室寬度', '#adb5bd');
-  }
-}
-
-function toggleChatHidden(btn) {
-  const chatArea = findChatArea();
-  if (!chatArea) {
-    setPanelStatus('❌ 找不到聊天室', '#dc3545');
-    return;
-  }
-
-  if (!chatHiddenActive) {
-    chatArea.classList.add('dlsq-chat-hidden');
-    chatHiddenActive = true;
-    btn.textContent = '🚫 顯示聊天室';
-    btn.style.background = 'rgba(120,190,255,0.4)';
-    setPanelStatus('✅ 已隱藏聊天室', '#28a745');
-  } else {
-    chatArea.classList.remove('dlsq-chat-hidden');
-    chatHiddenActive = false;
-    btn.textContent = '🚫 隱藏聊天室';
-    btn.style.background = '';
-    setPanelStatus('已顯示聊天室', '#adb5bd');
-  }
-}
-
-function toggleChatOverlayFix1(btn) {
-  const chatArea = findChatArea();
-  if (!chatArea) {
-    setPanelStatus('❌ 找不到聊天室', '#dc3545');
-    return;
-  }
-
-  if (!chatOverlayActiveFix1) {
-    chatArea.classList.add('dlsq-chat-overlay');
-    chatOverlayActiveFix1 = true;
-    btn.textContent = '🎬 固定聊天室';
-    btn.style.background = 'rgba(120,190,255,0.4)';
-    setPanelStatus('✅ 聊天室已浮動在影片上', '#28a745');
-
-    // 移除聊天室頂部陰影
-    const topContributors = document.querySelector('.top-contributors');
-    if (topContributors) {
-      topContributors.style.setProperty('box-shadow', 'none', 'important');
-    }
-  } else {
-    chatArea.classList.remove('dlsq-chat-overlay');
-    chatOverlayActiveFix1 = false;
-    btn.textContent = '🎬 浮動聊天室';
-    btn.style.background = '';
-    setPanelStatus('已恢復聊天室原位置', '#adb5bd');
-
-    // 【修正】恢復陰影
-    const topContributors = document.querySelector('.top-contributors');
-    if (topContributors) {
-      topContributors.style.removeProperty('box-shadow');
-    }
-  }
-}
-
-function findSidebar() {
-  return document.querySelector('.sidebar');
-}
-
-function findNavbar() {
-  const navbar = document.querySelector('.nav-bar');
-  // 返回父元素，這樣隱藏時可以移除整個頂部區域
-  return navbar?.parentElement || navbar;
-}
-
-function toggleSidebar(btn) {
-  const sidebar = findSidebar();
-  if (!sidebar) {
-    setPanelStatus('❌ 找不到側邊欄', '#dc3545');
-    return;
-  }
-
-  if (!sidebarHidden) {
-    sidebar.classList.add('dlsq-sidebar-hidden');
-    sidebarHidden = true;
-    btn.textContent = '📁 顯示側邊欄';
-    btn.style.background = 'rgba(120,190,255,0.4)';
-    setPanelStatus('✅ 已隱藏側邊欄', '#28a745');
-  } else {
-    sidebar.classList.remove('dlsq-sidebar-hidden');
-    sidebarHidden = false;
-    btn.textContent = '📁 隱藏側邊欄';
-    btn.style.background = '';
-    setPanelStatus('已顯示側邊欄', '#adb5bd');
-  }
-}
-
-function toggleNavbar(btn) {
-  const navbar = findNavbar();
-  if (!navbar) {
-    setPanelStatus('❌ 找不到頂部導航', '#dc3545');
-    return;
-  }
-
-  if (!navbarHidden) {
-    // 隱藏頂部欄，讓影片上移並填滿視口
-    navbar.classList.add('dlsq-navbar-hidden');
-    navbarHidden = true;
-    btn.textContent = '📌 顯示頂部欄';
-    btn.style.background = 'rgba(120,190,255,0.4)';
-    setPanelStatus('✅ 已隱藏頂部導航', '#28a745');
-
-    // 強制移除頂部欄 - 防止它顯示在視頻下方
-    navbar.style.setProperty('display', 'none', 'important');
-    navbar.style.setProperty('visibility', 'hidden', 'important');
-    navbar.style.setProperty('position', 'absolute', 'important');
-    navbar.style.setProperty('top', '-9999px', 'important');
-    navbar.style.setProperty('left', '-9999px', 'important');
-    navbar.style.setProperty('height', '0', 'important');
-    navbar.style.setProperty('min-height', '0', 'important');
-    navbar.style.setProperty('max-height', '0', 'important');
-
-    // 強制調整布局 - 移除頂部欄留下的空間
-    const genius = document.querySelector('#genius');
-    const app = document.querySelector('.application');
-    const appWrap = document.querySelector('.application--wrap');
-    const mobilePage = document.querySelector('.mobile-page');
-
-    // 直接設定樣式來消除黑邊
-    if (genius) {
-      genius.style.setProperty('padding-top', '0', 'important');
-      genius.style.setProperty('margin-top', '0', 'important');
-    }
-    if (app) {
-      app.style.setProperty('padding-top', '0', 'important');
-      app.style.setProperty('margin-top', '0', 'important');
-    }
-    if (appWrap) {
-      appWrap.style.setProperty('padding-top', '0', 'important');
-      appWrap.style.setProperty('margin-top', '0', 'important');
-    }
-    if (mobilePage) {
-      mobilePage.style.setProperty('height', '100vh', 'important');
-      mobilePage.style.setProperty('min-height', '100vh', 'important');
-      mobilePage.style.setProperty('padding-top', '0', 'important');
-      mobilePage.style.setProperty('margin-top', '0', 'important');
-    }
-
-    // 調整 dplayer 容器高度填滿視口
-    const dplayer = document.querySelector('.dplayer');
-    if (dplayer) {
-      dplayer.style.setProperty('height', '100vh', 'important');
-    }
-
-    // 調整 video-wrap 高度填滿視口並設為透明背景
-    const videoWrap = document.querySelector('.dplayer-video-wrap');
-    if (videoWrap) {
-      videoWrap.style.setProperty('height', '100vh', 'important');
-      videoWrap.style.setProperty('max-width', '100%', 'important');
-      videoWrap.style.setProperty('max-height', '100%', 'important');
-      videoWrap.style.setProperty('overflow', 'hidden', 'important');
-      videoWrap.style.setProperty('background', 'transparent', 'important');
-    }
-
-    // 調整 flex-box 高度填滿視口（修復黑邊關鍵）
-    const flexBox = document.querySelector('.flex-box.dl-flex-row');
-    if (flexBox) {
-      flexBox.style.cssText = 'height: 100vh !important; max-width: 100% !important; max-height: 100% !important; overflow: hidden !important;';
-    }
-
-    // 隱藏所有可能覆蓋的元素
-    document.querySelectorAll('.dplayer-notice').forEach(el => {
-      el.style.setProperty('display', 'none', 'important');
-    });
-  } else {
-    // 恢復頂部欄
-    navbar.classList.remove('dlsq-navbar-hidden');
-    navbarHidden = false;
-    btn.textContent = '📌 隱藏頂部欄';
-    btn.style.background = '';
-    setPanelStatus('已恢復頂部欄', '#adb5bd');
-
-    // 恢復導航欄樣式
-    navbar.style.removeProperty('display');
-    navbar.style.removeProperty('visibility');
-    navbar.style.removeProperty('position');
-    navbar.style.removeProperty('top');
-    navbar.style.removeProperty('left');
-    navbar.style.removeProperty('height');
-    navbar.style.removeProperty('min-height');
-    navbar.style.removeProperty('max-height');
-
-    // 顯示頂部欄後，恢復所有樣式
-    const genius = document.querySelector('#genius');
-    const app = document.querySelector('.application');
-    const appWrap = document.querySelector('.application--wrap');
-    const mobilePage = document.querySelector('.mobile-page');
-    const dplayer = document.querySelector('.dplayer');
-    const videoWrap = document.querySelector('.dplayer-video-wrap');
-
-    if (genius) {
-      genius.style.removeProperty('padding-top');
-      genius.style.removeProperty('margin-top');
-    }
-    if (app) {
-      app.style.removeProperty('padding-top');
-      app.style.removeProperty('margin-top');
-    }
-    if (appWrap) {
-      appWrap.style.removeProperty('padding-top');
-      appWrap.style.removeProperty('margin-top');
-    }
-    if (mobilePage) {
-      mobilePage.style.removeProperty('height');
-      mobilePage.style.removeProperty('min-height');
-      mobilePage.style.removeProperty('padding-top');
-      mobilePage.style.removeProperty('margin-top');
-    }
-    if (dplayer) {
-      dplayer.style.removeProperty('height');
-    }
-    if (videoWrap) {
-      videoWrap.style.removeProperty('height');
-      videoWrap.style.removeProperty('max-width');
-      videoWrap.style.removeProperty('max-height');
-      videoWrap.style.removeProperty('overflow');
-    }
-
-    // 恢復 flex-box 樣式
-    const flexBox = document.querySelector('.flex-box.dl-flex-row');
-    if (flexBox) {
-      flexBox.style.cssText = '';
-    }
-
-    // 恢復通知元素
-    document.querySelectorAll('.dplayer-notice').forEach(el => {
-      el.style.removeProperty('display');
-    });
-  }
-}
-
-function resetAllAreas(donationBtn, titleBtn, reorderBtn, resizeBtn, extraBtn, chatNarrowBtn, chatHideBtn, chatOverlayBtn, sidebarBtn, navbarBtn) {
-  // 重置課金區
-  const donationArea = findDonationArea();
-  if (donationArea) {
-    donationArea.classList.remove('dlsq-donation-hidden');
-  }
-  donationHidden = false;
-  if (donationBtn) {
-    donationBtn.textContent = '🔧 隱藏課金區';
-    donationBtn.style.background = '';
-  }
-
-  // 重置標題區
-  const titleArea = findTitleArea();
-  if (titleArea) {
-    titleArea.classList.remove('dlsq-title-hidden');
-  }
-  titleHidden = false;
-  if (titleBtn) {
-    titleBtn.textContent = '👁️ 隱藏標題';
-    titleBtn.style.background = '';
-  }
-
-  // 重置課金區下方區域和簡介
-  const extraAreaReset = findExtraArea();
-  if (extraAreaReset) extraAreaReset.classList.remove('dlsq-extra-hidden');
-  const aboutPanelsReset = document.querySelectorAll('.about-panel');
-  aboutPanelsReset.forEach(panel => panel.classList.remove('dlsq-about-hidden'));
-  extraHidden = false;
-  aboutHidden = false;
-
-  // 恢復課金區高度
-  const donationAreaReset = findDonationArea();
-  if (donationAreaReset) {
-    if (donationAreaReset.dataset.originalHeight !== undefined) {
-      donationAreaReset.style.cssText = donationAreaReset.dataset.originalHeight;
-      delete donationAreaReset.dataset.originalHeight;
-    } else {
-      donationAreaReset.style.height = '';
-      donationAreaReset.style.minHeight = '';
-      donationAreaReset.style.maxHeight = '';
-      donationAreaReset.style.overflow = '';
-      donationAreaReset.style.paddingTop = '';
-      donationAreaReset.style.paddingBottom = '';
-    }
-  }
-
-  // 關閉影片擴展模式
-  const mobilePageReset = document.querySelector('.mobile-page');
-  if (mobilePageReset) {
-    mobilePageReset.classList.remove('dlsq-video-expanded');
-  }
-
-  if (extraBtn) {
-    extraBtn.textContent = '📦 隱藏下方區';
-    extraBtn.style.background = '';
-  }
-
-  // 重置重新排列模式
-  disableReorderMode();
-  if (reorderBtn) {
-    reorderBtn.textContent = '📐 實況最大化';
-    reorderBtn.style.background = '';
-  }
-
-  // 重置自由拉伸模式
-  disableFreeResizeMode();
-  if (resizeBtn) {
-    resizeBtn.textContent = '↕️ 自由拉伸';
-    resizeBtn.style.background = '';
-  }
-
-  // 重置聊天室
-  const chatArea = findChatArea();
-  if (chatArea) {
-    chatArea.classList.remove('dlsq-chat-narrow', 'dlsq-chat-hidden');
-  }
-  chatNarrowActive = false;
-  chatHiddenActive = false;
-  if (chatNarrowBtn) {
-    chatNarrowBtn.textContent = '💬 聊天室變窄';
-    chatNarrowBtn.style.background = '';
-  }
-  if (chatHideBtn) {
-    chatHideBtn.textContent = '🚫 隱藏聊天室';
-    chatHideBtn.style.background = '';
-  }
-
-  // 重置側邊欄
-  const sidebar = findSidebar();
-  if (sidebar) {
-    sidebar.classList.remove('dlsq-sidebar-hidden');
-  }
-  sidebarHidden = false;
-  if (sidebarBtn) {
-    sidebarBtn.textContent = '📁 隱藏側邊欄';
-    sidebarBtn.style.background = '';
-  }
-
-  // 重置頂部導航
-  const navbar = findNavbar();
-  if (navbar) {
-    navbar.classList.remove('dlsq-navbar-hidden');
-  }
-  navbarHidden = false;
-  if (navbarBtn) {
-    navbarBtn.textContent = '📌 隱藏頂部欄';
-    navbarBtn.style.background = '';
-  }
-
-  // 關閉聊天室控制
-  const chatAreaOverlay = document.getElementById('dlsq-chat-overlay');
-  if (chatAreaOverlay) {
-    chatAreaOverlay.remove();
-  }
-
-  setPanelStatus('✅ 已重置所有區域', '#28a745');
-}
-
-// ==================== 劇院模式13（簡化修復策略）====================
-async function toggleTheaterMode13(btn) {
-  if (!theaterMode13Active) {
-    // 啟用劇院模式13 - 組合所有功能（與模式12相同）
-    // 1. 隱藏課金區
-    const donationArea = findDonationArea();
-    if (donationArea) {
-      donationArea.classList.add('dlsq-donation-hidden');
-      donationHidden = true;
-    }
-
-    // 2. 隱藏標題
-    const titleArea = findTitleArea();
-    if (titleArea) {
-      titleArea.classList.add('dlsq-title-hidden-fix1');
-      titleHiddenFix1 = true;
-    }
-
-    // 3. 隱藏下方區
-    const aboutPanels = document.querySelectorAll('.about-panel');
-    aboutPanels.forEach(panel => panel.classList.add('dlsq-about-hidden'));
-    aboutHiddenFix1 = true;
-    const mobilePage = document.querySelector('.mobile-page');
-    if (mobilePage) {
-      mobilePage.classList.add('dlsq-video-expanded');
-    }
-    const appElements = document.querySelectorAll('.application, .application--wrap, #genius, .bg-grey-darken-5, .height-100.bg-grey-darken-7');
-    appElements.forEach(el => {
-      el.style.setProperty('background-color', 'transparent', 'important');
-      el.style.setProperty('background', 'transparent', 'important');
-    });
-
-    // 4. 隱藏側邊欄
-    const sidebar = findSidebar();
-    if (sidebar) {
-      sidebar.classList.add('dlsq-sidebar-hidden');
-      sidebarHidden = true;
-    }
-
-    // 5. 隱藏頂部欄 + 調整 flex-box
-    const navbar = findNavbar();
-    const flexBox = document.querySelector('.flex-box.dl-flex-row');
-    if (navbar) {
-      navbar.classList.add('dlsq-navbar-hidden');
-    }
-    if (flexBox) {
-      flexBox.style.setProperty('height', '100vh', 'important');
-    }
-    navbarHidden = true;
-
-    // 6. 浮動聊天室（儲存原始樣式）
-    const chatArea = findChatArea();
-    if (chatArea) {
-      // 儲存原始樣式
-      if (!chatArea.dataset.originalCssText) {
-        chatArea.dataset.originalCssText = chatArea.style.cssText;
-      }
-      chatArea.classList.add('dlsq-chat-overlay');
-      chatOverlayActiveFix1 = true;
-      const topContributors = document.querySelector('.top-contributors');
-      if (topContributors) {
-        topContributors.style.setProperty('box-shadow', 'none', 'important');
-      }
-    }
-
-    // 7. 黑色背景
-    const bgCandidates = ['.bg-grey-darken-6', '[class*="grey-darken"]', '.flex-all-center', '.height-100.bg-grey-darken-6'];
-    bgCandidates.forEach(sel => {
-      const el = document.querySelector(sel);
-      if (el && !el.dataset.originalBgColor) {
-        el.dataset.originalBgColor = el.style.backgroundColor || '';
-        el.dataset.originalBg = el.style.background || '';
-        el.style.setProperty('background-color', '#000', 'important');
-        el.style.setProperty('background', '#000', 'important');
-      }
-    });
-    if (!document.body.dataset.originalBgColor) {
-      document.body.dataset.originalBgColor = document.body.style.backgroundColor || '';
-    }
-    if (!document.documentElement.dataset.originalBgColor) {
-      document.documentElement.dataset.originalBgColor = document.documentElement.style.backgroundColor || '';
-    }
-    document.body.style.setProperty('background-color', '#000', 'important');
-    document.documentElement.style.setProperty('background-color', '#000', 'important');
-    blackBgActiveFix1 = true;
-
-    theaterMode13Active = true;
-    btn.textContent = '🎭 關閉劇院13';
-    btn.style.background = 'rgba(100, 200, 255, 0.6)';
-    setPanelStatus('✅ 劇院模式13已啟用', '#28a745');
-  } else {
-    // 【修正策略】關閉劇院模式13 - 先處理聊天室，再恢復佈局
-    const chatArea = findChatArea();
-    const flexBox = document.querySelector('.flex-box.dl-flex-row');
-    const navbar = findNavbar();
-
-    // 1. 保持 flex-box 100vh + 隱藏頂欄（為聊天室修復創造環境）
-    if (flexBox) {
-      flexBox.style.setProperty('height', '100vh', 'important');
-    }
-    if (navbar) {
-      if (navbar.parentElement) {
-        navbar.parentElement.style.setProperty('display', 'none', 'important');
-      }
-      navbar.style.setProperty('display', 'none', 'important');
-    }
-
-    // 等待佈局穩定
-    await new Promise(r => setTimeout(r, 100));
-
-    // 2. 移除聊天室 overlay class
-    if (chatArea) {
-      chatArea.classList.remove('dlsq-chat-overlay');
-    }
-
-    // 等待一下
-    await new Promise(r => setTimeout(r, 100));
-
-    // 3. 清除所有 inline styles，隱藏再顯示來強制重新渲染
-    if (chatArea) {
-      chatArea.style.cssText = ''; // 清除所有 inline styles
-      // 強制瀏覽器 reflow
-      void chatArea.offsetHeight;
-      // 恢復原始樣式
-      if (chatArea.dataset.originalCssText) {
-        chatArea.style.cssText = chatArea.dataset.originalCssText;
-        delete chatArea.dataset.originalCssText;
-      }
-      // 找到聊天室父容器並清除樣式
-      const chatParent = chatArea.parentElement;
-      if (chatParent) {
-        chatParent.style.cssText = '';
-        void chatParent.offsetHeight;
-      }
-      // 【關鍵】隱藏聊天室
-      chatArea.style.setProperty('display', 'none', 'important');
-    }
-
-    // 等待
-    await new Promise(r => setTimeout(r, 100));
-
-    // 【關鍵】重新顯示聊天室
-    if (chatArea) {
-      chatArea.style.removeProperty('display');
-    }
-
-    // 等待佈局穩定
-    await new Promise(r => setTimeout(r, 300));
-
-    // 4. 現在恢復 flex-box 和頂欄
-    if (flexBox) {
-      flexBox.style.removeProperty('height');
-    }
-    if (navbar) {
-      navbar.classList.remove('dlsq-navbar-hidden');
-      if (navbar.parentElement) {
-        navbar.parentElement.style.removeProperty('display');
-      }
-      navbar.style.removeProperty('display');
-    }
-    navbarHidden = false;
-
-    // 【關鍵】觸發 resize 事件讓佈局重新計算
-    window.dispatchEvent(new Event('resize'));
-
-    // 等待佈局重算完成
-    await new Promise(r => setTimeout(r, 100));
-
-    // 【關鍵】直接設定聊天室高度為視窗剩餘空間
-    if (chatArea) {
-      chatArea.style.setProperty('height', 'calc(100vh - 60px)', 'important');
-    }
-
-    // 4. 恢復其他功能
-    const donationArea = findDonationArea();
-    if (donationArea) {
-      donationArea.classList.remove('dlsq-donation-hidden');
-      donationHidden = false;
-    }
-
-    const titleArea = findTitleArea();
-    if (titleArea) {
-      titleArea.classList.remove('dlsq-title-hidden-fix1');
-      titleHiddenFix1 = false;
-    }
-
-    const aboutPanels = document.querySelectorAll('.about-panel');
-    aboutPanels.forEach(panel => panel.classList.remove('dlsq-about-hidden'));
-    aboutHiddenFix1 = false;
-    const mobilePage = document.querySelector('.mobile-page');
-    if (mobilePage) {
-      mobilePage.classList.remove('dlsq-video-expanded');
-    }
-    const appElementsClose = document.querySelectorAll('.application, .application--wrap, #genius, .bg-grey-darken-5, .height-100.bg-grey-darken-7');
-    appElementsClose.forEach(el => {
-      el.style.removeProperty('background-color');
-      el.style.removeProperty('background');
-    });
-
-    const sidebar = findSidebar();
-    if (sidebar) {
-      sidebar.classList.remove('dlsq-sidebar-hidden');
-      sidebarHidden = false;
-    }
-
-    if (chatArea) {
-      chatOverlayActiveFix1 = false;
-      const topContributors = document.querySelector('.top-contributors');
-      if (topContributors) {
-        topContributors.style.removeProperty('box-shadow');
-      }
-    }
-
-    const bgCandidatesClose = ['.bg-grey-darken-6', '[class*="grey-darken"]', '.flex-all-center', '.height-100.bg-grey-darken-6'];
-    bgCandidatesClose.forEach(sel => {
-      const el = document.querySelector(sel);
-      if (el) {
-        if (el.dataset.originalBgColor) {
-          el.style.backgroundColor = el.dataset.originalBgColor;
-          delete el.dataset.originalBgColor;
-        } else {
-          el.style.removeProperty('background-color');
-        }
-        if (el.dataset.originalBg) {
-          el.style.background = el.dataset.originalBg;
-          delete el.dataset.originalBg;
-        } else {
-          el.style.removeProperty('background');
-        }
-      }
-    });
-    if (document.body.dataset.originalBgColor) {
-      document.body.style.backgroundColor = document.body.dataset.originalBgColor;
-      delete document.body.dataset.originalBgColor;
-    } else {
-      document.body.style.removeProperty('background-color');
-    }
-    if (document.documentElement.dataset.originalBgColor) {
-      document.documentElement.style.backgroundColor = document.documentElement.dataset.originalBgColor;
-      delete document.documentElement.dataset.originalBgColor;
-    } else {
-      document.documentElement.style.removeProperty('background-color');
-    }
-    blackBgActiveFix1 = false;
-
-    theaterMode13Active = false;
-    btn.textContent = '🎭 劇院模式13';
-    btn.style.background = '';
-    setPanelStatus('已關閉劇院模式13', '#adb5bd');
-  }
-}
-
-// ==================== 黑色背景 ====================
-function toggleBlackBackgroundFix1(btn) {
-  const candidates = [
-    '.bg-grey-darken-6',
-    '[class*="grey-darken"]',
-    '.flex-all-center',
-    '.height-100.bg-grey-darken-6'
-  ];
-
-  if (!blackBgActiveFix1) {
-    // 開啟黑色背景 - 儲存原始樣式
-    let found = false;
-    for (const sel of candidates) {
-      const el = document.querySelector(sel);
-      if (el && !el.dataset.originalBgColor) {
-        el.dataset.originalBgColor = el.style.backgroundColor || '';
-        el.dataset.originalBg = el.style.background || '';
-        el.style.setProperty('background-color', '#000', 'important');
-        el.style.setProperty('background', '#000', 'important');
-        found = true;
-      }
-    }
-    // body 和 html
-    if (!document.body.dataset.originalBgColor) {
-      document.body.dataset.originalBgColor = document.body.style.backgroundColor || '';
-    }
-    if (!document.documentElement.dataset.originalBgColor) {
-      document.documentElement.dataset.originalBgColor = document.documentElement.style.backgroundColor || '';
-    }
-    document.body.style.setProperty('background-color', '#000', 'important');
-    document.documentElement.style.setProperty('background-color', '#000', 'important');
-
-    blackBgActiveFix1 = true;
-    btn.textContent = '🖤 恢復背景';
-    btn.style.background = 'rgba(120,190,255,0.4)';
-    setPanelStatus(found ? '✅ 已設置黑色背景' : '⚠️ 已嘗試設置黑色背景', '#28a745');
-  } else {
-    // 關閉黑色背景 - 恢復原始樣式
-    for (const sel of candidates) {
-      const el = document.querySelector(sel);
-      if (el) {
-        if (el.dataset.originalBgColor) {
-          el.style.backgroundColor = el.dataset.originalBgColor;
-          delete el.dataset.originalBgColor;
-        } else {
-          el.style.removeProperty('background-color');
-        }
-        if (el.dataset.originalBg) {
-          el.style.background = el.dataset.originalBg;
-          delete el.dataset.originalBg;
-        } else {
-          el.style.removeProperty('background');
-        }
-      }
-    }
-    // 恢復 body 和 html
-    if (document.body.dataset.originalBgColor) {
-      document.body.style.backgroundColor = document.body.dataset.originalBgColor;
-      delete document.body.dataset.originalBgColor;
-    } else {
-      document.body.style.removeProperty('background-color');
-    }
-    if (document.documentElement.dataset.originalBgColor) {
-      document.documentElement.style.backgroundColor = document.documentElement.dataset.originalBgColor;
-      delete document.documentElement.dataset.originalBgColor;
-    } else {
-      document.documentElement.style.removeProperty('background-color');
-    }
-
-    blackBgActiveFix1 = false;
-    btn.textContent = '🖤 黑色背景';
-    btn.style.background = '';
-    setPanelStatus('已恢復背景', '#adb5bd');
-  }
-}
-
-// ==================== 實況最大化模式（重新排列）====================
-let reorderModeActive = false;
-
-function toggleReorderMode(btn) {
-  if (!reorderModeActive) {
-    // 啟用重新排列模式
-    enableReorderMode();
-    reorderModeActive = true;
-    btn.textContent = '📐 關閉最大化模式';
-    btn.style.background = 'rgba(120,190,255,0.4)';
-    setPanelStatus('✅ 已啟用實況最大化模式：上=實況 中=課金 下=標題', '#28a745');
-  } else {
-    // 關閉重新排列模式
-    disableReorderMode();
-    reorderModeActive = false;
-    btn.textContent = '📐 實況最大化模式';
-    btn.style.background = '';
-    setPanelStatus('已關閉最大化模式', '#adb5bd');
-  }
-}
-
-function enableReorderMode() {
-  // 找到三個主要區域
-  const videoSection = findVideoSection();
-  const donationArea = findDonationArea();
-  const titleArea = findTitleArea();
-
-  console.log('enableReorderMode 找到:', {
-    video: videoSection?.className,
-    donation: donationArea?.className,
-    title: titleArea?.className
-  });
-
-  // 找到正確的父容器 - 應該是包含所有三個區域的容器
-  // 從診斷結果看，應該是 .mobile-page 或 .live-stream-page 這一層
-  let parent = null;
-
-  // 方法1：找 dplayer 的祖父容器（通常是正確的父層）
-  const dplayer = document.querySelector('.dplayer');
-  if (dplayer) {
-    let current = dplayer.parentElement;
-    let level = 0;
-    while (current && level < 10) {
-      // 檢查這個父容器是否包含 donation 和 title
-      const hasDonation = donationArea ? current.contains(donationArea) : false;
-      const hasTitle = titleArea ? current.contains(titleArea) : false;
-
-      console.log(`檢查層級 ${level}:`, current.className?.substring(0, 50),
-        '有課金:', hasDonation, '有標題:', hasTitle);
-
-      // 如果找到同時包含 donation 或 title 的容器，或者找到 mobile-page
-      if ((hasDonation || hasTitle) || current.classList?.contains('mobile-page')) {
-        parent = current;
-        console.log('✓ 選擇此層級作為父容器');
-        if (hasDonation && hasTitle) break; // 找到最佳匹配
-      }
-
-      current = current.parentElement;
-      level++;
-    }
-  }
-
-  if (!parent) {
-    // 方法2：直接找 .mobile-page 或 .live-stream-page
-    parent = document.querySelector('.mobile-page') ||
-      document.querySelector('.live-stream-page') ||
-      document.querySelector('#liveContainer');
-    console.log('方法2找到父容器:', parent?.className);
-  }
-
-  if (parent) {
-    console.log('最終父容器:', parent.className);
-
-    // 添加重新排列模式的 class
-    parent.classList.add('dlsq-reorder-mode');
-
-    // 給各區域添加標記 class 以便 CSS 控制
-    if (videoSection) videoSection.classList.add('dlsq-video-section');
-    if (donationArea) donationArea.classList.add('dlsq-donation-section');
-    if (titleArea) titleArea.classList.add('dlsq-title-section');
-
-    // 強制修改 flex 佈局
-    parent.style.display = 'flex';
-    parent.style.flexDirection = 'column';
-
-    // 調整各區域順序和大小
-    if (videoSection) {
-      videoSection.style.order = '1';
-      videoSection.style.flex = '1';
-      videoSection.style.height = '70vh';
-      videoSection.style.minHeight = '400px';
-      console.log('設置視頻區樣式');
-    }
-    if (donationArea) {
-      donationArea.style.order = '2';
-      donationArea.style.height = '80px';
-      donationArea.style.minHeight = '60px';
-      donationArea.style.overflow = 'hidden';
-      donationArea.style.flex = '0 0 auto';
-      console.log('設置課金區樣式');
-    }
-    if (titleArea) {
-      titleArea.style.order = '3';
-      titleArea.style.height = '50px';
-      titleArea.style.minHeight = '40px';
-      titleArea.style.overflow = 'hidden';
-      titleArea.style.flex = '0 0 auto';
-      console.log('設置標題區樣式');
-    }
-  } else {
-    console.log('❌ 找不到父容器');
-  }
-}
-
-function disableReorderMode() {
-  // 移除所有重新排列的樣式
-  document.querySelectorAll('.dlsq-reorder-mode').forEach(el => {
-    el.classList.remove('dlsq-reorder-mode');
-    el.style.display = '';
-    el.style.flexDirection = '';
-  });
-
-  // 移除各區域的樣式
-  document.querySelectorAll('.dlsq-video-section, .dlsq-donation-section, .dlsq-title-section').forEach(el => {
-    el.classList.remove('dlsq-video-section', 'dlsq-donation-section', 'dlsq-title-section');
-    el.style.order = '';
-    el.style.flex = '';
-    el.style.height = '';
-    el.style.minHeight = '';
-    el.style.overflow = '';
-  });
-}
-
-// ==================== 自由拉伸模式 ====================
-let freeResizeActive = false;
-let resizeHandles = [];
-
-function toggleFreeResizeMode(btn) {
-  if (!freeResizeActive) {
-    enableFreeResizeMode();
-    freeResizeActive = true;
-    btn.textContent = '↕️ 關閉自由拉伸';
-    btn.style.background = 'rgba(120,190,255,0.4)';
-    setPanelStatus('✅ 已啟用自由拉伸模式：拖拽藍色分隔條調整高度', '#28a745');
-  } else {
-    disableFreeResizeMode();
-    freeResizeActive = false;
-    btn.textContent = '↕️ 自由拉伸';
-    btn.style.background = '';
-    setPanelStatus('已關閉自由拉伸模式', '#adb5bd');
-  }
-}
-
-function enableFreeResizeMode() {
-  const videoWrap = document.querySelector('.dplayer-video-wrap') || document.querySelector('.dplayer');
-  if (!videoWrap) {
-    console.log('❌ 找不到 DPlayer 視頻容器');
-    setPanelStatus('❌ 找不到視頻容器', '#dc3545');
-    return;
-  }
-  console.log('✓ 找到視頻容器:', videoWrap.className);
-  if (!videoWrap.dataset.originalStyle) {
-    videoWrap.dataset.originalStyle = videoWrap.style.cssText;
-  }
-  videoWrap.style.resize = 'both';
-  videoWrap.style.overflow = 'visible';
-  videoWrap.style.minWidth = '320px';
-  videoWrap.style.minHeight = '180px';
-  videoWrap.style.maxWidth = '100vw';
-  videoWrap.style.maxHeight = '100vh';
-  videoWrap.style.position = 'relative';
-  videoWrap.classList.add('dlsq-video-resizing');
-  let parent = videoWrap.parentElement;
-  let level = 0;
-  const modifiedParents = [];
-  while (parent && level < 10) {
-    const style = window.getComputedStyle(parent);
-    if (style.overflow === 'hidden' || style.overflowX === 'hidden' || style.overflowY === 'hidden') {
-      if (!parent.dataset.originalOverflow) {
-        parent.dataset.originalOverflow = parent.style.overflow || 'auto';
-      }
-      parent.style.overflow = 'visible';
-      modifiedParents.push(parent);
-      console.log(`✓ 修改層級 ${level} overflow:`, parent.className?.substring(0, 40));
-    }
-    parent = parent.parentElement;
-    level++;
-  }
-  videoWrap.dataset.modifiedParents = JSON.stringify(modifiedParents.map(p => Array.from(p.parentElement?.children || []).indexOf(p)));
-  createVideoResizeCornerHandle(videoWrap);
-  console.log('✓ 已啟用視頻容器拉伸，修改了', modifiedParents.length, '個父元素');
-  setPanelStatus('✅ 已啟用視頻拉伸：拖拽右下角藍色手柄調整大小', '#28a745');
-}
-
-function createVideoResizeCornerHandle(videoWrap) {
-  const oldHandle = videoWrap.querySelector('.dlsq-corner-handle');
-  if (oldHandle) oldHandle.remove();
-
-  const handle = document.createElement('div');
-  handle.className = 'dlsq-corner-handle';
-  handle.style.cssText = `position:absolute!important;right:0!important;bottom:0!important;width:24px!important;height:24px!important;background:linear-gradient(135deg,transparent 50%,rgba(120,190,255,0.9) 50%)!important;cursor:nwse-resize!important;z-index:99999!important;border-radius:0 0 4px 0!important;box-shadow:-2px -2px 4px rgba(0,0,0,0.2)!important;`;
-
-  // 懸停效果
-  handle.addEventListener('mouseenter', () => {
-    handle.style.background = 'linear-gradient(135deg,transparent 50%,rgba(255,200,100,0.95) 50%)!important';
-    handle.style.width = '28px!important';
-    handle.style.height = '28px!important';
-  });
-  handle.addEventListener('mouseleave', () => {
-    handle.style.background = 'linear-gradient(135deg,transparent 50%,rgba(120,190,255,0.9) 50%)!important';
-    handle.style.width = '24px!important';
-    handle.style.height = '24px!important';
-  });
-
-  // 實現拖動調整大小功能
-  let isDragging = false;
-  let startX = 0;
-  let startY = 0;
-  let startWidth = 0;
-  let startHeight = 0;
-
-  handle.addEventListener('mousedown', (e) => {
-    isDragging = true;
-    startX = e.clientX;
-    startY = e.clientY;
-    startWidth = videoWrap.offsetWidth;
-    startHeight = videoWrap.offsetHeight;
-
-    handle.style.background = 'linear-gradient(135deg,transparent 50%,rgba(255,150,100,1) 50%)!important';
-
-    e.preventDefault();
-    e.stopPropagation();
-    console.log('開始拖動調整大小:', startWidth, 'x', startHeight);
-  });
-
-  document.addEventListener('mousemove', (e) => {
-    if (!isDragging) return;
-
-    const deltaX = e.clientX - startX;
-    const deltaY = e.clientY - startY;
-
-    const newWidth = Math.max(320, Math.min(window.innerWidth, startWidth + deltaX));
-    const newHeight = Math.max(180, Math.min(window.innerHeight, startHeight + deltaY));
-
-    videoWrap.style.width = newWidth + 'px';
-    videoWrap.style.height = newHeight + 'px';
-
-    console.log('調整大小中:', newWidth, 'x', newHeight);
-  });
-
-  document.addEventListener('mouseup', () => {
-    if (isDragging) {
-      isDragging = false;
-      handle.style.background = 'linear-gradient(135deg,transparent 50%,rgba(120,190,255,0.9) 50%)!important';
-      console.log('拖動結束');
-    }
-  });
-
-  videoWrap.appendChild(handle);
-  console.log('✓ 右下角拖拽手柄已添加（帶拖動功能）');
-}
-
-function disableFreeResizeMode() {
-  document.querySelectorAll('.dlsq-video-resizing').forEach(videoWrap => {
-    videoWrap.classList.remove('dlsq-video-resizing');
-    const handle = videoWrap.querySelector('.dlsq-corner-handle');
-    if (handle) handle.remove();
-    if (videoWrap.dataset.originalStyle) {
-      videoWrap.style.cssText = videoWrap.dataset.originalStyle;
-    } else {
-      videoWrap.style.cssText = '';
-    }
-    let parent = videoWrap.parentElement;
-    let level = 0;
-    while (parent && level < 10) {
-      if (parent.dataset.originalOverflow) {
-        parent.style.overflow = parent.dataset.originalOverflow;
-        delete parent.dataset.originalOverflow;
-        console.log(`✓ 恢復層級 ${level} overflow`);
-      }
-      parent = parent.parentElement;
-      level++;
-    }
-  });
-  console.log('✓ 已關閉視頻拉伸');
-}
-
-function findDonationArea() {
-  // 找課金區域
-  const selectors = [
-    '.donation-wrapper',
-    '.donation-box',
-    '[class*="donation"]',
-    '[class*="donate"]',
-  ];
-
-  for (const selector of selectors) {
-    const el = document.querySelector(selector);
-    if (el) return el;
-  }
-
-  // 備選：找包含特定文字的區域
-  const allDivs = document.querySelectorAll('div');
-  for (const div of allDivs) {
-    const text = div.textContent?.toLowerCase() || '';
-    if ((text.includes('donate') || text.includes('課金') || text.includes('贊助')) && div.offsetHeight > 50) {
-      return div;
-    }
-  }
-
-  return null;
-}
-
 function findTitleArea() {
   // 找標題/直播資訊區域 - DLive 使用 #livestream-info 或 .livestream-info
   const selectors = [
@@ -4987,12 +4252,56 @@ function findTitleArea() {
   return null;
 }
 
+function findDonationArea() {
+  // 找課金區域
+  const selectors = [
+    '.donation-wrapper',
+    '.donation-box',
+    '[class*="donation"]',
+    '[class*="donate"]',
+  ];
+
+  for (const selector of selectors) {
+    const el = document.querySelector(selector);
+    if (el) return el;
+  }
+
+  // 備選：找包含特定文字的區域
+  const allDivs = document.querySelectorAll('div');
+  for (const div of allDivs) {
+    const text = div.textContent?.toLowerCase() || '';
+    if ((text.includes('donate') || text.includes('課金') || text.includes('贊助')) && div.offsetHeight > 50) {
+      return div;
+    }
+  }
+
+  return null;
+}
+
+function findChatArea() {
+  const selectors = ['.chatroom-right', '[class*="chatroom"]', '.chat-room', '.chat-container'];
+  for (const selector of selectors) {
+    const el = document.querySelector(selector);
+    if (el) return el;
+  }
+  return null;
+}
+
+function findSidebar() {
+  return document.querySelector('.sidebar');
+}
+
+function findNavbar() {
+  const navbar = document.querySelector('.nav-bar');
+  // 返回父元素，這樣隱藏時可以移除整個頂部區域
+  return navbar?.parentElement || navbar;
+}
+
 // ==================== 全螢幕聊天室功能 ====================
 let fullscreenChatActive = false;
 let fullscreenChatClone = null;
-let fullscreenChatContainer = null;
-let fullscreenChatToggleBtn = null;
 let fullscreenScrollSyncInterval = null;
+let blackBgActiveFix1 = false;
 
 // 初始化全螢幕聊天室功能
 function initFullscreenChat() {
@@ -5040,55 +4349,6 @@ function initFullscreenChat() {
       }
     }
   });
-}
-
-// 將全螢幕聊天室的事件轉發到原始聊天室
-function forwardEventsToOriginal(mirrorLayer, originalChat) {
-  // 監聽鏡像層的點擊事件，轉發到原始聊天室
-  mirrorLayer.addEventListener('click', (e) => {
-    const path = getElementPath(e.target, mirrorLayer);
-    const originalTarget = getElementByPath(path, originalChat);
-    if (originalTarget) {
-      originalTarget.click();
-    }
-  });
-}
-
-// 獲取元素路徑
-function getElementPath(element, root) {
-  const path = [];
-  let current = element;
-  while (current && current !== root) {
-    let index = 0;
-    let sibling = current.previousElementSibling;
-    while (sibling) {
-      if (sibling.tagName === current.tagName) index++;
-      sibling = sibling.previousElementSibling;
-    }
-    path.unshift({ tag: current.tagName, index });
-    current = current.parentElement;
-  }
-  return path;
-}
-
-// 根據路徑獲取元素
-function getElementByPath(path, root) {
-  let current = root;
-  for (const { tag, index } of path) {
-    const siblings = Array.from(current.children).filter(c => c.tagName === tag);
-    current = siblings[index];
-    if (!current) return null;
-  }
-  return current;
-}
-
-// 同步捲動位置
-function syncChatScroll(originalChat, mirrorLayer) {
-  fullscreenScrollSyncInterval = setInterval(() => {
-    if (mirrorLayer && originalChat) {
-      mirrorLayer.scrollTop = originalChat.scrollTop;
-    }
-  }, 100);
 }
 
 // 檢查是否處於全螢幕模式
@@ -5177,23 +4437,6 @@ function prepareFullscreenChat() {
       fullscreenEl.appendChild(panelTagMenu);
     }
   }
-}
-
-// 創建全螢幕切換按鈕
-function createFullscreenToggleBtn() {
-  const fullscreenEl = document.fullscreenElement ||
-    document.webkitFullscreenElement ||
-    document.mozFullScreenElement ||
-    document.msFullscreenElement;
-  if (!fullscreenEl) return;
-
-  fullscreenChatToggleBtn = document.createElement('button');
-  fullscreenChatToggleBtn.id = 'dlsq-fullscreen-chat-btn';
-  fullscreenChatToggleBtn.textContent = '💬';
-  fullscreenChatToggleBtn.style.cssText = 'position:fixed!important;right:10px!important;top:70px!important;width:40px!important;height:40px!important;z-index:9999999!important;background:rgba(0,0,0,0.7)!important;color:white!important;border:2px solid rgba(255,255,255,0.5)!important;border-radius:50%!important;cursor:pointer!important;font-size:20px!important;display:flex!important;align-items:center!important;justify-content:center!important;';
-  fullscreenChatToggleBtn.onclick = toggleFullscreenChat;
-
-  fullscreenEl.appendChild(fullscreenChatToggleBtn);
 }
 
 // 切換全螢幕聊天室顯示
@@ -5293,5 +4536,5 @@ function cleanupFullscreenChat() {
   }
   setupUiAutoMount();
   initIMFeature();
-  initFullscreenChat(); // 初始化全螢幕聊天室功能
+  initFullscreenChat();
 })();

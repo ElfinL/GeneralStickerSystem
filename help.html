@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GSS - 使用說明</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0b0f14;
+      color: rgba(255, 255, 255, 0.9);
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+      padding-bottom: 30px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .header img {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 16px;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #4a90e2, #7b68ee);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header p {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 14px;
+    }
+
+    .lang-switch {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 30px;
+    }
+
+    .lang-btn {
+      padding: 8px 20px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(10, 12, 16, 0.8);
+      color: rgba(255, 255, 255, 0.7);
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .lang-btn:hover {
+      background: rgba(120, 190, 255, 0.14);
+      border-color: rgba(120, 190, 255, 0.45);
+    }
+
+    .lang-btn.active {
+      background: rgba(120, 190, 255, 0.35);
+      border-color: rgba(120, 190, 255, 0.7);
+      color: rgba(255, 255, 255, 0.95);
+    }
+
+    .content-section {
+      background: rgba(16, 18, 22, 0.98);
+      border-radius: 12px;
+      padding: 28px;
+      margin-bottom: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .content-section h2 {
+      font-size: 20px;
+      margin-bottom: 20px;
+      color: rgba(255, 255, 255, 0.95);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .content-section h3 {
+      font-size: 16px;
+      margin: 24px 0 12px;
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .content-section p {
+      margin-bottom: 12px;
+      color: rgba(255, 255, 255, 0.75);
+    }
+
+    .content-section ul {
+      margin: 12px 0;
+      padding-left: 24px;
+    }
+
+    .content-section li {
+      margin: 8px 0;
+      color: rgba(255, 255, 255, 0.75);
+    }
+
+    .content-section code {
+      background: rgba(120, 190, 255, 0.15);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 13px;
+      color: rgba(120, 190, 255, 0.95);
+    }
+
+    .highlight-box {
+      background: rgba(74, 144, 226, 0.1);
+      border-left: 3px solid #4a90e2;
+      padding: 16px;
+      border-radius: 0 8px 8px 0;
+      margin: 16px 0;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      padding-top: 30px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 13px;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <img src="icons/icon48.png" alt="GSS Logo">
+      <h1>General Sticker System (GSS)</h1>
+      <p id="header-subtitle">通用貼圖系統</p>
+    </div>
+
+    <div class="lang-switch">
+      <button class="lang-btn active" data-lang="zh-TW">繁中</button>
+      <button class="lang-btn" data-lang="zh-CN">简中</button>
+      <button class="lang-btn" data-lang="en">English</button>
+      <button class="lang-btn" data-lang="ja">日本語</button>
+      <button class="lang-btn" data-lang="ko">한국어</button>
+    </div>
+
+    <!-- 繁中內容 -->
+    <div id="content-zh-TW">
+      <div class="content-section">
+        <h2>📋 快速開始</h2>
+        <div class="highlight-box">
+          <p><strong>使用步驟：</strong></p>
+          <ol style="margin-left: 20px; margin-top: 8px;">
+            <li>在 DLive 或 Twitch 登入並進入頻道頁面</li>
+            <li>開啟插件，輸入貼圖 ID 清單</li>
+            <li>點擊聊天室旁的 GSS 圖示開啟貼圖面板</li>
+            <li>一鍵發送貼圖！</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="content-section">
+        <h2>🎨 貼圖格式</h2>
+        <h3>DLive 官方貼圖</h3>
+        <p>格式：<code>DL-xxx</code></p>
+        <ul>
+          <li>在 DLive 頻道頁面右鍵點擊貼圖即可快速儲存 ID</li>
+          <li>或在貼圖連結中找到 ID（例如：<code>DL-826c4ac1e004273_498281</code>）</li>
+        </ul>
+        <div class="highlight-box">
+          <p><strong>🔍 如何從網址取得 ID：</strong></p>
+          <p style="margin-top: 8px; font-size: 12px;">
+            貼圖網址範例：<code>https://images.prd.dlivecdn.com/emote/826c4ac1e004273_498281</code>
+          </p>
+          <p style="margin-top: 8px;">
+            網址最後一段 <code>826c4ac1e004273_498281</code> 就是 ID<br>
+            使用時請加上 <code>DL-</code> 前綴，變成 <code>DL-826c4ac1e004273_498281</code>
+          </p>
+        </div>
+
+        <h3>Imgur 圖片/影片</h3>
+        <p>格式：<code>IM-xxx.ext</code></p>
+        <ul>
+          <li>支援格式：.gif, .png, .jpg, .mp4</li>
+          <li>範例：<code>IM-ha3eTC7.gif</code>、<code>IM-abc1234.mp4</code></li>
+        </ul>
+        <div class="highlight-box">
+          <p><strong>🔍 Imgur ID 取得方式：</strong></p>
+          <p style="margin-top: 8px; font-size: 12px;">
+            Imgur 網址範例：<code>https://i.imgur.com/ha3eTC7.gif</code> 或 <code>https://imgur.com/ha3eTC7</code>
+          </p>
+          <p style="margin-top: 8px;">
+            網址最後一段 <code>ha3eTC7</code> 就是 ID<br>
+            使用時請加上 <code>IM-</code> 前綴和副檔名（如 .gif/.mp4），變成 <code>IM-ha3eTC7.gif</code><br>
+            <span style="color: rgba(255,255,255,0.6); font-size: 11px;">※ 若不知道副檔名，可先嘗試 .gif 或 .mp4</span>
+          </p>
+        </div>
+      </div>
+
+      <div class="content-section">
+        <h2>🏷️ 標籤功能</h2>
+        <p>每張貼圖可添加最多 <strong>4 個標籤</strong>，方便分類和搜尋。</p>
+        <p>格式：<code>DL-xxx #meme #reaction</code></p>
+        <ul>
+          <li>標籤以 <code>#</code> 開頭</li>
+          <li>每個標籤最多 16 個字元</li>
+          <li>不能包含空格或 <code>#</code></li>
+        </ul>
+        <div class="highlight-box">
+          <p>💡 <strong>提示：</strong>右鍵點擊貼圖（在頻道頁面或插件面板）即可快速添加/移除標籤</p>
+        </div>
+      </div>
+
+      <div class="content-section">
+        <h2>⭐ 快捷操作</h2>
+        <ul>
+          <li><strong>★ 常用標記：</strong>點擊貼圖上的 ★ 按鈕將其標記為常用，常用貼圖會置頂顯示</li>
+          <li><strong>✕ 刪除：</strong>點擊 ✕ 按鈕從清單中移除貼圖</li>
+          <li><strong>右鍵標籤：</strong>在貼圖上點擊右鍵可添加或移除標籤</li>
+        </ul>
+      </div>
+
+      <div class="content-section">
+        <h2>🎭 DLive 劇院模式</h2>
+        <p>DLive 設定頁提供多種視覺調整功能：</p>
+        <ul>
+          <li><strong>劇院模式：</strong>全屏觀看體驗</li>
+          <li><strong>聊天室控制：</strong>調整聊天室寬度或隱藏</li>
+          <li><strong>元素控制：</strong>隱藏導航欄、標題、送禮區等</li>
+        </ul>
+        <div class="highlight-box">
+          <p><strong>🎮 全屏模式快捷鍵：</strong></p>
+          <ul style="margin-top: 8px;">
+            <li>按 <code>C</code> 鍵：快速開關聊天室</li>
+            <li>滑鼠移到畫面右側：自動展開聊天室</li>
+          </ul>
+          <p style="margin-top: 8px; font-size: 10px; color: rgba(255,255,255,0.5);">※ 快捷鍵僅在全屏模式下有效，劇院模式不適用</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- English Content -->
+    <div id="content-en" class="hidden">
+      <div class="content-section">
+        <h2>📋 Quick Start</h2>
+        <div class="highlight-box">
+          <p><strong>Steps:</strong></p>
+          <ol style="margin-left: 20px; margin-top: 8px;">
+            <li>Log in to DLive or Twitch and go to a channel page</li>
+            <li>Open the extension and enter your sticker ID list</li>
+            <li>Click the GSS icon next to the chat to open the sticker panel</li>
+            <li>Send stickers with one click!</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="content-section">
+        <h2>🎨 Sticker Formats</h2>
+        <h3>DLive Official Emotes</h3>
+        <p>Format: <code>DL-xxx</code></p>
+        <ul>
+          <li>Right-click any emote on a DLive channel to quickly save its ID</li>
+          <li>Or find the ID in the emote URL (e.g., <code>DL-826c4ac1e004273_498281</code>)</li>
+        </ul>
+        <div class="highlight-box">
+          <p><strong>🔍 How to get ID from URL:</strong></p>
+          <p style="margin-top: 8px; font-size: 12px;">
+            Example URL: <code>https://images.prd.dlivecdn.com/emote/826c4ac1e004273_498281</code>
+          </p>
+          <p style="margin-top: 8px;">
+            The last part <code>826c4ac1e004273_498281</code> is the ID<br>
+            Add <code>DL-</code> prefix to use it: <code>DL-826c4ac1e004273_498281</code>
+          </p>
+        </div>
+
+        <h3>Imgur Images/Videos</h3>
+        <p>Format: <code>IM-xxx.ext</code></p>
+        <ul>
+          <li>Supported: .gif, .png, .jpg, .mp4</li>
+          <li>Examples: <code>IM-ha3eTC7.gif</code>, <code>IM-abc1234.mp4</code></li>
+        </ul>
+        <div class="highlight-box">
+          <p><strong>🔍 How to get Imgur ID:</strong></p>
+          <p style="margin-top: 8px; font-size: 12px;">
+            Example URL: <code>https://i.imgur.com/ha3eTC7.gif</code> or <code>https://imgur.com/ha3eTC7</code>
+          </p>
+          <p style="margin-top: 8px;">
+            The last part <code>ha3eTC7</code> is the ID<br>
+            Add <code>IM-</code> prefix and extension (e.g., .gif/.mp4): <code>IM-ha3eTC7.gif</code><br>
+            <span style="color: rgba(255,255,255,0.6); font-size: 11px;">※ If unsure of extension, try .gif or
+              .mp4</span>
+          </p>
+        </div>
+      </div>
+
+      <div class="content-section">
+        <h2>🏷️ Tags</h2>
+        <p>Each sticker can have up to <strong>4 tags</strong> for easy categorization and filtering.</p>
+        <p>Format: <code>DL-xxx #meme #reaction</code></p>
+        <ul>
+          <li>Tags start with <code>#</code></li>
+          <li>Max 16 characters per tag</li>
+          <li>No spaces or <code>#</code> allowed in tag names</li>
+        </ul>
+        <div class="highlight-box">
+          <p>💡 <strong>Tip:</strong> Right-click on any sticker (on channel or in panel) to quickly add/remove tags</p>
+        </div>
+      </div>
+
+      <div class="content-section">
+        <h2>⭐ Shortcuts</h2>
+        <ul>
+          <li><strong>★ Favorite:</strong> Click the ★ button to mark a sticker as favorite. Favorites appear at the
+            top.</li>
+          <li><strong>✕ Delete:</strong> Click the ✕ button to remove a sticker from your list</li>
+          <li><strong>Right-click Tags:</strong> Right-click a sticker to add or remove tags</li>
+        </ul>
+      </div>
+
+      <div class="content-section">
+        <h2>🎭 DLive Theater Mode</h2>
+        <p>The DLive settings page provides various visual adjustment features:</p>
+        <ul>
+          <li><strong>Theater Mode:</strong> Fullscreen viewing experience</li>
+          <li><strong>Chat Control:</strong> Adjust chat width or hide it</li>
+          <li><strong>Element Control:</strong> Hide navbar, title, gift area, etc.</li>
+        </ul>
+        <div class="highlight-box">
+          <p><strong>🎮 Fullscreen Shortcuts:</strong></p>
+          <ul style="margin-top: 8px;">
+            <li>Press <code>C</code> key: Toggle chat on/off</li>
+            <li>Hover mouse to right edge: Auto-expand chat room</li>
+          </ul>
+          <p style="margin-top: 8px; font-size: 10px; color: rgba(255,255,255,0.5);">※ Shortcuts only work in fullscreen
+            mode, not in theater mode</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 简中內容 -->
+    <div id="content-zh-CN" class="hidden">
+      <div class="content-section">
+        <h2>📋 快速开始</h2>
+        <div class="highlight-box">
+          <p><strong>使用步骤：</strong></p>
+          <ol style="margin-left: 20px; margin-top: 8px;">
+            <li>在 DLive 或 Twitch 登录并进入频道页面</li>
+            <li>开启插件，输入贴纸 ID 清单</li>
+            <li>点击聊天室旁的 GSS 图标开启贴纸面板</li>
+            <li>一键发送贴纸！</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="content-section">
+        <h2>🎨 贴纸格式</h2>
+        <h3>DLive 官方贴纸</h3>
+        <p>格式：<code>DL-xxx</code></p>
+        <ul>
+          <li>在 DLive 频道页面右键点击贴纸即可快速保存 ID</li>
+          <li>或在贴纸链接中找到 ID（例如：<code>DL-826c4ac1e004273_498281</code>）</li>
+        </ul>
+        <div class="highlight-box">
+          <p><strong>🔍 如何从网址获取 ID：</strong></p>
+          <p style="margin-top: 8px; font-size: 12px;">
+            贴纸网址示例：<code>https://images.prd.dlivecdn.com/emote/826c4ac1e004273_498281</code>
+          </p>
+          <p style="margin-top: 8px;">
+            网址最后一段 <code>826c4ac1e004273_498281</code> 就是 ID<br>
+            使用时请加上 <code>DL-</code> 前缀，变成 <code>DL-826c4ac1e004273_498281</code>
+          </p>
+        </div>
+
+        <h3>Imgur 图片/视频</h3>
+        <p>格式：<code>IM-xxx.ext</code></p>
+        <ul>
+          <li>支持格式：.gif, .png, .jpg, .mp4</li>
+          <li>示例：<code>IM-ha3eTC7.gif</code>、<code>IM-abc1234.mp4</code></li>
+        </ul>
+        <div class="highlight-box">
+          <p><strong>🔍 Imgur ID 获取方式：</strong></p>
+          <p style="margin-top: 8px; font-size: 12px;">
+            Imgur 网址示例：<code>https://i.imgur.com/ha3eTC7.gif</code> 或 <code>https://imgur.com/ha3eTC7</code>
+          </p>
+          <p style="margin-top: 8px;">
+            网址最后一段 <code>ha3eTC7</code> 就是 ID<br>
+            使用时请加上 <code>IM-</code> 前缀和扩展名（如 .gif/.mp4），变成 <code>IM-ha3eTC7.gif</code><br>
+            <span style="color: rgba(255,255,255,0.6); font-size: 11px;">※ 若不知道扩展名，可先尝试 .gif 或 .mp4</span>
+          </p>
+        </div>
+      </div>
+
+      <div class="content-section">
+        <h2>🏷️ 标签功能</h2>
+        <p>每张贴纸可添加最多 <strong>4 个标签</strong>，方便分类和搜索。</p>
+        <p>格式：<code>DL-xxx #meme #reaction</code></p>
+        <ul>
+          <li>标签以 <code>#</code> 开头</li>
+          <li>每个标签最多 16 个字符</li>
+          <li>不能包含空格或 <code>#</code></li>
+        </ul>
+        <div class="highlight-box">
+          <p>💡 <strong>提示：</strong>右键点击贴纸（在频道页面或插件面板）即可快速添加/移除标签</p>
+        </div>
+      </div>
+
+      <div class="content-section">
+        <h2>⭐ 快捷操作</h2>
+        <ul>
+          <li><strong>★ 标记常用：</strong>点击贴纸上的 ★ 按钮将其标记为常用，常用贴纸会置顶显示</li>
+          <li><strong>✕ 删除：</strong>点击 ✕ 按钮从清单中移除贴纸</li>
+          <li><strong>右键标签：</strong>在贴纸上点击右键可添加或移除标签</li>
+        </ul>
+      </div>
+
+      <div class="content-section">
+        <h2>🎭 DLive 剧院模式</h2>
+        <p>DLive 设定页提供多种视觉调整功能：</p>
+        <ul>
+          <li><strong>剧院模式：</strong>全屏观看体验</li>
+          <li><strong>聊天室控制：</strong>调整聊天室宽度或隐藏</li>
+          <li><strong>元素控制：</strong>隐藏导航栏、标题、送礼区等</li>
+        </ul>
+        <div class="highlight-box">
+          <p><strong>🎮 全屏模式快捷键：</strong></p>
+          <ul style="margin-top: 8px;">
+            <li>按 <code>C</code> 键：快速开关聊天室</li>
+            <li>鼠标移到画面右侧：自动展开聊天室</li>
+          </ul>
+          <p style="margin-top: 8px; font-size: 10px; color: rgba(255,255,255,0.5);">※ 快捷键仅在全屏模式下有效，剧院模式不适用</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 日本語内容 -->
+    <div id="content-ja" class="hidden">
+      <div class="content-section">
+        <h2>📋 クイックスタート</h2>
+        <div class="highlight-box">
+          <p><strong>使用手順：</strong></p>
+          <ol style="margin-left: 20px; margin-top: 8px;">
+            <li>DLive または Twitch にログインしてチャンネルページへ</li>
+            <li>拡張機能を開き、ステッカーIDリストを入力</li>
+            <li>チャット横の GSS アイコンをクリックしてパネルを開く</li>
+            <li>ワンクリックでステッカーを送信！</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="content-section">
+        <h2>🎨 ステッカー形式</h2>
+        <h3>DLive 公式ステッカー</h3>
+        <p>形式：<code>DL-xxx</code></p>
+        <ul>
+          <li>DLive チャンネルページでステッカーを右クリックしてIDを素早く保存</li>
+          <li>またはステッカーURLからIDを見つける（例：<code>DL-826c4ac1e004273_498281</code>）</li>
+        </ul>
+        <div class="highlight-box">
+          <p><strong>🔍 URLからIDを取得する方法：</strong></p>
+          <p style="margin-top: 8px; font-size: 12px;">
+            URL例：<code>https://images.prd.dlivecdn.com/emote/826c4ac1e004273_498281</code>
+          </p>
+          <p style="margin-top: 8px;">
+            URLの最後の部分 <code>826c4ac1e004273_498281</code> がIDです<br>
+            使用時は <code>DL-</code> プレフィックスを付けて：<code>DL-826c4ac1e004273_498281</code>
+          </p>
+        </div>
+
+        <h3>Imgur 画像/動画</h3>
+        <p>形式：<code>IM-xxx.ext</code></p>
+        <ul>
+          <li>対応形式：.gif, .png, .jpg, .mp4</li>
+          <li>例：<code>IM-ha3eTC7.gif</code>、<code>IM-abc1234.mp4</code></li>
+        </ul>
+        <div class="highlight-box">
+          <p><strong>🔍 Imgur IDの取得方法：</strong></p>
+          <p style="margin-top: 8px; font-size: 12px;">
+            URL例：<code>https://i.imgur.com/ha3eTC7.gif</code> または <code>https://imgur.com/ha3eTC7</code>
+          </p>
+          <p style="margin-top: 8px;">
+            URLの最後の部分 <code>ha3eTC7</code> がIDです<br>
+            使用時は <code>IM-</code> プレフィックスと拡張子（.gif/.mp4など）を付けて：<code>IM-ha3eTC7.gif</code><br>
+            <span style="color: rgba(255,255,255,0.6); font-size: 11px;">※ 拡張子が不明な場合は、.gif または .mp4 を試行</span>
+          </p>
+        </div>
+      </div>
+
+      <div class="content-section">
+        <h2>🏷️ タグ機能</h2>
+        <p>各ステッカーに最大 <strong>4つまでタグ</strong>を追加でき、分類・検索が簡単になります。</p>
+        <p>形式：<code>DL-xxx #meme #reaction</code></p>
+        <ul>
+          <li>タグは <code>#</code> で始まる</li>
+          <li>タグは最大16文字まで</li>
+          <li>タグ名にスペースや <code>#</code> は使用不可</li>
+        </ul>
+        <div class="highlight-box">
+          <p>💡 <strong>ヒント：</strong>ステッカーを右クリック（チャンネルページまたはパネル内）してタグを素早く追加/削除</p>
+        </div>
+      </div>
+
+      <div class="content-section">
+        <h2>⭐ ショートカット</h2>
+        <ul>
+          <li><strong>★ お気に入り：</strong>★ ボタンをクリックしてステッカーをお気に入り登録。お気に入りは上部に表示されます</li>
+          <li><strong>✕ 削除：</strong>✕ ボタンをクリックしてリストからステッカーを削除</li>
+          <li><strong>右クリックタグ：</strong>ステッカーを右クリックしてタグを追加/削除</li>
+        </ul>
+      </div>
+
+      <div class="content-section">
+        <h2>🎭 DLive シアターモード</h2>
+        <p>DLive 設定ページでは、さまざまな視覚調整機能を提供しています：</p>
+        <ul>
+          <li><strong>シアターモード：</strong>全画面表示体験</li>
+          <li><strong>チャット制御：</strong>チャット幅の調整または非表示</li>
+          <li><strong>要素制御：</strong>ナビバー、タイトル、ギフトエリアなどを非表示</li>
+        </ul>
+        <div class="highlight-box">
+          <p><strong>🎮 全画面ショートカット：</strong></p>
+          <ul style="margin-top: 8px;">
+            <li><code>C</code> キー：チャットのオン/オフ切り替え</li>
+            <li>マウスを右端に移動：チャットを自動展開</li>
+          </ul>
+          <p style="margin-top: 8px; font-size: 10px; color: rgba(255,255,255,0.5);">※ ショートカットは全画面モードでのみ有効。シアターモードでは無効
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 한국어 내용 -->
+    <div id="content-ko" class="hidden">
+      <div class="content-section">
+        <h2>📋 빠른 시작</h2>
+        <div class="highlight-box">
+          <p><strong>사용 방법:</strong></p>
+          <ol style="margin-left: 20px; margin-top: 8px;">
+            <li>DLive 또는 Twitch에 로그인하고 채널 페이지로 이동</li>
+            <li>확장 프로그램을 열고 스티커 ID 목록을 입력</li>
+            <li>채팅창 옆 GSS 아이콘을 클릭하여 스티커 패널 열기</li>
+            <li>원클릭으로 스티커 보내기!</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="content-section">
+        <h2>🎨 스티커 형식</h2>
+        <h3>DLive 공식 스티커</h3>
+        <p>형식: <code>DL-xxx</code></p>
+        <ul>
+          <li>DLive 채널 페이지에서 스티커를 우클릭하여 ID를 빠르게 저장</li>
+          <li>또는 스티커 URL에서 ID 찾기 (예: <code>DL-826c4ac1e004273_498281</code>)</li>
+        </ul>
+        <div class="highlight-box">
+          <p><strong>🔍 URL에서 ID 가져오기:</strong></p>
+          <p style="margin-top: 8px; font-size: 12px;">
+            URL 예시: <code>https://images.prd.dlivecdn.com/emote/826c4ac1e004273_498281</code>
+          </p>
+          <p style="margin-top: 8px;">
+            URL의 마지막 부분 <code>826c4ac1e004273_498281</code> 이 ID입니다<br>
+            사용할 때 <code>DL-</code> 접두사를 붙여서: <code>DL-826c4ac1e004273_498281</code>
+          </p>
+        </div>
+
+        <h3>Imgur 이미지/영상</h3>
+        <p>형식: <code>IM-xxx.ext</code></p>
+        <ul>
+          <li>지원 형식: .gif, .png, .jpg, .mp4</li>
+          <li>예시: <code>IM-ha3eTC7.gif</code>, <code>IM-abc1234.mp4</code></li>
+        </ul>
+        <div class="highlight-box">
+          <p><strong>🔍 Imgur ID 가져오기:</strong></p>
+          <p style="margin-top: 8px; font-size: 12px;">
+            URL 예시: <code>https://i.imgur.com/ha3eTC7.gif</code> 또는 <code>https://imgur.com/ha3eTC7</code>
+          </p>
+          <p style="margin-top: 8px;">
+            URL의 마지막 부분 <code>ha3eTC7</code> 이 ID입니다<br>
+            사용할 때 <code>IM-</code> 접두사와 확장자(.gif/.mp4 등)를 붙여서: <code>IM-ha3eTC7.gif</code><br>
+            <span style="color: rgba(255,255,255,0.6); font-size: 11px;">※ 확장자를 모르면 .gif 또는 .mp4 시도</span>
+          </p>
+        </div>
+      </div>
+
+      <div class="content-section">
+        <h2>🏷️ 태그 기능</h2>
+        <p>스티커당 최대 <strong>4개 태그</strong>를 추가하여 분류 및 검색이 쉬워집니다.</p>
+        <p>형식: <code>DL-xxx #meme #reaction</code></p>
+        <ul>
+          <li>태그는 <code>#</code> 으로 시작</li>
+          <li>태그당 최대 16자까지</li>
+          <li>태그명에 공백이나 <code>#</code> 사용 불가</li>
+        </ul>
+        <div class="highlight-box">
+          <p>💡 <strong>팁:</strong> 스티커를 우클릭(채널 페이지 또는 패널 내)하여 태그를 빠르게 추가/제거</p>
+        </div>
+      </div>
+
+      <div class="content-section">
+        <h2>⭐ 단축키</h2>
+        <ul>
+          <li><strong>★ 즐겨찾기:</strong> ★ 버튼을 클릭하여 스티커를 즐겨찾기에 추가. 즐겨찾기는 상단에 표시됨</li>
+          <li><strong>✕ 삭제:</strong> ✕ 버튼을 클릭하여 목록에서 스티커 제거</li>
+          <li><strong>우클릭 태그:</strong> 스티커를 우클릭하여 태그 추가/제거</li>
+        </ul>
+      </div>
+
+      <div class="content-section">
+        <h2>🎭 DLive 극장 모드</h2>
+        <p>DLive 설정 페이지는 다양한 시각 조정 기능을 제공합니다:</p>
+        <ul>
+          <li><strong>극장 모드:</strong> 전체 화면 시청 경험</li>
+          <li><strong>채팅 제어:</strong> 채팅창 너비 조정 또는 숨기기</li>
+          <li><strong>요소 제어:</strong> 네비바, 제목, 선물 영역 등 숨기기</li>
+        </ul>
+        <div class="highlight-box">
+          <p><strong>🎮 전체 화면 단축키:</strong></p>
+          <ul style="margin-top: 8px;">
+            <li><code>C</code> 키: 채팅 켜기/끄기 전환</li>
+            <li>마우스를 오른쪽 가장자리로 이동: 채팅창 자동 펼치기</li>
+          </ul>
+          <p style="margin-top: 8px; font-size: 10px; color: rgba(255,255,255,0.5);">※ 단축키는 전체 화면 모드에서만 작동하며, 극장 모드에서는
+            적용되지 않음</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>Made by Elfin • <a href="https://github.com/ElfinL" target="_blank" style="color: #4a90e2;">GitHub</a></p>
+    </div>
+  </div>
+
+  <script src="help.js"></script>
+</body>
+
+</html>

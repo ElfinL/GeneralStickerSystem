@@ -1,218 +1,5 @@
-/* global DLSQ */
+/* global DLSQ, I18N, SUPPORTED_LANGS, currentLang, t, applyLanguage, initLanguage, setLanguage */
 const TAG = typeof DLSQ !== 'undefined' ? DLSQ : null;
-
-let currentLang = 'zh';
-
-const I18N = {
-  zh: {
-    headerSubtitle: '貼圖清單管理',
-    configTitle: '貼圖 ID 與標籤',
-    configHint: '一行一組：DL-xxx 或 IM-xxx，後可接 #標籤（每張最多 4 個）',
-    tagVocabTitle: '標籤詞庫（一行一個）',
-    tagVocabHint: '頻道頁右鍵貼圖或面板內右鍵可套用；每張最多 4 個標籤',
-    saveButton: '儲存 ID 清單與詞庫',
-    reminder: '提醒：需要先在 DLive 或 Twitch 登入；並在頻道頁使用',
-    footer: '',
-    favTitle: '常用',
-    delTitle: '刪除',
-    statusFavOn: '✅ 已標記常用',
-    statusFavOff: '✅ 已取消常用',
-    statusCleared: '✅ 已清空 ID 清單',
-    statusSavedCount: (n) => `✅ 已儲存 ${n} 個 ID`,
-    statusDeleted: '✅ 已刪除',
-    statusInvalidId: (id) => `❌ ID 格式錯誤：${id}`,
-    statusParseErr: (detail) => `❌ 清單格式錯誤：${detail}`,
-    statusVocabBadLine: (line) => `❌ 詞庫無效標籤（最多 16 字元、不可空白/#）：${line}`,
-    langToggleLabel: '中 / EN',
-    lineInfo: (current, total) => `第 ${current} 行 / 共 ${total} 行`,
-    gotoLineButton: '跳轉',
-    idPlaceholder: 'DL-826c4ac1e004273_498281 #梗圖 #反應\nIM-ha3eTC7.gif #搞笑\nDL-826cd8c8b004273_335245',
-    vocabPlaceholder: 'meme\nreaction\n搞笑',
-    errBadId: (id) => `${id || ''}`.trim() || '無效 ID',
-    errBadTag: (id, tag) => `${id}: #${tag} 無效`,
-    errTooManyTags: (id) => `${id}: 標籤超過 4 個`,
-    errDupId: (id) => `重複 ID: ${id}`,
-    errUnknown: '未知錯誤',
-    // DLive 頁面翻譯
-    dliveTheaterTitle: '🎭 劇院模式',
-    dliveTheaterMode: '🎭 劇院模式',
-    dliveZoomReset: '🔄 縮放重置',
-    dliveZoomOut: '🔍- 縮小10%',
-    dliveZoomIn: '🔍+ 放大10%',
-    dliveChatTitle: '💬 聊天室控制',
-    dliveChatNarrow: '💬 聊天室變窄',
-    dliveChatHidden: '🚫 隱藏聊天室',
-    dliveChatOverlay: '🎬 浮動聊天室',
-    dliveElementTitle: '👁️ 元素控制',
-    dliveNavbar: '📌 隱藏頂部欄',
-    dliveTitle: '👁️ 隱藏標題',
-    dliveDonation: '💰 隱藏課金區',
-    dliveSidebar: '📁 隱藏側邊欄',
-    dliveAbout: '📦 隱藏下方區',
-    dliveBlackBg: '🖤 黑色背景',
-    dliveStatusHint: 'ℹ️ 這些功能只在 DLive 頻道頁面有效'
-  },
-  en: {
-    headerSubtitle: 'Sticker list manager',
-    configTitle: 'Sticker IDs & tags',
-    configHint: 'One per line: DL-xxx or IM-xxx, then optional #tags (max 4 tags)',
-    tagVocabTitle: 'Tag vocabulary (one per line)',
-    tagVocabHint: 'Right-click emote on channel or tile in panel to apply tags; max 4 tags per sticker',
-    saveButton: 'Save IDs & vocabulary',
-    reminder: 'Tip: Log in to DLive or Twitch first and use this on a channel page',
-    footer: '',
-    favTitle: 'Favorite',
-    delTitle: 'Delete',
-    statusFavOn: '✅ Marked as favorite',
-    statusFavOff: '✅ Unmarked as favorite',
-    statusCleared: '✅ Cleared ID list',
-    statusSavedCount: (n) => `✅ Saved ${n} IDs`,
-    statusDeleted: '✅ Deleted',
-    statusInvalidId: (id) => `❌ Invalid ID format: ${id}`,
-    statusParseErr: (detail) => `❌ List parse error: ${detail}`,
-    statusVocabBadLine: (line) => `❌ Invalid tag (max 16 chars, no spaces/# allowed): ${line}`,
-    langToggleLabel: 'EN / 中',
-    lineInfo: (current, total) => `Line ${current} / ${total} total`,
-    gotoLinePlaceholder: 'Go to line',
-    gotoLineButton: 'Go',
-    idPlaceholder: 'DL-826c4ac1e004273_498281 #meme #reaction\nIM-ha3eTC7.gif #funny\nDL-826cd8c8b004273_335245',
-    vocabPlaceholder: 'meme\nreaction\nfunny',
-    errBadId: (id) => `${id || ''}`.trim() || 'Invalid ID',
-    errBadTag: (id, tag) => `${id}: Invalid tag #${tag}`,
-    errTooManyTags: (id) => `${id}: More than 4 tags`,
-    errDupId: (id) => `Duplicate ID: ${id}`,
-    errUnknown: 'Unknown error',
-    // DLive page translations
-    dliveTheaterTitle: '🎭 Theater Mode',
-    dliveTheaterMode: '🎭 Theater Mode',
-    dliveZoomReset: '🔄 Zoom Reset',
-    dliveZoomOut: '🔍- Zoom Out 10%',
-    dliveZoomIn: '🔍+ Zoom In 10%',
-    dliveChatTitle: '💬 Chat Control',
-    dliveChatNarrow: '💬 Narrow Chat',
-    dliveChatHidden: '🚫 Hide Chat',
-    dliveChatOverlay: '🎬 Float Chat',
-    dliveElementTitle: '👁️ Elements',
-    dliveNavbar: '📌 Hide Navbar',
-    dliveTitle: '👁️ Hide Title',
-    dliveDonation: '💰 Hide Donation',
-    dliveSidebar: '📁 Hide Sidebar',
-    dliveAbout: '📦 Hide About',
-    dliveBlackBg: '🖤 Black Bg',
-    dliveStatusHint: 'ℹ️ These features only work on DLive channel pages'
-  }
-};
-
-function t(key, ...args) {
-  const dict = I18N[currentLang] || I18N.zh;
-  const val = dict[key];
-  if (typeof val === 'function') return val(...args);
-  return val;
-}
-
-function applyLanguage(lang) {
-  currentLang = lang === 'en' ? 'en' : 'zh';
-
-  const subtitleEl = document.getElementById('subtitleText');
-  if (subtitleEl) subtitleEl.textContent = t('headerSubtitle');
-
-  const configTitleEl = document.getElementById('configTitle');
-  if (configTitleEl) configTitleEl.textContent = t('configTitle');
-
-  const configHintEl = document.getElementById('configHint');
-  if (configHintEl) configHintEl.textContent = t('configHint');
-
-  const tagVocabTitleEl = document.getElementById('tagVocabTitle');
-  if (tagVocabTitleEl) tagVocabTitleEl.textContent = t('tagVocabTitle');
-
-  const tagVocabHintEl = document.getElementById('tagVocabHint');
-  if (tagVocabHintEl) tagVocabHintEl.textContent = t('tagVocabHint');
-
-  const saveBtn = document.getElementById('saveIdsBtn');
-  if (saveBtn) saveBtn.textContent = t('saveButton');
-
-  const reminderEl = document.getElementById('reminderText');
-  if (reminderEl) reminderEl.textContent = t('reminder');
-
-  const footerEl = document.getElementById('footerText');
-  if (footerEl) footerEl.textContent = t('footer');
-
-  const langToggle = document.getElementById('langToggle');
-  if (langToggle) langToggle.textContent = t('langToggleLabel');
-
-  const idListInput = document.getElementById('idListInput');
-  if (idListInput) idListInput.placeholder = t('idPlaceholder');
-
-  const tagVocabInput = document.getElementById('tagVocabInput');
-  if (tagVocabInput) tagVocabInput.placeholder = t('vocabPlaceholder');
-
-  const gotoLineInput = document.getElementById('gotoLineInput');
-  if (gotoLineInput) gotoLineInput.placeholder = t('gotoLinePlaceholder');
-
-  const gotoLineBtn = document.getElementById('gotoLineBtn');
-  if (gotoLineBtn) gotoLineBtn.textContent = t('gotoLineButton');
-
-  // DLive 頁面翻譯
-  const dliveTheaterTitle = document.querySelector('#dlivePage .dlive-section:nth-child(1) .dlive-section-title');
-  if (dliveTheaterTitle) dliveTheaterTitle.textContent = t('dliveTheaterTitle');
-
-  const btnTheater13 = document.getElementById('btnTheater13');
-  if (btnTheater13) btnTheater13.textContent = t('dliveTheaterMode');
-
-  const btnTestZoomReset = document.getElementById('btnTestZoomReset');
-  if (btnTestZoomReset) btnTestZoomReset.textContent = t('dliveZoomReset');
-
-  const btnTestZoomOut = document.getElementById('btnTestZoomOut');
-  if (btnTestZoomOut) btnTestZoomOut.textContent = t('dliveZoomOut');
-
-  const btnTestZoomIn = document.getElementById('btnTestZoomIn');
-  if (btnTestZoomIn) btnTestZoomIn.textContent = t('dliveZoomIn');
-
-  const dliveChatTitle = document.querySelector('#dlivePage .dlive-section:nth-child(2) .dlive-section-title');
-  if (dliveChatTitle) dliveChatTitle.textContent = t('dliveChatTitle');
-
-  const btnChatNarrow = document.getElementById('btnChatNarrow');
-  if (btnChatNarrow) btnChatNarrow.textContent = t('dliveChatNarrow');
-
-  const btnChatHidden = document.getElementById('btnChatHidden');
-  if (btnChatHidden) btnChatHidden.textContent = t('dliveChatHidden');
-
-  const btnChatOverlayFix1 = document.getElementById('btnChatOverlayFix1');
-  if (btnChatOverlayFix1) btnChatOverlayFix1.textContent = t('dliveChatOverlay');
-
-  const dliveElementTitle = document.querySelector('#dlivePage .dlive-section:nth-child(3) .dlive-section-title');
-  if (dliveElementTitle) dliveElementTitle.textContent = t('dliveElementTitle');
-
-  const btnNavbar = document.getElementById('btnNavbar');
-  if (btnNavbar) btnNavbar.textContent = t('dliveNavbar');
-
-  const btnTitleFix1 = document.getElementById('btnTitleFix1');
-  if (btnTitleFix1) btnTitleFix1.textContent = t('dliveTitle');
-
-  const btnDonation = document.getElementById('btnDonation');
-  if (btnDonation) btnDonation.textContent = t('dliveDonation');
-
-  const btnSidebar = document.getElementById('btnSidebar');
-  if (btnSidebar) btnSidebar.textContent = t('dliveSidebar');
-
-  const btnAboutFix1 = document.getElementById('btnAboutFix1');
-  if (btnAboutFix1) btnAboutFix1.textContent = t('dliveAbout');
-
-  const btnTestBlackFix1 = document.getElementById('btnTestBlackFix1');
-  if (btnTestBlackFix1) btnTestBlackFix1.textContent = t('dliveBlackBg');
-
-  const dliveStatus = document.getElementById('dliveStatus');
-  if (dliveStatus) dliveStatus.textContent = t('dliveStatusHint');
-
-  chrome.storage.sync.set({ uiLang: currentLang });
-}
-
-function initLanguage() {
-  chrome.storage.sync.get(['uiLang'], (result) => {
-    const lang = result.uiLang === 'en' ? 'en' : 'zh';
-    applyLanguage(lang);
-  });
-}
 
 function setStatus(text, color = '#28a745') {
   const el = document.getElementById('configStatus');
@@ -374,15 +161,16 @@ function loadSettings() {
   });
 }
 
-const langToggleBtn = document.getElementById('langToggle');
-if (langToggleBtn) {
-  langToggleBtn.addEventListener('click', () => {
-    const next = currentLang === 'zh' ? 'en' : 'zh';
-    applyLanguage(next);
-    updateLineInfo();
-    loadStickers();
+// 初始化語言按鈕事件
+document.querySelectorAll('.lang-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const lang = btn.dataset.lang;
+    if (lang && setLanguage(lang)) {
+      updateLineInfo();
+      loadStickers();
+    }
   });
-}
+});
 
 function loadStickers() {
   chrome.storage.local.get(['stickerIdsText', 'favoriteStickerIds'], (result) => {
@@ -784,12 +572,10 @@ function initPageToggle() {
     if (platform === 'twitch') {
       // Twitch 平台：隱藏 DLive 設定頁，因為 Twitch 劇院模式已經做得很好
       tabDlive.style.display = 'none';
-      // 更新提醒文字
+      // 更新提醒文字（根據當前語言）
       const reminderText = document.getElementById('reminderText');
-      if (reminderText) {
-        reminderText.textContent = currentLang === 'en'
-          ? 'Tip: Use on DLive or Twitch channel pages'
-          : '提醒：需要先在 DLive 或 Twitch 登入；並在頻道頁使用';
+      if (reminderText && typeof t === 'function') {
+        reminderText.textContent = t('reminder');
       }
     }
   });
@@ -831,13 +617,29 @@ function initDliveButtons() {
   bindDliveButton('btnChatOverlayFix1', 'toggleChatOverlayFix1');
 
   // 劇院模式
-  bindDliveButton('btnTheater13', 'toggleTheaterMode13');
+  bindDliveButton('btnTheater13', 'toggleTheaterComboFix');
 
   // 測試按鈕
   bindDliveButton('btnTestZoomIn', 'testZoomIn');
   bindDliveButton('btnTestZoomOut', 'testZoomOut');
   bindDliveButton('btnTestZoomReset', 'testZoomReset');
   bindDliveButton('btnTestBlackFix1', 'toggleBlackBackgroundFix1');
+
+  // 隱藏頂部欄分解測試按鈕
+  bindDliveButton('btnNavbarTest1', 'toggleNavbarTest1');
+  bindDliveButton('btnNavbarTest2', 'toggleNavbarTest2');
+  bindDliveButton('btnNavbarTest3', 'toggleNavbarTest3');
+  bindDliveButton('btnNavbarTest4', 'toggleNavbarTest4');
+  bindDliveButton('btnNavbarTest5', 'toggleNavbarTest5');
+  bindDliveButton('btnNavbarTest6', 'toggleNavbarTest6');
+  bindDliveButton('btnNavbarTest7', 'toggleNavbarTest7');
+  bindDliveButton('btnNavbarTest8', 'toggleNavbarTest8');
+  bindDliveButton('btnNavbarTest9', 'toggleNavbarTest9');
+  bindDliveButton('btnNavbarTest10', 'toggleNavbarTest10');
+  bindDliveButton('btnNavbarTest2Fix', 'toggleNavbarTest2Fix');
+  bindDliveButton('btnNavbarTestCombo', 'toggleNavbarTestCombo');
+  bindDliveButton('btnTheaterCombo', 'toggleTheaterComboFix');
+  bindDliveButton('btnTheaterComboFix', 'toggleTheaterComboFix');
 }
 
 function bindDliveButton(btnId, command) {
@@ -887,4 +689,17 @@ function showDliveStatus(message, color) {
 // DOM 載入後初始化頁面切換
 document.addEventListener('DOMContentLoaded', () => {
   initPageToggle();
+  initHelpPopover();
 });
+
+// ==================== Help Button 功能 ====================
+function initHelpPopover() {
+  const helpBtn = document.getElementById('helpBtn');
+  if (!helpBtn) return;
+
+  // 問號按鈕點擊 - 在新分頁打開說明頁面
+  helpBtn.addEventListener('click', () => {
+    const helpUrl = chrome.runtime.getURL('help.html');
+    chrome.tabs.create({ url: helpUrl });
+  });
+}

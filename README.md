@@ -49,7 +49,7 @@ When watching in fullscreen mode:
 - Chat remains interactive while in fullscreen
 
 ### 🌐 Language Support
-The extension supports both **English** and **Traditional Chinese (繁體中文)**. Toggle language in the popup settings.
+The extension supports **5 languages**: English, Traditional Chinese (繁體中文), Simplified Chinese (简体中文), Japanese (日本語), and Korean (한국어). Toggle language in the popup settings.
 
 ## 🔒 Privacy Policy
 This extension does not collect, store, or transmit any user data. All data (stickers, tags, settings) is stored locally on your device using Chrome's storage API. See [privacy.html](privacy.html) for full details.
@@ -106,7 +106,7 @@ This extension does not collect, store, or transmit any user data. All data (sti
 - 全螢幕模式下聊天室仍可互動
 
 ### 🌐 語言支援
-支援 **英文** 與 **繁體中文**。在彈出視窗設定中切換語言。
+支援 **5 種語言**：繁體中文、簡體中文、英文、日文、韓文。在彈出視窗設定中切換語言。
 
 ## 🔒 隱私政策
 本擴充功能不會收集、儲存或傳輸任何使用者資料。所有資料（貼圖、標籤、設定）都使用 Chrome 儲存 API 儲存在您的本地裝置。詳見 [privacy.html](privacy.html)。
