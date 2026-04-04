@@ -18,16 +18,31 @@ function buildStickerFromId(id, index) {
     const isVideo = /\.mp4$/i.test(idWithExt);
     return {
       name: `圖片 ${index + 1}`,
+      rawId: id,
       code: id,
       imageUrl: `https://i.imgur.com/${idWithExt}`,
       isVideo: isVideo,
       isIM: true
     };
   }
+  // ME 類型
+  if (id.startsWith('ME-')) {
+    const idWithExt = id.slice(3);
+    const isVideo = /\.mp4$/i.test(idWithExt);
+    return {
+      name: `圖片 ${index + 1}`,
+      rawId: id,
+      code: id,
+      imageUrl: `https://meee.com.tw/${idWithExt}`,
+      isVideo: isVideo,
+      isME: true
+    };
+  }
   // DL 類型：移除 DL- 前綴
   const cleanId = id.startsWith('DL-') ? id.slice(3) : id;
   return {
     name: `ID${index + 1}`,
+    rawId: id,
     code: `:emote/mine/dlive/${cleanId}:`,
     imageUrl: `https://images.prd.dlivecdn.com/emote/${cleanId}`
   };
@@ -49,6 +64,15 @@ function parseStickerIdsWithTag(rawText) {
         const id = rawId.replace(/-(gif|png|jpg|jpeg|mp4)$/i, '.$1');
         // 驗證 IM ID 格式（必須有點號擴展名）
         if (!/^IM-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4)$/i.test(id)) continue;
+        const tags = parts.slice(1).filter(p => p.startsWith('#')).map(p => p.slice(1));
+        rows.push({ id, tags });
+        continue;
+      }
+      // ME 格式：將 -gif, -png, -jpg, -jpeg, -mp4 結尾替換為 . 點格式
+      if (rawId.startsWith('ME-')) {
+        const id = rawId.replace(/-(gif|png|jpg|jpeg|mp4)$/i, '.$1');
+        // 驗證 ME ID 格式（必須有點號擴展名）
+        if (!/^ME-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4)$/i.test(id)) continue;
         const tags = parts.slice(1).filter(p => p.startsWith('#')).map(p => p.slice(1));
         rows.push({ id, tags });
         continue;
@@ -197,15 +221,15 @@ function displayStickers(stickers, favoriteIds = [], idToTags = {}) {
 
   const favSet = new Set(favoriteIds);
   const sorted = [...stickers].sort((a, b) => {
-    const ida = a.code || a.id;
-    const idb = b.code || b.id;
+    const ida = a.rawId || a.code;
+    const idb = b.rawId || b.code;
     const fa = ida && favSet.has(ida) ? 1 : 0;
     const fb = idb && favSet.has(idb) ? 1 : 0;
     return fb - fa;
   });
 
   sorted.forEach((sticker) => {
-    const id = sticker.code;
+    const id = sticker.rawId || sticker.code;
     const isIM = sticker.isIM || id.startsWith('IM-');
     const item = document.createElement('div');
     item.className = 'sticker-item';
@@ -251,7 +275,7 @@ function displayStickers(stickers, favoriteIds = [], idToTags = {}) {
       if (id) {
         const idDiv = document.createElement('div');
         idDiv.className = 'sticker-id';
-        idDiv.textContent = id.length > 20 ? id.slice(0, 20) + '...' : id;
+        idDiv.textContent = sticker.code.length > 20 ? sticker.code.slice(0, 20) + '...' : sticker.code;
         imgContainer.appendChild(idDiv);
 
         if (tags.length) {
@@ -402,13 +426,16 @@ document.getElementById('saveIdsBtn').addEventListener('click', () => {
   const mergedVocabRaw = mergeVocabWithRowTags(vocabRaw, rows);
 
   const ids = rows.map((r) => r.id);
-  // 驗證 ID 格式（支援 DL- 和 IM- 前綴）
+  // 驗證 ID 格式（支援 DL-、IM- 和 ME- 前綴）
   const invalidId = ids.find((id) => {
     if (TAG) {
-      return !TAG.isValidDLId(id) && !TAG.isValidIMId(id);
+      return !TAG.isValidDLId(id) && !TAG.isValidIMId(id) && !TAG.isValidMEId(id);
     }
     // 後備驗證
-    return !/^(?:DL-)?[A-Za-z0-9_]+$/.test(id) && !/^IM-[a-zA-Z0-9]+(?:\.(?:gif|png|jpg|jpeg|mp4))?$/i.test(id);
+    const isDL = /^(?:DL-)?[A-Za-z0-9_]+$/.test(id);
+    const isIM = /^IM-[a-zA-Z0-9]+(?:\.(?:gif|png|jpg|jpeg|mp4))?$/i.test(id);
+    const isME = /^ME-[a-zA-Z0-9]+(?:\.(?:gif|png|jpg|jpeg|mp4))?$/i.test(id);
+    return !isDL && !isIM && !isME;
   });
   if (invalidId) {
     setStatus(t('statusInvalidId', invalidId), '#dc3545');
@@ -603,6 +630,15 @@ function initPageToggle() {
 
   tabSticker.addEventListener('click', () => switchToPage('main'));
   tabDlive.addEventListener('click', () => switchToPage('dlive'));
+
+  // 圖庫編輯按鈕 - 在新分頁開啟編輯器
+  const openEditorBtn = document.getElementById('openEditorBtn');
+  if (openEditorBtn) {
+    openEditorBtn.addEventListener('click', () => {
+      const editorUrl = chrome.runtime.getURL('editor.html');
+      chrome.tabs.create({ url: editorUrl });
+    });
+  }
 
   // 初始化 DLive 設定頁按鈕
   initDliveButtons();

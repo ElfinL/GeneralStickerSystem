@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>General Sticker System (GSS) 圖庫編輯器</title>
+  <link rel="icon" type="image/png" href="icons/icon48.png">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a2e;
+      color: #eee;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      padding: 0 20px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #ffd43b;
+      font-size: 22px;
+    }
+
+    .toolbar-row {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .toolbar-row .filter-tabs {
+      margin: 0;
+    }
+
+    .toolbar-row button {
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(10, 12, 16, 0.88);
+      color: rgba(255, 255, 255, 0.88);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .toolbar-row button:hover {
+      background: rgba(120, 190, 255, 0.22);
+      border-color: rgba(120, 190, 255, 0.4);
+    }
+
+    .toolbar-row button.danger:hover {
+      background: rgba(255, 100, 100, 0.5);
+    }
+
+    .main-layout {
+      display: flex;
+      gap: 0;
+    }
+
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 420px;
+      height: 100vh;
+      overflow-y: auto;
+      background: rgba(16, 18, 22, 0.98);
+      padding: 20px;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .sidebar::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 3px;
+    }
+
+    .sidebar-section {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      flex: 7;
+      min-height: 0;
+    }
+
+    .sidebar-section.tag-section {
+      flex: 3;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .lang-btn:hover {
+      background: rgba(120, 190, 255, 0.22);
+      border-color: rgba(120, 190, 255, 0.4);
+    }
+
+    .header-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .header-row h1 {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 0;
+      font-size: 24px;
+      font-weight: 600;
+      color: #ffd43b;
+      white-space: nowrap;
+    }
+
+    .header-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+
+    .lang-switcher-sidebar {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 12px;
+      justify-content: center;
+    }
+
+    .lang-btn {
+      padding: 4px 8px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(10, 12, 16, 0.5);
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .lang-btn:hover {
+      background: rgba(120, 190, 255, 0.22);
+      border-color: rgba(120, 190, 255, 0.4);
+    }
+
+    .lang-btn.active {
+      background: rgba(120, 190, 255, 0.35);
+      border-color: rgba(120, 190, 255, 0.7);
+      color: #fff;
+    }
+
+    .sidebar-section h3 {
+      font-size: 14px;
+      color: #ffd43b;
+      margin-bottom: 12px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .sidebar-section textarea {
+      width: 100%;
+      flex: 1;
+      min-height: 0;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(10, 12, 16, 0.88);
+      color: #fff;
+      font-size: 13px;
+      line-height: 1.4;
+      resize: none;
+      font-family: Consolas, "Courier New", monospace;
+    }
+
+    .sidebar-section textarea::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .sidebar-section button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 6px;
+      border: none;
+      background: rgba(120, 190, 255, 0.35);
+      color: #fff;
+      cursor: pointer;
+      font-size: 13px;
+      transition: background 0.2s;
+    }
+
+    .sidebar-section button:hover {
+      background: rgba(120, 190, 255, 0.5);
+    }
+
+    .sidebar-hint {
+      font-size: 11px;
+      color: #adb5bd;
+      margin-top: 8px;
+      line-height: 1.4;
+    }
+
+    .line-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+      font-size: 12px;
+      line-height: 28px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .goto-line {
+      display: grid !important;
+      grid-template-columns: auto auto !important;
+      gap: 6px !important;
+      align-items: center !important;
+    }
+
+    .goto-line input,
+    .goto-line button {
+      height: 28px !important;
+      min-height: 28px !important;
+      max-height: 28px !important;
+      padding: 0 10px !important;
+      font-size: 12px !important;
+      line-height: 28px !important;
+      box-sizing: border-box !important;
+      margin: 0 !important;
+      vertical-align: middle !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+
+    .goto-line input {
+      width: 80px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      background: rgba(10, 12, 16, 0.8);
+      color: rgba(255, 255, 255, 0.9);
+      text-align: center;
+    }
+
+    .goto-line button {
+      border: none;
+      border-radius: 4px;
+      background: rgba(31, 122, 236, 0.8);
+      color: white;
+      cursor: pointer;
+    }
+
+    .goto-line button:hover {
+      background: rgba(31, 122, 236, 1);
+    }
+
+    .content-area {
+      margin-left: 440px;
+      flex: 1;
+      min-width: 0;
+      padding: 20px;
+    }
+
+    .filter-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .filter-tab {
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(10, 12, 16, 0.88);
+      color: rgba(255, 255, 255, 0.88);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-tab:hover {
+      background: rgba(120, 190, 255, 0.22);
+      border-color: rgba(120, 190, 255, 0.4);
+    }
+
+    .filter-tab.active {
+      background: rgba(120, 190, 255, 0.35);
+      border-color: rgba(120, 190, 255, 0.7);
+      color: #fff;
+    }
+
+    .tag-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 8px;
+    }
+
+    .tag-tab {
+      padding: 4px 10px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(10, 12, 16, 0.7);
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .tag-tab:hover {
+      background: rgba(120, 190, 255, 0.2);
+      border-color: rgba(120, 190, 255, 0.4);
+    }
+
+    .tag-tab.active {
+      background: rgba(120, 190, 255, 0.35);
+      border-color: rgba(120, 190, 255, 0.7);
+      color: #fff;
+    }
+
+    .tag-tab.hidden-tag {
+      border-color: rgba(255, 100, 100, 0.4);
+      background: rgba(255, 100, 100, 0.15);
+    }
+
+    .tag-tab.hidden-tag.active {
+      background: rgba(255, 100, 100, 0.4);
+      border-color: rgba(255, 100, 100, 0.7);
+    }
+
+    .sticker-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .sticker-card {
+      width: 180px;
+      flex-shrink: 0;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 16px;
+      transition: border-color 0.2s;
+    }
+
+    .sticker-card:hover {
+      border-color: rgba(120, 190, 255, 0.4);
+    }
+
+    .sticker-card.selected {
+      border-color: #ffd43b;
+      background: rgba(255, 212, 59, 0.1);
+    }
+
+    .sticker-preview {
+      width: 100%;
+      height: auto;
+      max-height: 120px;
+      border-radius: 8px;
+      object-fit: cover;
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    .sticker-id {
+      font-weight: 600;
+      font-size: 12px;
+      color: #fff;
+      text-align: center;
+      margin-top: 8px;
+      word-break: break-all;
+      line-height: 1.3;
+    }
+
+    .sticker-line-number {
+      font-size: 10px;
+      color: rgba(255, 255, 255, 0.5);
+      text-align: center;
+      margin-top: 2px;
+      font-family: Consolas, "Courier New", monospace;
+    }
+
+    .sticker-header {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    .sticker-actions {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      display: flex;
+      gap: 4px;
+    }
+
+    .sticker-delete-btn {
+      width: 22px;
+      height: 22px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(220, 53, 69, 0.8);
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background 0.2s;
+    }
+
+    .sticker-delete-btn:hover {
+      background: rgba(220, 53, 69, 1);
+    }
+
+    .sticker-select {
+      position: absolute;
+      top: -4px;
+      left: -4px;
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    .tags-section {
+      margin-top: 8px;
+    }
+
+    .tags-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      justify-content: center;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      padding: 2px 6px;
+      background: rgba(120, 190, 255, 0.2);
+      border-radius: 4px;
+      font-size: 11px;
+      color: #fff;
+    }
+
+    .tag button {
+      background: none;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      font-size: 12px;
+      line-height: 1;
+      padding: 0;
+      width: 14px;
+      height: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 2px;
+    }
+
+    .tag button:hover {
+      background: rgba(255, 100, 100, 0.5);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #adb5bd;
+    }
+
+    .empty-state-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 60px;
+      color: #adb5bd;
+    }
+
+    .status-bar {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 12px 20px;
+      background: rgba(40, 167, 69, 0.9);
+      color: #fff;
+      border-radius: 8px;
+      font-size: 14px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+
+    .status-bar.show {
+      opacity: 1;
+    }
+
+    .status-bar.error {
+      background: rgba(220, 53, 69, 0.9);
+    }
+
+    .batch-panel {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(26, 26, 46, 0.98);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 16px 20px;
+      display: none;
+      align-items: center;
+      gap: 16px;
+      justify-content: center;
+    }
+
+    .batch-panel.show {
+      display: flex;
+    }
+
+    .batch-panel .selected-count {
+      font-weight: 600;
+      color: #ffd43b;
+    }
+
+    /* 右鍵選單樣式 */
+    .context-menu {
+      position: absolute;
+      background: rgba(26, 26, 46, 0.98);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      padding: 8px 0;
+      min-width: 180px;
+      max-height: 400px;
+      overflow-y: auto;
+      z-index: 10000;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .context-menu-header {
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #ffd43b;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .context-menu-divider {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.1);
+      margin: 4px 0;
+    }
+
+    .context-menu-item {
+      padding: 8px 16px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.9);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .context-menu-item:hover {
+      background: rgba(120, 190, 255, 0.2);
+    }
+
+    .context-menu-item.has-tag {
+      color: #28a745;
+    }
+
+    .context-menu-item.has-tag .tag-indicator {
+      color: #28a745;
+    }
+
+    .tag-indicator {
+      width: 16px;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.4);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header-row">
+      <h1><img src="icons/icon48.png" alt="GSS" class="header-icon"> General Sticker System (GSS) <span
+          id="versionText"></span> 圖庫編輯器</h1>
+    </div>
+
+    <div class="main-layout">
+      <!-- 左側邊欄 -->
+      <div class="sidebar">
+        <div class="lang-switcher-sidebar">
+          <button class="lang-btn" data-lang="zh-TW">繁</button>
+          <button class="lang-btn" data-lang="zh-CN">简</button>
+          <button class="lang-btn" data-lang="en">En</button>
+          <button class="lang-btn" data-lang="ja">日</button>
+          <button class="lang-btn" data-lang="ko">한</button>
+        </div>
+        <div class="sidebar-section">
+          <h3>📋 貼圖 ID 清單</h3>
+          <textarea id="idListInput" placeholder="DL-xxx #tag&#10;IM-xxx.gif #meme&#10;ME-xxx.png"></textarea>
+          <div class="line-info">
+            <span id="lineInfoText">第 1 行 / 共 1 行</span>
+            <div class="goto-line">
+              <input type="text" id="gotoLineInput" placeholder="跳轉到行">
+              <button id="gotoLineBtn">跳轉</button>
+            </div>
+          </div>
+          <div class="sidebar-hint">每行一個 ID，後面可接 #標籤</div>
+          <button id="saveIdsBtn">💾 儲存 ID 清單</button>
+          <div id="saveStatus" style="margin-top: 8px; font-size: 12px; color: #28a745;"></div>
+        </div>
+
+        <div class="sidebar-section tag-section">
+          <h3>🏷️ 標籤詞庫</h3>
+          <textarea id="tagVocabInput" placeholder="meme&#10;reaction&#10;funny&#10;隱藏"></textarea>
+          <div class="sidebar-hint">一行一個標籤，用於快速選擇</div>
+          <button id="saveVocabBtn">💾 儲存詞庫</button>
+        </div>
+      </div>
+
+      <!-- 右側主內容區 -->
+      <div class="content-area">
+        <div class="toolbar-row">
+          <div class="filter-tabs" id="typeTabs">
+            <button class="filter-tab active" data-type="all">全部</button>
+            <button class="filter-tab" data-type="DL">DL</button>
+            <button class="filter-tab" data-type="IM">IM</button>
+            <button class="filter-tab" data-type="ME">ME</button>
+          </div>
+          <button id="refreshBtn">🔄 重新整理</button>
+          <button id="selectAllBtn">☑️ 全選</button>
+          <button id="exportBtn">📥 匯出資料</button>
+          <span class="stats" id="statsText">載入中...</span>
+        </div>
+
+        <div class="tag-tabs" id="tagTabs">
+          <button class="tag-tab active" data-tag="__all__">全部</button>
+          <button class="tag-tab" data-tag="__uncategorized__">未分類</button>
+        </div>
+
+        <div id="content">
+          <div class="loading">載入資料中...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="batch-panel" id="batchPanel">
+    <span class="selected-count">已選擇 <span id="selectedCount">0</span> 個</span>
+    <select id="batchTagSelect"
+      style="padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); background: rgba(10,12,16,0.88); color: #fff; font-size: 14px;">
+      <option value="">選擇標籤...</option>
+      <option value="__manual__">✏️ 手動輸入...</option>
+    </select>
+    <input type="text" id="batchTagInput" placeholder="輸入新標籤..."
+      style="display: none; padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); background: rgba(10,12,16,0.88); color: #fff; font-size: 14px; width: 150px;">
+    <button id="batchAddTagBtn">➕ 批量新增</button>
+    <button id="batchRemoveTagBtn" class="danger">➖ 批量移除</button>
+    <button id="clearSelectionBtn">✕ 清除選擇</button>
+  </div>
+
+  <div class="status-bar" id="statusBar"></div>
+
+  <script src="i18n.js"></script>
+  <script src="editor.js"></script>
+</body>
+
+</html>

@@ -5,9 +5,35 @@
 
 const I18N = {
   'zh-TW': {
+    editorTitle: (version) => `General Sticker System (GSS) V${version} 圖庫編輯器`,
+    idListTitle: '📋 貼圖 ID 清單',
+    idListHint: '每行一個 ID，後面可接 #標籤',
+    saveIdList: '💾 儲存 ID 清單',
+    tagVocabTitle: '🏷️ 標籤詞庫',
+    tagVocabHint: '一行一個標籤，用於快速選擇',
+    saveVocab: '💾 儲存詞庫',
+    searchPlaceholder: '搜尋 ID 或標籤...',
+    refresh: '🔄 重新整理',
+    selectAll: '☑️ 全選',
+    export: '📥 匯出資料',
+    loading: '載入中...',
+    typeAll: '全部',
+    typeDL: 'DL',
+    typeIM: 'IM',
+    typeME: 'ME',
+    tagAll: '全部',
+    tagUncategorized: '未分類',
+    selectedCount: '已選擇 {0} 個',
+    selectTag: '選擇標籤...',
+    manualInput: '✏️ 手動輸入...',
+    batchAdd: '➕ 批量新增',
+    batchRemove: '➖ 批量移除',
+    clearSelection: '✕ 清除選擇',
+    hiddenTag: '隱藏',
+    statsText: (filtered, total) => `顯示 ${filtered} / ${total} 個貼圖`,
     headerSubtitle: '通用貼圖系統 (GSS)',
     configTitle: '貼圖 ID 與標籤',
-    configHint: '一行一組：DL-xxx 或 IM-xxx，後可接 #標籤（每張最多 4 個）',
+    configHint: '支援 DL / IM / ME 圖，後可接 #標籤，詳見 ❓',
     tagVocabTitle: '標籤詞庫（一行一個）',
     tagVocabHint: '頻道頁右鍵貼圖或面板內右鍵可套用；每張最多 4 個標籤',
     saveButton: '儲存 ID 清單與詞庫',
@@ -15,6 +41,10 @@ const I18N = {
     footer: '',
     favTitle: '常用',
     delTitle: '刪除',
+    deleteConfirmTitle: '刪除貼圖',
+    deleteConfirmMessage: (id) => `確定要刪除貼圖 ${id} 嗎？\n此操作無法復原。`,
+    deleteConfirmBtn: '刪除',
+    deleteCancelBtn: '取消',
     statusFavOn: '✅ 已標記常用',
     statusFavOff: '✅ 已取消常用',
     statusCleared: '✅ 已清空 ID 清單',
@@ -24,15 +54,16 @@ const I18N = {
     statusParseErr: (detail) => `❌ 清單格式錯誤：${detail}`,
     statusVocabBadLine: (line) => `❌ 詞庫無效標籤（最多 16 字元、不可空白/#）：${line}`,
     lineInfo: (current, total) => `第 ${current} 行 / 共 ${total} 行`,
+    stickerLineNumber: (line) => `第 ${line} 行`,
     gotoLinePlaceholder: '跳轉到行',
     gotoLineButton: '跳轉',
-    idPlaceholder: 'DL-826c4ac1e004273_498281 #梗圖 #反應\nIM-ha3eTC7.gif #搞笑\nDL-826cd8c8b004273_335245',
+    idPlaceholder: 'DL-826c4ac1e004273_498281 #梗圖 #反應\nIM-ha3eTC7.gif #搞笑\nME-LXEcxGi.gif\nDL-826cd8c8b004273_335245',
     vocabPlaceholder: 'meme\nreaction\n搞笑',
     errBadId: (id) => `${id || ''}`.trim() || '無效 ID',
     errBadTag: (id, tag) => `${id}: #${tag} 無效`,
     errTooManyTags: (id) => `${id}: 標籤超過 4 個`,
     errDupId: (id) => `重複 ID: ${id}`,
-    errUnknown: '未知錯誤',
+    sendSameSticker: '↵ 發送相同圖片',
     dliveTheaterTitle: '🎭 劇院模式',
     dliveTheaterMode: '🎭 劇院模式',
     dliveZoomReset: '🔄 縮放重置',
@@ -50,11 +81,15 @@ const I18N = {
     dliveAbout: '📦 隱藏下方區',
     dliveBlackBg: '🖤 黑色背景',
     dliveStatusHint: 'ℹ️ 這些功能只在 DLive 頻道頁面有效',
+    tabSticker: '🎨 貼圖',
+    tabDlive: '⚙️ DLive',
+    openEditor: '📚 圖庫編輯',
     helpTitle: '使用說明',
     helpContent: `<p><b>貼圖格式：</b></p>
 <ul>
   <li>DL-xxx：DLive 官方貼圖</li>
   <li>IM-xxx：Imgur 圖片/影片</li>
+  <li>ME-xxx：meee.com.tw 圖片/影片</li>
 </ul>
 <p><b>標籤功能：</b></p>
 <ul>
@@ -74,9 +109,35 @@ const I18N = {
 </ul>`,
   },
   'zh-CN': {
+    editorTitle: (version) => `General Sticker System (GSS) V${version} 图库编辑器`,
+    idListTitle: '📋 贴纸 ID 清单',
+    idListHint: '每行一个 ID，后面可接 #标签',
+    saveIdList: '💾 保存 ID 清单',
+    tagVocabTitle: '🏷️ 标签词库',
+    tagVocabHint: '一行一个标签，用于快速选择',
+    saveVocab: '💾 保存词库',
+    searchPlaceholder: '搜索 ID 或标签...',
+    refresh: '🔄 重新整理',
+    selectAll: '☑️ 全选',
+    export: '📥 导出资料',
+    loading: '载入中...',
+    typeAll: '全部',
+    typeDL: 'DL',
+    typeIM: 'IM',
+    typeME: 'ME',
+    tagAll: '全部',
+    tagUncategorized: '未分类',
+    selectedCount: '已选择 {0} 个',
+    selectTag: '选择标签...',
+    manualInput: '✏️ 手动输入...',
+    batchAdd: '➕ 批量新增',
+    batchRemove: '➖ 批量移除',
+    clearSelection: '✕ 清除选择',
+    hiddenTag: '隐藏',
+    statsText: (filtered, total) => `显示 ${filtered} / ${total} 个贴纸`,
     headerSubtitle: '通用贴图系统 (GSS)',
     configTitle: '贴纸 ID 与标签',
-    configHint: '一行一组：DL-xxx 或 IM-xxx，后可接 #标签（每张最多 4 个）',
+    configHint: '支持 DL / IM / ME 图，后可接 #标签，详见 ❓ 说明',
     tagVocabTitle: '标签词库（一行一个）',
     tagVocabHint: '频道页右键贴纸或面板内右键可套用；每张最多 4 个标签',
     saveButton: '保存 ID 清单与词库',
@@ -84,6 +145,10 @@ const I18N = {
     footer: '',
     favTitle: '常用',
     delTitle: '删除',
+    deleteConfirmTitle: '删除贴纸',
+    deleteConfirmMessage: (id) => `确定要删除贴纸 ${id} 吗？\n此操作无法复原。`,
+    deleteConfirmBtn: '删除',
+    deleteCancelBtn: '取消',
     statusFavOn: '✅ 已标记常用',
     statusFavOff: '✅ 已取消常用',
     statusCleared: '✅ 已清空 ID 清单',
@@ -93,14 +158,16 @@ const I18N = {
     statusParseErr: (detail) => `❌ 清单格式错误：${detail}`,
     statusVocabBadLine: (line) => `❌ 词库无效标签（最多 16 字符、不可空白/#）：${line}`,
     lineInfo: (current, total) => `第 ${current} 行 / 共 ${total} 行`,
+    stickerLineNumber: (line) => `第 ${line} 行`,
     gotoLinePlaceholder: '跳转到行',
     gotoLineButton: '跳转',
-    idPlaceholder: 'DL-826c4ac1e004273_498281 #梗图 #反应\nIM-ha3eTC7.gif #搞笑\nDL-826cd8c8b004273_335245',
+    idPlaceholder: 'DL-826c4ac1e004273_498281 #梗图 #反应\nIM-ha3eTC7.gif #搞笑\nME-LXEcxGi.gif\nDL-826cd8c8b004273_335245',
     vocabPlaceholder: 'meme\nreaction\n搞笑',
     errBadId: (id) => `${id || ''}`.trim() || '无效 ID',
     errBadTag: (id, tag) => `${id}: #${tag} 无效`,
     errTooManyTags: (id) => `${id}: 标签超过 4 个`,
     errDupId: (id) => `重复 ID: ${id}`,
+    sendSameSticker: '↵ 发送相同图片',
     errUnknown: '未知错误',
     dliveTheaterTitle: '🎭 剧院模式',
     dliveTheaterMode: '🎭 剧院模式',
@@ -119,11 +186,15 @@ const I18N = {
     dliveAbout: '📦 隐藏下方区',
     dliveBlackBg: '🖤 黑色背景',
     dliveStatusHint: 'ℹ️ 这些功能只在 DLive 频道页面有效',
+    tabSticker: '🎨 贴纸',
+    tabDlive: '⚙️ DLive',
+    openEditor: '📚 图库编辑',
     helpTitle: '使用说明',
     helpContent: `<p><b>贴纸格式：</b></p>
 <ul>
   <li>DL-xxx：DLive 官方贴纸</li>
   <li>IM-xxx：Imgur 图片/视频</li>
+  <li>ME-xxx：meee.com.tw 图片/视频</li>
 </ul>
 <p><b>标签功能：</b></p>
 <ul>
@@ -143,9 +214,35 @@ const I18N = {
 </ul>`,
   },
   en: {
+    editorTitle: (version) => `General Sticker System (GSS) V${version} Sticker Editor`,
+    idListTitle: '📋 Sticker ID List',
+    idListHint: 'One ID per line, can add #tags',
+    saveIdList: '💾 Save ID List',
+    tagVocabTitle: '🏷️ Tag Vocabulary',
+    tagVocabHint: 'One tag per line for quick selection',
+    saveVocab: '💾 Save Vocabulary',
+    searchPlaceholder: 'Search ID or tags...',
+    refresh: '🔄 Refresh',
+    selectAll: '☑️ Select All',
+    export: '📥 Export Data',
+    loading: 'Loading...',
+    typeAll: 'All',
+    typeDL: 'DL',
+    typeIM: 'IM',
+    typeME: 'ME',
+    tagAll: 'All',
+    tagUncategorized: 'Uncategorized',
+    selectedCount: 'Selected {0}',
+    selectTag: 'Select tag...',
+    manualInput: '✏️ Manual input...',
+    batchAdd: '➕ Batch Add',
+    batchRemove: '➖ Batch Remove',
+    clearSelection: '✕ Clear',
+    hiddenTag: 'Hidden',
+    statsText: (filtered, total) => `Showing ${filtered} / ${total} stickers`,
     headerSubtitle: 'General Sticker System (GSS)',
     configTitle: 'Sticker IDs & tags',
-    configHint: 'One per line: DL-xxx or IM-xxx, then optional #tags (max 4 tags)',
+    configHint: 'Supports DL / IM / ME images, optional #tags, see ❓ for help',
     tagVocabTitle: 'Tag vocabulary (one per line)',
     tagVocabHint: 'Right-click emote on channel or tile in panel to apply tags; max 4 tags per sticker',
     saveButton: 'Save IDs & vocabulary',
@@ -153,6 +250,10 @@ const I18N = {
     footer: '',
     favTitle: 'Favorite',
     delTitle: 'Delete',
+    deleteConfirmTitle: 'Delete Sticker',
+    deleteConfirmMessage: (id) => `Are you sure you want to delete sticker ${id}?\nThis action cannot be undone.`,
+    deleteConfirmBtn: 'Delete',
+    deleteCancelBtn: 'Cancel',
     statusFavOn: '✅ Marked as favorite',
     statusFavOff: '✅ Unmarked as favorite',
     statusCleared: '✅ Cleared ID list',
@@ -162,14 +263,16 @@ const I18N = {
     statusParseErr: (detail) => `❌ List parse error: ${detail}`,
     statusVocabBadLine: (line) => `❌ Invalid tag (max 16 chars, no spaces/# allowed): ${line}`,
     lineInfo: (current, total) => `Line ${current} / ${total} total`,
+    stickerLineNumber: (line) => `Line ${line}`,
     gotoLinePlaceholder: 'Go to line',
     gotoLineButton: 'Go',
-    idPlaceholder: 'DL-826c4ac1e004273_498281 #meme #reaction\nIM-ha3eTC7.gif #funny\nDL-826cd8c8b004273_335245',
+    idPlaceholder: 'DL-826c4ac1e004273_498281 #meme #reaction\nIM-ha3eTC7.gif #funny\nME-LXEcxGi.gif\nDL-826cd8c8b004273_335245',
     vocabPlaceholder: 'meme\nreaction\nfunny',
     errBadId: (id) => `${id || ''}`.trim() || 'Invalid ID',
     errBadTag: (id, tag) => `${id}: Invalid tag #${tag}`,
     errTooManyTags: (id) => `${id}: More than 4 tags`,
     errDupId: (id) => `Duplicate ID: ${id}`,
+    sendSameSticker: '↵ Send Same Image',
     errUnknown: 'Unknown error',
     dliveTheaterTitle: '🎭 Theater Mode',
     dliveTheaterMode: '🎭 Theater Mode',
@@ -188,22 +291,26 @@ const I18N = {
     dliveAbout: '📦 Hide About',
     dliveBlackBg: '🖤 Black Bg',
     dliveStatusHint: 'ℹ️ These features only work on DLive channel pages',
+    tabSticker: '🎨 Stickers',
+    tabDlive: '⚙️ DLive',
+    openEditor: '📚 Editor',
     helpTitle: 'Help',
     helpContent: `<p><b>Sticker Formats:</b></p>
 <ul>
   <li>DL-xxx: DLive official emotes</li>
   <li>IM-xxx: Imgur images/videos</li>
+  <li>ME-xxx: meee.com.tw images/videos</li>
 </ul>
 <p><b>Tags:</b></p>
 <ul>
   <li>Max 4 tags per sticker</li>
   <li>Format: ID #tag1 #tag2</li>
-</ul>
-<p><b>Shortcuts:</b></p>
-<ul>
   <li>★ Mark as favorite</li>
   <li>✕ Delete sticker</li>
   <li>Right-click to add tags</li>
+  <li>Ctrl + S: Save changes</li>
+  <li>Ctrl + Z: Undo</li>
+  <li>Ctrl + Y: Redo</li>
 </ul>
 <p><b>DLive Features:</b></p>
 <ul>
@@ -212,9 +319,35 @@ const I18N = {
 </ul>`,
   },
   ja: {
+    editorTitle: (version) => `General Sticker System (GSS) V${version} ステッカーエディタ`,
+    idListTitle: '📋 ステッカーIDリスト',
+    idListHint: '1行に1つのID、#タグを追加可能',
+    saveIdList: '💾 IDリストを保存',
+    tagVocabTitle: '🏷️ タグ辞書',
+    tagVocabHint: '1行に1つのタグ、クイック選択用',
+    saveVocab: '💾 辞書を保存',
+    searchPlaceholder: 'IDまたはタグを検索...',
+    refresh: '🔄 更新',
+    selectAll: '☑️ 全選択',
+    export: '📥 データをエクスポート',
+    loading: '読み込み中...',
+    typeAll: 'すべて',
+    typeDL: 'DL',
+    typeIM: 'IM',
+    typeME: 'ME',
+    tagAll: 'すべて',
+    tagUncategorized: '未分類',
+    selectedCount: '{0}個選択中',
+    selectTag: 'タグを選択...',
+    manualInput: '✏️ 手動入力...',
+    batchAdd: '➕ 一括追加',
+    batchRemove: '➖ 一括削除',
+    clearSelection: '✕ 選択を解除',
+    hiddenTag: '隠す',
+    statsText: (filtered, total) => `${filtered} / ${total} 個を表示`,
     headerSubtitle: '汎用ステッカーシステム (GSS)',
     configTitle: 'ステッカーIDとタグ',
-    configHint: '1行1つ：DL-xxx または IM-xxx、後に #タグを追加可能（最大4つ）',
+    configHint: 'DL / IM / ME 対応、#タグ追加可能、詳細は ❓ を参照',
     tagVocabTitle: 'タグ辞書（1行1つ）',
     tagVocabHint: 'チャンネルまたはパネルで右クリックしてタグを適用；1ステッカー最大4タグ',
     saveButton: 'IDリストと辞書を保存',
@@ -222,6 +355,10 @@ const I18N = {
     footer: '',
     favTitle: 'お気に入り',
     delTitle: '削除',
+    deleteConfirmTitle: 'ステッカーを削除',
+    deleteConfirmMessage: (id) => `ステッカー ${id} を削除しますか？\nこの操作は元に戻せません。`,
+    deleteConfirmBtn: '削除',
+    deleteCancelBtn: 'キャンセル',
     statusFavOn: '✅ お気に入りに追加',
     statusFavOff: '✅ お気に入りから削除',
     statusCleared: '✅ IDリストをクリア',
@@ -231,14 +368,16 @@ const I18N = {
     statusParseErr: (detail) => `❌ リスト形式エラー：${detail}`,
     statusVocabBadLine: (line) => `❌ 無効なタグ（最大16文字、空白/#不可）：${line}`,
     lineInfo: (current, total) => `行 ${current} / ${total}`,
+    stickerLineNumber: (line) => `行 ${line}`,
     gotoLinePlaceholder: '行へ移動',
     gotoLineButton: '移動',
-    idPlaceholder: 'DL-826c4ac1e004273_498281 #ミーム #反応\nIM-ha3eTC7.gif #面白い\nDL-826cd8c8b004273_335245',
+    idPlaceholder: 'DL-826c4ac1e004273_498281 #ミーム #反応\nIM-ha3eTC7.gif #面白い\nME-LXEcxGi.gif\nDL-826cd8c8b004273_335245',
     vocabPlaceholder: 'ミーム\n反応\n面白い',
     errBadId: (id) => `${id || ''}`.trim() || '無効なID',
     errBadTag: (id, tag) => `${id}: #${tag} は無効`,
     errTooManyTags: (id) => `${id}: タグは4つまで`,
     errDupId: (id) => `重複ID: ${id}`,
+    sendSameSticker: '↵ 同じ画像を送信',
     errUnknown: '不明なエラー',
     dliveTheaterTitle: '🎭 シアターモード',
     dliveTheaterMode: '🎭 シアターモード',
@@ -257,11 +396,15 @@ const I18N = {
     dliveAbout: '📦 下部非表示',
     dliveBlackBg: '🖤 黒背景',
     dliveStatusHint: 'ℹ️ これらの機能はDLiveチャンネルページでのみ有効',
+    tabSticker: '🎨 ステッカー',
+    tabDlive: '⚙️ DLive',
+    openEditor: '📚 エディタ',
     helpTitle: '使い方',
     helpContent: `<p><b>ステッカー形式：</b></p>
 <ul>
   <li>DL-xxx：DLive公式ステッカー</li>
   <li>IM-xxx：Imgur画像/動画</li>
+  <li>ME-xxx：meee.com.tw画像/動画</li>
 </ul>
 <p><b>タグ機能：</b></p>
 <ul>
@@ -281,9 +424,35 @@ const I18N = {
 </ul>`,
   },
   ko: {
+    editorTitle: (version) => `General Sticker System (GSS) V${version} 스티커 편집기`,
+    idListTitle: '📋 스티커 ID 목록',
+    idListHint: '한 줄에 하나의 ID, #태그 추가 가능',
+    saveIdList: '💾 ID 목록 저장',
+    tagVocabTitle: '🏷️ 태그 사전',
+    tagVocabHint: '한 줄에 하나의 태그, 빠른 선택용',
+    saveVocab: '💾 사전 저장',
+    searchPlaceholder: 'ID 또는 태그 검색...',
+    refresh: '🔄 새로고침',
+    selectAll: '☑️ 전체 선택',
+    export: '📥 데이터보내기',
+    loading: '로딩 중...',
+    typeAll: '전체',
+    typeDL: 'DL',
+    typeIM: 'IM',
+    typeME: 'ME',
+    tagAll: '전체',
+    tagUncategorized: '미분류',
+    selectedCount: '{0}개 선택됨',
+    selectTag: '태그 선택...',
+    manualInput: '✏️ 수동 입력...',
+    batchAdd: '➕ 일괄 추가',
+    batchRemove: '➖ 일괄 제거',
+    clearSelection: '✕ 선택 해제',
+    hiddenTag: '숨김',
+    statsText: (filtered, total) => `${filtered} / ${total}개 표시`,
     headerSubtitle: '범용 스티커 시스템 (GSS)',
     configTitle: '스티커 ID와 태그',
-    configHint: '한 줄에 하나: DL-xxx 또는 IM-xxx, 선택적으로 #태그 추가 (최대 4개)',
+    configHint: 'DL / IM / ME 지원, #태그 추가 가능, ❓ 클릭',
     tagVocabTitle: '태그 사전 (한 줄에 하나)',
     tagVocabHint: '채널 또는 패널에서 우클릭하여 태그 적용; 스티커당 최대 4개 태그',
     saveButton: 'ID 목록과 사전 저장',
@@ -291,6 +460,10 @@ const I18N = {
     footer: '',
     favTitle: '즐겨찾기',
     delTitle: '삭제',
+    deleteConfirmTitle: '스티커 삭제',
+    deleteConfirmMessage: (id) => `스티커 ${id}를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`,
+    deleteConfirmBtn: '삭제',
+    deleteCancelBtn: '취소',
     statusFavOn: '✅ 즐겨찾기 추가됨',
     statusFavOff: '✅ 즐겨찾기 제거됨',
     statusCleared: '✅ ID 목록 지워짐',
@@ -300,14 +473,16 @@ const I18N = {
     statusParseErr: (detail) => `❌ 목록 형식 오류: ${detail}`,
     statusVocabBadLine: (line) => `❌ 유효하지 않은 태그 (최대 16자, 공백/# 불가): ${line}`,
     lineInfo: (current, total) => `줄 ${current} / ${total}`,
+    stickerLineNumber: (line) => `줄 ${line}`,
     gotoLinePlaceholder: '줄로 이동',
     gotoLineButton: '이동',
-    idPlaceholder: 'DL-826c4ac1e004273_498281 #밈 #반응\nIM-ha3eTC7.gif #웃긴\nDL-826cd8c8b004273_335245',
+    idPlaceholder: 'DL-826c4ac1e004273_498281 #밈 #반응\nIM-ha3eTC7.gif #웃긴\nME-LXEcxGi.gif\nDL-826cd8c8b004273_335245',
     vocabPlaceholder: '밈\n반응\n웃긴',
     errBadId: (id) => `${id || ''}`.trim() || '유효하지 않은 ID',
     errBadTag: (id, tag) => `${id}: #${tag} 유효하지 않음`,
     errTooManyTags: (id) => `${id}: 태그는 4개까지`,
     errDupId: (id) => `중복 ID: ${id}`,
+    sendSameSticker: '↵ 같은 이미지 보내기',
     errUnknown: '알 수 없는 오류',
     dliveTheaterTitle: '🎭 극장 모드',
     dliveTheaterMode: '🎭 극장 모드',
@@ -326,11 +501,15 @@ const I18N = {
     dliveAbout: '📦 하단 숨기기',
     dliveBlackBg: '🖤 검은 배경',
     dliveStatusHint: 'ℹ️ 이 기능은 DLive 채널 페이지에서만 작동',
+    tabSticker: '🎨 스티커',
+    tabDlive: '⚙️ DLive',
+    openEditor: '📚 편집기',
     helpTitle: '사용 방법',
     helpContent: `<p><b>스티커 형식：</b></p>
 <ul>
   <li>DL-xxx: DLive 공식 스티커</li>
   <li>IM-xxx: Imgur 이미지/영상</li>
+  <li>ME-xxx: meee.com.tw 이미지/영상</li>
 </ul>
 <p><b>태그 기능：</b></p>
 <ul>
@@ -367,6 +546,160 @@ function t(key, ...args) {
   const val = dict[key];
   if (typeof val === 'function') return val(...args);
   return val;
+}
+
+/**
+ * 套用語言設定到編輯器頁面
+ * @param {string} lang - 語言代碼
+ */
+function applyEditorLanguage(lang) {
+  currentLang = SUPPORTED_LANGS.includes(lang) ? lang : 'zh-TW';
+
+  // 更新語言按鈕的 active 狀態
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    if (btn.dataset.lang === currentLang) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+
+  // 標題 - 動態獲取版本號
+  const titleEl = document.querySelector('h1');
+  if (titleEl) {
+    try {
+      const manifest = chrome.runtime.getManifest();
+      const version = manifest?.version || '4.4';
+      const iconImg = titleEl.querySelector('img');
+      if (iconImg) {
+        iconImg.className = 'header-icon';
+        titleEl.innerHTML = '';
+        titleEl.appendChild(iconImg);
+        titleEl.appendChild(document.createTextNode(' ' + t('editorTitle', version)));
+      } else {
+        titleEl.textContent = t('editorTitle', version);
+      }
+    } catch (e) {
+      // 如果無法獲取 manifest，使用預設版本
+      const iconImg = titleEl.querySelector('img');
+      if (iconImg) {
+        iconImg.className = 'header-icon';
+        titleEl.innerHTML = '';
+        titleEl.appendChild(iconImg);
+        titleEl.appendChild(document.createTextNode(' ' + t('editorTitle', '4.4')));
+      } else {
+        titleEl.textContent = t('editorTitle', '4.4');
+      }
+    }
+  }
+
+  // 側邊欄 - 使用正確的選擇器
+  const sidebarSections = document.querySelectorAll('.sidebar-section');
+  if (sidebarSections.length >= 1) {
+    const h3 = sidebarSections[0].querySelector('h3');
+    if (h3) h3.textContent = t('idListTitle');
+    const hint = sidebarSections[0].querySelector('.sidebar-hint');
+    if (hint) hint.textContent = t('idListHint');
+  }
+  if (sidebarSections.length >= 2) {
+    const h3 = sidebarSections[1].querySelector('h3');
+    if (h3) h3.textContent = t('tagVocabTitle');
+    const hint = sidebarSections[1].querySelector('.sidebar-hint');
+    if (hint) hint.textContent = t('tagVocabHint');
+  }
+
+  const idListInput = document.getElementById('idListInput');
+  if (idListInput) idListInput.placeholder = t('idPlaceholder');
+
+  const saveIdsBtn = document.getElementById('saveIdsBtn');
+  if (saveIdsBtn) saveIdsBtn.textContent = t('saveIdList');
+
+  const tagVocabInput = document.getElementById('tagVocabInput');
+  if (tagVocabInput) tagVocabInput.placeholder = t('vocabPlaceholder');
+
+  const saveVocabBtn = document.getElementById('saveVocabBtn');
+  if (saveVocabBtn) saveVocabBtn.textContent = t('saveVocab');
+
+  // 行號信息和跳轉按鈕
+  const lineInfoText = document.getElementById('lineInfoText');
+  const idListInputEl = document.getElementById('idListInput');
+  if (lineInfoText && idListInputEl) {
+    const totalLines = idListInputEl.value.split('\n').length;
+    const cursorPos = idListInputEl.selectionStart || 0;
+    const textBeforeCursor = idListInputEl.value.substring(0, cursorPos);
+    const currentLine = textBeforeCursor.split('\n').length || 1;
+    lineInfoText.textContent = t('lineInfo', currentLine, totalLines);
+  }
+
+  const gotoLineInput = document.getElementById('gotoLineInput');
+  if (gotoLineInput) gotoLineInput.placeholder = t('gotoLinePlaceholder');
+
+  const gotoLineBtn = document.getElementById('gotoLineBtn');
+  if (gotoLineBtn) gotoLineBtn.textContent = t('gotoLineButton');
+
+  // 工具列
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) searchInput.placeholder = t('searchPlaceholder');
+
+  const refreshBtn = document.getElementById('refreshBtn');
+  if (refreshBtn) refreshBtn.textContent = t('refresh');
+
+  const selectAllBtn = document.getElementById('selectAllBtn');
+  if (selectAllBtn) selectAllBtn.textContent = t('selectAll');
+
+  const exportBtn = document.getElementById('exportBtn');
+  if (exportBtn) exportBtn.textContent = t('export');
+
+  // 類型過濾按鈕
+  const typeAllBtn = document.querySelector('[data-type="all"]');
+  if (typeAllBtn) typeAllBtn.textContent = t('typeAll');
+
+  const typeDLBtn = document.querySelector('[data-type="DL"]');
+  if (typeDLBtn) typeDLBtn.textContent = t('typeDL');
+
+  const typeIMBtn = document.querySelector('[data-type="IM"]');
+  if (typeIMBtn) typeIMBtn.textContent = t('typeIM');
+
+  const typeMEBtn = document.querySelector('[data-type="ME"]');
+  if (typeMEBtn) typeMEBtn.textContent = t('typeME');
+
+  // 批量操作面板
+  const batchTagSelect = document.getElementById('batchTagSelect');
+  if (batchTagSelect) {
+    const options = batchTagSelect.querySelectorAll('option');
+    if (options[0]) options[0].textContent = t('selectTag');
+    if (options[1]) options[1].textContent = t('manualInput');
+  }
+
+  const batchTagInput = document.getElementById('batchTagInput');
+  if (batchTagInput) batchTagInput.placeholder = t('manualInput').replace('✏️ ', '');
+
+  const batchAddTagBtn = document.getElementById('batchAddTagBtn');
+  if (batchAddTagBtn) batchAddTagBtn.textContent = t('batchAdd');
+
+  const batchRemoveTagBtn = document.getElementById('batchRemoveTagBtn');
+  if (batchRemoveTagBtn) batchRemoveTagBtn.textContent = t('batchRemove');
+
+  const clearSelectionBtn = document.getElementById('clearSelectionBtn');
+  if (clearSelectionBtn) clearSelectionBtn.textContent = t('clearSelection');
+
+  // 更新標籤頁（需要重新渲染）
+  if (typeof updateTagTabs === 'function') {
+    updateTagTabs();
+  }
+
+  // 更新統計文字（如果有數據）
+  const statsText = document.getElementById('statsText');
+  if (statsText && typeof filteredStickers !== 'undefined' && typeof allStickers !== 'undefined') {
+    statsText.textContent = t('statsText', filteredStickers.length, allStickers.length);
+  }
+
+  // 重新渲染貼圖卡片以更新行數顯示
+  if (typeof renderStickers === 'function') {
+    renderStickers();
+  }
+
+  chrome.storage.sync.set({ uiLang: currentLang });
 }
 
 /**
@@ -484,6 +817,16 @@ function applyLanguage(lang) {
   const dliveStatus = document.getElementById('dliveStatus');
   if (dliveStatus) dliveStatus.textContent = t('dliveStatusHint');
 
+  // 頁面切換按鈕
+  const tabSticker = document.getElementById('tabSticker');
+  if (tabSticker) tabSticker.textContent = t('tabSticker');
+
+  const tabDlive = document.getElementById('tabDlive');
+  if (tabDlive) tabDlive.textContent = t('tabDlive');
+
+  const openEditorBtn = document.getElementById('openEditorBtn');
+  if (openEditorBtn) openEditorBtn.textContent = t('openEditor');
+
   chrome.storage.sync.set({ uiLang: currentLang });
 }
 
@@ -516,5 +859,6 @@ window.SUPPORTED_LANGS = SUPPORTED_LANGS;
 window.currentLang = currentLang;
 window.t = t;
 window.applyLanguage = applyLanguage;
+window.applyEditorLanguage = applyEditorLanguage;
 window.initLanguage = initLanguage;
 window.setLanguage = setLanguage;

@@ -31,6 +31,7 @@ const UI_I18N = {
     unhide: '取消隱藏',
     tags: '標籤',
     zoomImage: '放大圖片',
+    sendSameSticker: '↵ 發送相同圖片',
     added: (n) => `✅ 已新增（共 ${n} 個）`,
     exists: (n) => `ℹ️ 已存在（共 ${n} 個）`,
     favMarked: '✅ 已標記常用（★）',
@@ -49,7 +50,9 @@ const UI_I18N = {
     notInListMsg: '不在清單內',
     emptyVocabMsg: '詞庫為空時仍可用上方「常用／隱藏」；要套用其他 #標籤請到 popup 建立詞庫',
     permDelete: '從清單永久刪除…',
-    uncategorizedTab: (n) => `未分類 (${n})`
+    uncategorizedTab: (n) => `未分類 (${n})`,
+    prevPage: '< 上一頁',
+    nextPage: '下一頁 >'
   },
   'zh-CN': {
     addToQuick: '添加到 GSS',
@@ -59,6 +62,7 @@ const UI_I18N = {
     unhide: '取消隐藏',
     tags: '标签',
     zoomImage: '放大图片',
+    sendSameSticker: '↵ 发送相同图片',
     added: (n) => `✅ 已添加（共 ${n} 个）`,
     exists: (n) => `ℹ️ 已存在（共 ${n} 个）`,
     favMarked: '✅ 已标记常用（★）',
@@ -77,7 +81,9 @@ const UI_I18N = {
     notInListMsg: '不在清单内',
     emptyVocabMsg: '词库为空时仍可用上方「常用／隐藏」；要套用其他 #标签请到 popup 建立词库',
     permDelete: '从清单永久删除…',
-    uncategorizedTab: (n) => `未分类 (${n})`
+    uncategorizedTab: (n) => `未分类 (${n})`,
+    prevPage: '< 上一页',
+    nextPage: '下一页 >'
   },
   en: {
     addToQuick: 'Add to GSS',
@@ -87,6 +93,7 @@ const UI_I18N = {
     unhide: 'Unhide',
     tags: 'Tags',
     zoomImage: 'Zoom Image',
+    sendSameSticker: '↵ Send Same Image',
     added: (n) => `✅ Added (${n} total)`,
     exists: (n) => `ℹ️ Already exists (${n} total)`,
     favMarked: '✅ Marked as favorite (★)',
@@ -105,7 +112,9 @@ const UI_I18N = {
     notInListMsg: 'Not in list',
     emptyVocabMsg: 'When vocabulary is empty, you can still use "Favorite/Hide" above; to apply other #tags, add them in popup',
     permDelete: 'Permanently delete from list…',
-    uncategorizedTab: (n) => `Uncategorized (${n})`
+    uncategorizedTab: (n) => `Uncategorized (${n})`,
+    prevPage: '< Prev',
+    nextPage: 'Next >'
   },
   ja: {
     addToQuick: 'GSSに追加',
@@ -115,6 +124,7 @@ const UI_I18N = {
     unhide: '非表示解除',
     tags: 'タグ',
     zoomImage: '画像を拡大',
+    sendSameSticker: '↵ 同じ画像を送信',
     added: (n) => `✅ 追加しました（計 ${n} 個）`,
     exists: (n) => `ℹ️ 既に存在します（計 ${n} 個）`,
     favMarked: '✅ お気に入りに追加しました（★）',
@@ -133,7 +143,9 @@ const UI_I18N = {
     notInListMsg: 'リストにありません',
     emptyVocabMsg: '辞書が空でも「お気に入り／非表示」は使用可能；その他の #タグ を追加するには popup で辞書を作成してください',
     permDelete: 'リストから完全に削除…',
-    uncategorizedTab: (n) => `未分類 (${n})`
+    uncategorizedTab: (n) => `未分類 (${n})`,
+    prevPage: '< 前へ',
+    nextPage: '次へ >'
   },
   ko: {
     addToQuick: 'GSS에 추가',
@@ -143,6 +155,7 @@ const UI_I18N = {
     unhide: '숨기기 해제',
     tags: '태그',
     zoomImage: '이미지 확대',
+    sendSameSticker: '↵ 같은 이미지 보내기',
     added: (n) => `✅ 추가되었습니다（총 ${n} 개）`,
     exists: (n) => `ℹ️ 이미 존재합니다（총 ${n} 개）`,
     favMarked: '✅ 즐겨찾기에 추가되었습니다（★）',
@@ -161,7 +174,9 @@ const UI_I18N = {
     notInListMsg: '목록에 없음',
     emptyVocabMsg: '사전이 비어있어도 "즐겨찾기／숨김"은 사용 가능；다른 #태그 를 추가하려면 popup에서 사전을 만드세요',
     permDelete: '목록에서 영구 삭제…',
-    uncategorizedTab: (n) => `미분류 (${n})`
+    uncategorizedTab: (n) => `미분류 (${n})`,
+    prevPage: '< 이전',
+    nextPage: '다음 >'
   }
 };
 
@@ -268,8 +283,10 @@ const UI = {
   zoomOverlayId: 'dlsq_zoom_overlay'
 };
 
-let panelFilterType = 'all'; // 'all', 'DL', 'IM'
+let panelFilterType = 'all'; // 'all', 'DL', 'IM', 'ME'
 let panelFilterTag = '__all__';
+let panelCurrentPage = 1; // 當前頁碼（分頁功能）
+const PANEL_PAGE_SIZE = 12; // 每頁顯示 12 張貼圖（3行×4欄）
 /** 保留標籤：帶此標籤的貼圖只在「隱藏」分頁顯示；一般分頁的「刪除」改為加此標籤 */
 const PANEL_HIDDEN_TAG = '隱藏';
 const PANEL_FILTER_HIDDEN = '__hidden__';
@@ -388,8 +405,7 @@ function ensureStyles() {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 8px;
-      max-height: 220px;
-      overflow-y: auto;
+      height: 216px;
       padding-right: 2px;
     }
     #${UI.panelId} .tile {
@@ -821,6 +837,7 @@ function togglePanel(force) {
   if (shouldOpen) {
     panelFilterType = 'all';
     panelFilterTag = '__all__';
+    panelCurrentPage = 1; // 重置頁碼
     refreshPanelStickers();
   }
 }
@@ -856,11 +873,13 @@ async function refreshTagTabs() {
 
   // 根據當前類型過濾 rows 統計數量
   const isIMId = (id) => id && id.startsWith('IM-');
-  const isDLId = (id) => id && (id.startsWith('DL-') || /^[A-Za-z0-9_]+$/.test(id));
+  const isMEId = (id) => id && id.startsWith('ME-');
+  const isDLId = (id) => id && (id.startsWith('DL-') || (/^[A-Za-z0-9_]+$/.test(id) && !id.startsWith('IM-') && !id.startsWith('ME-')));
 
   const filteredRows = parsed.rows.filter((r) => {
     if (panelFilterType === 'DL') return isDLId(r.id);
     if (panelFilterType === 'IM') return isIMId(r.id);
+    if (panelFilterType === 'ME') return isMEId(r.id);
     return true;
   });
 
@@ -875,11 +894,9 @@ async function refreshTagTabs() {
     b.title = label;
     b.addEventListener('click', () => {
       panelFilterTag = value;
-      // 只更新標籤過濾，不清空重建 grid
-      applyTagFilter();
-      // 更新按鈕樣式
-      tabs.querySelectorAll('.tab').forEach(btn => btn.classList.remove('on'));
-      b.classList.add('on');
+      panelCurrentPage = 1; // 【分頁】重置頁碼
+      // 重新整理面板以應用標籤過濾和分頁
+      refreshPanelStickers();
     });
     tabs.appendChild(b);
   };
@@ -950,13 +967,17 @@ async function applyTagFilter() {
       return;
     }
 
-    // 先檢查 DL/IM 類型過濾
+    // 先檢查 DL/IM/ME 類型過濾
     const type = tile.getAttribute('data-type');
     if (panelFilterType === 'DL' && type !== 'DL') {
       tile.style.display = 'none';
       return;
     }
     if (panelFilterType === 'IM' && type !== 'IM') {
+      tile.style.display = 'none';
+      return;
+    }
+    if (panelFilterType === 'ME' && type !== 'ME') {
       tile.style.display = 'none';
       return;
     }
@@ -1012,9 +1033,10 @@ function createPanelIfNeeded() {
   tabAll.style.fontWeight = '600';
   tabAll.addEventListener('click', async () => {
     panelFilterType = 'all';
+    panelCurrentPage = 1; // 重置頁碼
     updatePanelTypeTabs();
     await refreshTagTabs();
-    applyTagFilter();
+    refreshPanelStickers();
   });
 
   const tabDL = document.createElement('button');
@@ -1030,9 +1052,10 @@ function createPanelIfNeeded() {
   tabDL.style.fontWeight = '600';
   tabDL.addEventListener('click', async () => {
     panelFilterType = 'DL';
+    panelCurrentPage = 1; // 重置頁碼
     updatePanelTypeTabs();
     await refreshTagTabs();
-    applyTagFilter();
+    refreshPanelStickers();
   });
 
   const tabIM = document.createElement('button');
@@ -1048,14 +1071,35 @@ function createPanelIfNeeded() {
   tabIM.style.fontWeight = '600';
   tabIM.addEventListener('click', async () => {
     panelFilterType = 'IM';
+    panelCurrentPage = 1; // 重置頁碼
     updatePanelTypeTabs();
     await refreshTagTabs();
-    applyTagFilter();
+    refreshPanelStickers();
+  });
+
+  const tabME = document.createElement('button');
+  tabME.id = 'dlsq_tab_me';
+  tabME.textContent = 'ME';
+  tabME.style.padding = '3px 8px';
+  tabME.style.borderRadius = '6px';
+  tabME.style.border = '1px solid rgba(255,255,255,0.14)';
+  tabME.style.background = 'rgba(10,12,16,0.88)';
+  tabME.style.color = 'rgba(255,255,255,0.88)';
+  tabME.style.fontSize = '10px';
+  tabME.style.cursor = 'pointer';
+  tabME.style.fontWeight = '600';
+  tabME.addEventListener('click', async () => {
+    panelFilterType = 'ME';
+    panelCurrentPage = 1; // 重置頁碼
+    updatePanelTypeTabs();
+    await refreshTagTabs();
+    refreshPanelStickers();
   });
 
   tabsContainer.appendChild(tabAll);
   tabsContainer.appendChild(tabDL);
   tabsContainer.appendChild(tabIM);
+  tabsContainer.appendChild(tabME);
 
   // 右側：關閉按鈕
   const closeBtn = document.createElement('div');
@@ -1072,8 +1116,80 @@ function createPanelIfNeeded() {
   body.className = 'body';
   const tabs = document.createElement('div');
   tabs.className = 'tabs';
+
+  // 分頁控制區域（在標籤下方，grid 上方）
+  const pagination = document.createElement('div');
+  pagination.className = 'pagination';
+  pagination.id = 'dlsq_pagination';
+  pagination.style.display = 'flex';
+  pagination.style.alignItems = 'center';
+  pagination.style.justifyContent = 'center';
+  pagination.style.gap = '12px';
+  pagination.style.marginBottom = '10px';
+  pagination.style.padding = '6px 0';
+  pagination.style.fontSize = '12px';
+  pagination.style.color = 'rgba(255,255,255,0.88)';
+
+  const prevBtn = document.createElement('button');
+  prevBtn.id = 'dlsq_prev_page';
+  prevBtn.textContent = t('prevPage');
+  prevBtn.style.padding = '4px 10px';
+  prevBtn.style.borderRadius = '6px';
+  prevBtn.style.border = '1px solid rgba(255,255,255,0.14)';
+  prevBtn.style.background = 'rgba(10,12,16,0.88)';
+  prevBtn.style.color = 'rgba(255,255,255,0.88)';
+  prevBtn.style.fontSize = '11px';
+  prevBtn.style.cursor = 'pointer';
+  prevBtn.addEventListener('click', () => goToPage(panelCurrentPage - 1));
+
+  const pageInfo = document.createElement('span');
+  pageInfo.id = 'dlsq_page_info';
+  pageInfo.textContent = '1 / 1';
+  pageInfo.style.minWidth = '50px';
+  pageInfo.style.textAlign = 'center';
+
+  const nextBtn = document.createElement('button');
+  nextBtn.id = 'dlsq_next_page';
+  nextBtn.textContent = t('nextPage');
+  nextBtn.style.padding = '4px 10px';
+  nextBtn.style.borderRadius = '6px';
+  nextBtn.style.border = '1px solid rgba(255,255,255,0.14)';
+  nextBtn.style.background = 'rgba(10,12,16,0.88)';
+  nextBtn.style.color = 'rgba(255,255,255,0.88)';
+  nextBtn.style.fontSize = '11px';
+  nextBtn.style.cursor = 'pointer';
+  nextBtn.addEventListener('click', () => goToPage(panelCurrentPage + 1));
+
+  pagination.appendChild(prevBtn);
+  pagination.appendChild(pageInfo);
+  pagination.appendChild(nextBtn);
+
+  // 【滑鼠滾輪分頁】為分頁控制區域添加滾輪事件
+  pagination.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    if (e.deltaY < 0) {
+      // 向上滾輪 → 上一頁
+      goToPage(panelCurrentPage - 1);
+    } else if (e.deltaY > 0) {
+      // 向下滾輪 → 下一頁
+      goToPage(panelCurrentPage + 1);
+    }
+  }, { passive: false });
+
   const grid = document.createElement('div');
   grid.className = 'grid';
+
+  // 【滑鼠滾輪分頁】為圖片區域也添加滾輪事件
+  grid.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    if (e.deltaY < 0) {
+      // 向上滾輪 → 上一頁
+      goToPage(panelCurrentPage - 1);
+    } else if (e.deltaY > 0) {
+      // 向下滾輪 → 下一頁
+      goToPage(panelCurrentPage + 1);
+    }
+  }, { passive: false });
 
   // 【已刪除視頻控制區域按鈕】
 
@@ -1082,6 +1198,7 @@ function createPanelIfNeeded() {
   const status = document.createElement('div');
   status.className = 'status';
   body.appendChild(tabs);
+  body.appendChild(pagination);
   body.appendChild(grid);
   body.appendChild(status);
   panel.appendChild(hdr);
@@ -1089,11 +1206,30 @@ function createPanelIfNeeded() {
   document.body.appendChild(panel);
 }
 
+// 分頁切換函數
+function goToPage(page) {
+  const pagination = document.getElementById('dlsq_pagination');
+  if (!pagination) return;
+
+  // 獲取總頁數（需要從當前過濾結果計算）
+  const totalPages = Math.max(1, Math.ceil(pagination.dataset.totalItems / PANEL_PAGE_SIZE));
+
+  // 限制頁碼範圍
+  page = Math.max(1, Math.min(page, totalPages));
+
+  // 更新當前頁碼
+  panelCurrentPage = page;
+
+  // 刷新面板顯示
+  refreshPanelStickers();
+}
+
 function updatePanelTypeTabs() {
   const tabAll = document.getElementById('dlsq_tab_all');
   const tabDL = document.getElementById(UI.tabDLId);
   const tabIM = document.getElementById(UI.tabIMId);
-  if (!tabAll || !tabDL || !tabIM) return;
+  const tabME = document.getElementById('dlsq_tab_me');
+  if (!tabAll || !tabDL || !tabIM || !tabME) return;
 
   // 重置所有樣式
   const inactiveStyle = {
@@ -1131,6 +1267,15 @@ function updatePanelTypeTabs() {
     tabIM.style.background = inactiveStyle.background;
     tabIM.style.color = inactiveStyle.color;
   }
+
+  // ME
+  if (panelFilterType === 'ME') {
+    tabME.style.background = activeStyle.background;
+    tabME.style.color = activeStyle.color;
+  } else {
+    tabME.style.background = inactiveStyle.background;
+    tabME.style.color = inactiveStyle.color;
+  }
 }
 
 function applyStableGridHeight(gridEl, allStickerCount) {
@@ -1145,6 +1290,9 @@ function applyStableGridHeight(gridEl, allStickerCount) {
 function updateContextMenuTexts() {
   const menu = document.getElementById(UI.ctxMenuId);
   if (!menu) return;
+
+  const sendDiv = menu.querySelector('[data-action="sendSameSticker"] > div:first-child');
+  if (sendDiv) sendDiv.textContent = t('sendSameSticker');
 
   const addDiv = menu.querySelector('[data-action="addStickerId"] > div:first-child');
   if (addDiv) addDiv.textContent = t('addToQuick');
@@ -1213,6 +1361,7 @@ function createContextMenuIfNeeded() {
   };
 
   menu.appendChild(mkItem('addStickerId', '＋'));
+  menu.appendChild(mkItem('sendSameSticker', '↵'));
   menu.appendChild(mkItem('toggleFavorite', '★'));
   menu.appendChild(mkItem('toggleHidden', '👁️'));
   menu.appendChild(mkItem('zoomImage', '🔍'));
@@ -1264,7 +1413,50 @@ function dispatchContextMenuPointer(e, menu) {
       } else if (action === 'openTagMenu') {
         showPanelTagMenuAt((e.clientX || 0) + 6, (e.clientY || 0) + 6, id);
         return;
-      } else if (action === 'addStickerId') {
+      } else if (action === 'sendSameSticker') {
+        // 發送相同圖片 - 遵循平台規則（與面板點擊邏輯一致）
+        // 判斷 ID 類型：DL-xxx、IM-xxx、ME-xxx 或純 DLive ID
+        const isIM = id.startsWith('IM-');
+        const isME = id.startsWith('ME-');
+        const isDLWithPrefix = id.startsWith('DL-');
+        const isRawDLId = !isIM && !isME && !isDLWithPrefix && /^[A-Za-z0-9_]+$/.test(id);
+
+        // 將 ID 轉換為 code 格式
+        let code = id;
+        if (isDLWithPrefix) {
+          // DL-xxx → :emote/mine/dlive/xxx:
+          const cleanId = id.slice(3);
+          code = `:emote/mine/dlive/${cleanId}:`;
+        } else if (isRawDLId) {
+          // 純 DLive ID → :emote/mine/dlive/xxx:
+          code = `:emote/mine/dlive/${id}:`;
+        }
+
+        // 在 DLive 上，IM/ME 使用零寬編碼；DL 和其他平台直接發送
+        if ((isIM || isME) && isDLive()) {
+          // DLive 的 IM/ME 使用零寬編碼
+          sendHiddenMessage(code).catch((e) => {
+            showSendFailureToast(e?.message || e);
+          });
+        } else {
+          // 直接發送：Twitch 或 DLive 的 DL
+          let sendCode = code;
+          if (isTwitch() && (isDLWithPrefix || isRawDLId)) {
+            // Twitch 上 DL 貼圖：轉換為 DL-xxx
+            if (isDLWithPrefix) {
+              sendCode = id;
+            } else {
+              sendCode = `DL-${id}`;
+            }
+          } else if (isTwitch() && (isIM || isME)) {
+            // Twitch 的 IM/ME：IM-xxx.gif → IM-xxx-gif（用 - 代替 .）
+            sendCode = code.replace(/\.(gif|png|jpg|jpeg|mp4)$/i, '-$1');
+          }
+          sendChatMessage(sendCode).catch((e) => {
+            showSendFailureToast(e?.message || e);
+          });
+        }
+        return;
         const r = await addStickerIdToStorage(id);
         setPanelStatus(
           r.added ? t('added', r.count) : t('exists', r.count),
@@ -1440,25 +1632,26 @@ function hideContextMenu() {
 }
 
 function findEmoteImageById(id) {
-  // 處理 IM 類型：移除 IM- 前綴來比對 imgur URL
+  // 處理 IM/ME 類型：移除 IM-/ME- 前綴來比對 URL
   const isIM = id && id.startsWith('IM-');
-  const searchId = isIM ? id.slice(3) : id;
+  const isME = id && id.startsWith('ME-');
+  const searchId = isIM || isME ? id.slice(3) : id;
 
   // 搜尋 img 元素
   const imgs = document.querySelectorAll('img');
   for (const img of imgs) {
     const src = img.src || '';
-    if (src.includes(id) || (!isIM && src.includes(id.replace('DL-', '')))) {
+    if (src.includes(id) || (!isIM && !isME && src.includes(id.replace('DL-', '')))) {
       return { element: img, isVideo: false };
     }
-    // 對於 IM 類型，比對不含前綴的 ID
-    if (isIM && src.includes(searchId)) {
+    // 對於 IM/ME 類型，比對不含前綴的 ID
+    if ((isIM || isME) && src.includes(searchId)) {
       return { element: img, isVideo: false };
     }
   }
 
-  // 對於 IM mp4，搜尋 video 元素
-  if (isIM) {
+  // 對於 IM/ME mp4，搜尋 video 元素
+  if (isIM || isME) {
     const videos = document.querySelectorAll('video');
     for (const video of videos) {
       const src = video.src || video.currentSrc || '';
@@ -1760,6 +1953,12 @@ function extractEmoteIdFromSrc(src) {
     return `IM-${imgurMatch[1]}`;
   }
 
+  // MEEE 圖片 URL：meee.com.tw/xxx.jpg → ME-xxx.jpg
+  const meeeMatch = s.match(/meee\.com\.tw\/([a-zA-Z0-9]+\.(?:gif|png|jpg|jpeg|mp4))/i);
+  if (meeeMatch) {
+    return `ME-${meeeMatch[1]}`;
+  }
+
   const patterns = [
     /\/emote\/([A-Za-z0-9_]+)(?:[/?#]|$)/i,
     /\/emotes\/([A-Za-z0-9_]+)(?:[/?#]|$)/i,
@@ -1775,10 +1974,14 @@ function extractEmoteIdFromSrc(src) {
 function extractEmoteIdFromText(text) {
   const t = String(text || '').trim();
   if (!t) return null;
-  const m1 = t.match(/^([A-Za-z0-9_]+)$/);
+  // 只匹配特定格式的 emote ID
+  // 1. DLive emote 格式 :emote/mine/dlive/xxx:
+  const m1 = t.match(/:emote\/mine\/dlive\/([A-Za-z0-9_]+):/);
   if (m1?.[1]) return m1[1];
-  const m2 = t.match(/:emote\/mine\/dlive\/([A-Za-z0-9_]+):/);
-  return m2?.[1] || null;
+  // 2. 其他格式：以 DL-, IM-, ME- 開頭的貼圖 ID
+  const m2 = t.match(/^(DL|IM|ME)-([A-Za-z0-9_]+)/i);
+  if (m2) return t;
+  return null;
 }
 
 function getCandidateIdFromRightClick(target) {
@@ -1862,15 +2065,16 @@ async function writeStickerRows(rows, favoriteIds) {
 async function toggleFavoriteIdInStorage(id) {
   let trimmed = String(id || '').trim();
 
-  // IM 格式：將 -gif, -png, -jpg, -jpeg, -mp4 結尾替換為 . 點格式
-  if (trimmed.startsWith('IM-')) {
+  // IM/ME 格式：將 -gif, -png, -jpg, -jpeg, -mp4 結尾替換為 . 點格式
+  if (trimmed.startsWith('IM-') || trimmed.startsWith('ME-')) {
     trimmed = trimmed.replace(/-(gif|png|jpg|jpeg|mp4)$/i, '.$1');
   }
 
-  // 支援 DL- 前綴（DLive 貼圖）和 IM- 前綴（Imgur 圖片）
+  // 支援 DL- 前綴（DLive 貼圖）、IM- 前綴（Imgur 圖片）和 ME- 前綴（meee.com.tw 圖片）
   const isValidDL = /^(?:DL-)?[A-Za-z0-9_]+$/.test(trimmed);
   const isValidIM = /^IM-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4)$/i.test(trimmed);
-  if (!isValidDL && !isValidIM) {
+  const isValidME = /^ME-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4)$/i.test(trimmed);
+  if (!isValidDL && !isValidIM && !isValidME) {
     throw new Error(`ID 格式不正確：${trimmed}`);
   }
 
@@ -1891,15 +2095,16 @@ async function toggleFavoriteIdInStorage(id) {
 async function addStickerIdToStorage(id) {
   let trimmed = String(id || '').trim();
 
-  // IM 格式：將 -gif, -png, -jpg, -jpeg, -mp4 結尾替換為 . 點格式
-  if (trimmed.startsWith('IM-')) {
+  // IM/ME 格式：將 -gif, -png, -jpg, -jpeg, -mp4 結尾替換為 . 點格式
+  if (trimmed.startsWith('IM-') || trimmed.startsWith('ME-')) {
     trimmed = trimmed.replace(/-(gif|png|jpg|jpeg|mp4)$/i, '.$1');
   }
 
-  // 支援 DL- 前綴（DLive 貼圖）和 IM- 前綴（Imgur 圖片）
+  // 支援 DL- 前綴（DLive 貼圖）、IM- 前綴（Imgur 圖片）和 ME- 前綴（meee.com.tw 圖片）
   const isValidDL = /^(?:DL-)?[A-Za-z0-9_]+$/.test(trimmed);
   const isValidIM = /^IM-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4)$/i.test(trimmed);
-  if (!isValidDL && !isValidIM) {
+  const isValidME = /^ME-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4)$/i.test(trimmed);
+  if (!isValidDL && !isValidIM && !isValidME) {
     throw new Error(`ID 格式不正確：${trimmed}`);
   }
 
@@ -1920,15 +2125,16 @@ async function addStickerIdToStorage(id) {
 async function removeStickerIdFromStorage(id) {
   let trimmed = String(id || '').trim();
 
-  // IM 格式：將 -gif, -png, -jpg, -jpeg, -mp4 結尾替換為 . 點格式
-  if (trimmed.startsWith('IM-')) {
+  // IM/ME 格式：將 -gif, -png, -jpg, -jpeg, -mp4 結尾替換為 . 點格式
+  if (trimmed.startsWith('IM-') || trimmed.startsWith('ME-')) {
     trimmed = trimmed.replace(/-(gif|png|jpg|jpeg|mp4)$/i, '.$1');
   }
 
-  // 支援 DL- 前綴（DLive 貼圖）和 IM- 前綴（Imgur 圖片）
+  // 支援 DL- 前綴（DLive 貼圖）、IM- 前綴（Imgur 圖片）和 ME- 前綴（meee.com.tw 圖片）
   const isValidDL = /^(?:DL-)?[A-Za-z0-9_]+$/.test(trimmed);
   const isValidIM = /^IM-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4)$/i.test(trimmed);
-  if (!isValidDL && !isValidIM) {
+  const isValidME = /^ME-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4)$/i.test(trimmed);
+  if (!isValidDL && !isValidIM && !isValidME) {
     throw new Error(`ID 格式不正確：${trimmed}`);
   }
 
@@ -1946,15 +2152,16 @@ async function applyTagToStickerIdInStorage(id, tagLabel) {
   if (!TAG) throw new Error('標籤模組未載入');
   let trimmed = String(id || '').trim();
 
-  // IM 格式：將 -gif, -png, -jpg, -jpeg, -mp4 結尾替換為 . 點格式
-  if (trimmed.startsWith('IM-')) {
+  // IM/ME 格式：將 -gif, -png, -jpg, -jpeg, -mp4 結尾替換為 . 點格式
+  if (trimmed.startsWith('IM-') || trimmed.startsWith('ME-')) {
     trimmed = trimmed.replace(/-(gif|png|jpg|jpeg|mp4)$/i, '.$1');
   }
 
-  // 支援 DL- 前綴（DLive 貼圖）和 IM- 前綴（Imgur 圖片）
+  // 支援 DL- 前綴（DLive 貼圖）、IM- 前綴（Imgur 圖片）和 ME- 前綴（meee.com.tw 圖片）
   const isValidDL = /^(?:DL-)?[A-Za-z0-9_]+$/.test(trimmed);
   const isValidIM = /^IM-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4)$/i.test(trimmed);
-  if (!isValidDL && !isValidIM) {
+  const isValidME = /^ME-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4)$/i.test(trimmed);
+  if (!isValidDL && !isValidIM && !isValidME) {
     throw new Error(`ID 格式不正確：${trimmed}`);
   }
   const label = TAG.normalizeTagToken(tagLabel);
@@ -2048,11 +2255,11 @@ async function refreshPanelStickers() {
   if (TAG) {
     parsedRows = TAG.parseStickerIdsText(storage.stickerIdsText || '').rows;
     tagMap = TAG.rowsToIdTagMap(parsedRows);
-    tabLabels = TAG.sortedTagLabelsForTabs(parsedRows);
+    // tabLabels 将在下面根据 filteredRows 重新计算
   }
   if (refreshSeq !== panelRefreshSeq) return;
 
-  // 從 rows 創建混合 DL/IM 的 stickers
+  // 從 rows 創建混合 DL/IM/ME 的 stickers
   let stickers = parsedRows.map((row, index) => {
     const id = row.id;
     if (id.startsWith('IM-')) {
@@ -2064,6 +2271,16 @@ async function refreshPanelStickers() {
         imageUrl: `https://i.imgur.com/${idWithExt}`,
         isVideo: isVideo,
         isIM: true
+      };
+    } else if (id.startsWith('ME-')) {
+      const idWithExt = id.slice(3);
+      const isVideo = /\.mp4$/i.test(idWithExt);
+      return {
+        name: `LID ${index + 1}`,
+        code: id,
+        imageUrl: `https://meee.com.tw/${idWithExt}`,
+        isVideo: isVideo,
+        isME: true
       };
     } else {
       // DL 類型
@@ -2086,26 +2303,38 @@ async function refreshPanelStickers() {
   // 根據 panelFilterType 過濾類型（僅用於標籤統計，不改變 allStickers）
   let filteredForTags = allStickers;
   if (panelFilterType === 'DL') {
-    filteredForTags = allStickers.filter(s => !s.isIM);
+    filteredForTags = allStickers.filter(s => !s.isIM && !s.isME);
   } else if (panelFilterType === 'IM') {
-    filteredForTags = allStickers.filter(s => s.isIM);
+    filteredForTags = allStickers.filter(s => s.isIM && !s.isME);
+  } else if (panelFilterType === 'ME') {
+    filteredForTags = allStickers.filter(s => s.isME);
   }
 
   if (tabs && TAG) {
     // 根據當前類型過濾 rows 統計數量
-    const isIMId = (id) => id && id.startsWith('IM-');
-    const isDLId = (id) => id && (id.startsWith('DL-') || /^[A-Za-z0-9_]+$/.test(id));
+    // 【修正】使用 TAG 的驗證函數，確保 IM 和 ME 分開統計
+    const isIMId = (id) => id && TAG.isValidIMId(id);
+    const isMEId = (id) => id && TAG.isValidMEId(id);
+    const isDLId = (id) => id && TAG.isValidDLId(id);
 
     const filteredRows = parsedRows.filter((r) => {
       if (panelFilterType === 'DL') return isDLId(r.id);
       if (panelFilterType === 'IM') return isIMId(r.id);
+      if (panelFilterType === 'ME') return isMEId(r.id);
       return true; // 全部
     });
 
     // 為標籤統計，也過濾 sticker 對象以匹配
     const stickerIdsInFilteredRows = new Set(filteredRows.map(r => r.id));
     const filteredStickersForTagCounts = allStickers.filter(s => {
-      const sid = s.code?.startsWith('IM-') ? s.code : (String(s.code).match(/^:emote\/mine\/dlive\/([A-Za-z0-9_]+):$/) ? `DL-${RegExp.$1}` : null);
+      const code = String(s?.code || '');
+      let sid = null;
+      if (code.startsWith('IM-') || code.startsWith('ME-')) {
+        sid = code;
+      } else {
+        const dlMatch = code.match(/^:emote\/mine\/dlive\/([A-Za-z0-9_]+):$/);
+        if (dlMatch) sid = `DL-${dlMatch[1]}`;
+      }
       return sid && stickerIdsInFilteredRows.has(sid);
     });
 
@@ -2117,15 +2346,17 @@ async function refreshPanelStickers() {
       b.title = label;
       b.addEventListener('click', () => {
         panelFilterTag = value;
-        // 只更新標籤過濾，不清空重建 grid
-        applyTagFilter();
-        // 更新按鈕樣式
-        tabs.querySelectorAll('.tab').forEach(btn => btn.classList.remove('on'));
-        b.classList.add('on');
+        panelCurrentPage = 1; // 重置頁碼
+        // 重新整理面板以應用標籤過濾和分頁
+        refreshPanelStickers();
       });
       tabs.appendChild(b);
     };
     mkTab(t('all'), '__all__');
+
+    // 【修復】使用 filteredRows 計算標籤，確保標籤數量與當前類型匹配
+    tabLabels = TAG.sortedTagLabelsForTabs(filteredRows);
+
     const counts = TAG.tagCountsFromRows(filteredRows);
     const hiddenKey = PANEL_HIDDEN_TAG.toLowerCase();
     const hiddenCount = (filteredRows || []).filter((r) =>
@@ -2167,7 +2398,7 @@ async function refreshPanelStickers() {
 
   if (TAG) {
     const hiddenKey = PANEL_HIDDEN_TAG.toLowerCase();
-    // 獲取 ID 函數（支援 DL 和 IM）
+    // 取得 ID 用於常用標記和標籤存儲
     const getId = (s) => {
       const code = String(s?.code || '');
       // DL 格式
@@ -2175,6 +2406,8 @@ async function refreshPanelStickers() {
       if (dlMatch) return `DL-${dlMatch[1]}`;
       // IM 格式
       if (code.startsWith('IM-')) return code;
+      // ME 格式
+      if (code.startsWith('ME-')) return code;
       return null;
     };
     const isHidden = (sid) => {
@@ -2205,36 +2438,64 @@ async function refreshPanelStickers() {
     }
   }
 
-  // 應用 DL/IM 過濾
+  // 應用 DL/IM/ME 類型過濾（切換時無閃爍）
   if (panelFilterType === 'DL') {
-    stickersToRender = stickersToRender.filter(s => !s.isIM);
+    stickersToRender = stickersToRender.filter(s => !s.isIM && !s.isME);
   } else if (panelFilterType === 'IM') {
-    stickersToRender = stickersToRender.filter(s => s.isIM);
+    stickersToRender = stickersToRender.filter(s => s.isIM && !s.isME);
+  } else if (panelFilterType === 'ME') {
+    stickersToRender = stickersToRender.filter(s => s.isME);
   }
 
   if (refreshSeq !== panelRefreshSeq) return;
 
   // 常用置頂排序
   stickersToRender.sort((a, b) => {
-    const ida = a.code?.startsWith('IM-') ? a.code : (String(a.code).match(/^:emote\/mine\/dlive\/([A-Za-z0-9_]+):$/) ? `DL-${RegExp.$1}` : null);
-    const idb = b.code?.startsWith('IM-') ? b.code : (String(b.code).match(/^:emote\/mine\/dlive\/([A-Za-z0-9_]+):$/) ? `DL-${RegExp.$1}` : null);
+    const ida = a.code?.startsWith('IM-') || a.code?.startsWith('ME-') ? a.code : (String(a.code).match(/^:emote\/mine\/dlive\/([A-Za-z0-9_]+):$/) ? `DL-${RegExp.$1}` : null);
+    const idb = b.code?.startsWith('IM-') || b.code?.startsWith('ME-') ? b.code : (String(b.code).match(/^:emote\/mine\/dlive\/([A-Za-z0-9_]+):$/) ? `DL-${RegExp.$1}` : null);
     const fa = ida && favSet.has(ida) ? 1 : 0;
     const fb = idb && favSet.has(idb) ? 1 : 0;
     return fb - fa;
   });
+
+  // 【分頁】計算總頁數並儲存總項目數
+  const totalItems = stickersToRender.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / PANEL_PAGE_SIZE));
+
+  // 【分頁】如果當前頁碼超過總頁數，重置為第1頁
+  if (panelCurrentPage > totalPages) {
+    panelCurrentPage = 1;
+  }
+
+  // 【分頁】只取當前頁的貼圖
+  const startIndex = (panelCurrentPage - 1) * PANEL_PAGE_SIZE;
+  const endIndex = startIndex + PANEL_PAGE_SIZE;
+  stickersToRender = stickersToRender.slice(startIndex, endIndex);
+
+  // 【分頁】更新分頁控制區域
+  const pagination = document.getElementById('dlsq_pagination');
+  if (pagination) {
+    pagination.dataset.totalItems = totalItems;
+    const prevBtn = document.getElementById('dlsq_prev_page');
+    const nextBtn = document.getElementById('dlsq_next_page');
+    const pageInfo = document.getElementById('dlsq_page_info');
+    if (prevBtn) prevBtn.disabled = panelCurrentPage <= 1;
+    if (nextBtn) nextBtn.disabled = panelCurrentPage >= totalPages;
+    if (pageInfo) pageInfo.textContent = `${panelCurrentPage} / ${totalPages}`;
+  }
 
   setPanelStatus('');
 
   for (const s of stickersToRender) {
     const tile = document.createElement('div');
     tile.className = 'tile';
-    tile.classList.add(s.isIM ? 'type-im' : 'type-dl');
-    tile.setAttribute('data-type', s.isIM ? 'IM' : 'DL');
+    tile.classList.add(s.isIM ? 'type-im' : (s.isME ? 'type-me' : 'type-dl'));
+    tile.setAttribute('data-type', s.isIM ? 'IM' : (s.isME ? 'ME' : 'DL'));
     tile.setAttribute('data-code', s.code);
     tile.title = s.name || '';
 
     // 取得 ID 用於常用標記和標籤存儲
-    const sid = s.code?.startsWith('IM-') ? s.code : (String(s.code).match(/^:emote\/mine\/dlive\/([A-Za-z0-9_]+):$/) ? `DL-${RegExp.$1}` : null);
+    const sid = s.code?.startsWith('IM-') || s.code?.startsWith('ME-') ? s.code : (String(s.code).match(/^:emote\/mine\/dlive\/([A-Za-z0-9_]+):$/) ? `DL-${RegExp.$1}` : null);
     if (sid) {
       tile.setAttribute('data-id', sid);
       // 存儲標籤信息供輕量級過濾使用
@@ -2272,6 +2533,7 @@ async function refreshPanelStickers() {
       const img = document.createElement('img');
       img.src = s.imageUrl;
       img.alt = s.name || '';
+      img.style.pointerEvents = 'none'; // 防止圖片阻擋點擊（與視頻保持一致）
       img.onerror = () => {
         const fallback = document.createElement('div');
         fallback.className = 'fallback';
@@ -2303,8 +2565,8 @@ async function refreshPanelStickers() {
       const code = s.code;
       togglePanel(false);
 
-      // 在 Twitch 上，DL/IM 都直接發送明文 ID；在 DLive 上，DL 直接發送，IM 使用零寬編碼
-      if (s.isIM && isDLive()) {
+      // 在 Twitch 上，DL/IM/ME 都直接發送明文 ID；在 DLive 上，DL 直接發送，IM/ME 使用零寬編碼
+      if ((s.isIM || s.isME) && isDLive()) {
         // 只在 DLive 使用零寬編碼
         sendHiddenMessage(code).catch((e) => {
           showSendFailureToast(e?.message || e);
@@ -2318,8 +2580,8 @@ async function refreshPanelStickers() {
           if (match) {
             sendCode = `DL-${match[1]}`;
           }
-        } else if (isTwitch() && code.startsWith('IM-')) {
-          // 【Twitch 格式】IM-xxx.gif → IM-xxx-gif（用 - 代替 .）
+        } else if (isTwitch() && (code.startsWith('IM-') || code.startsWith('ME-'))) {
+          // 【Twitch 格式】IM-xxx.gif → IM-xxx-gif，ME-xxx.jpg → ME-xxx-jpg（用 - 代替 .）
           sendCode = code.replace(/\.(gif|png|jpg|jpeg|mp4)$/i, '-$1');
         }
         sendChatMessage(sendCode).catch((e) => {
@@ -3925,6 +4187,62 @@ const DKIP = {
   }
 };
 
+// MEEE (meee.com.tw) 編碼解碼器
+const MEKP = {
+  // 編碼：meee URL → ME-xxx（Twitch 格式：ME-id-jpg，用 - 代替 .）
+  encode(url, useTwitchFormat = false) {
+    const match = url.match(/meee\.com\.tw\/([a-zA-Z0-9]+)(?:\.(gif|png|jpg|jpeg|mp4))?/i);
+    if (!match || match[1].length < 5) return null;
+    const id = match[1];
+    const ext = match[2] || 'jpg'; // 默認 jpg
+    if (useTwitchFormat) {
+      // Twitch 格式：ME-43XNR9K-jpg（用 - 代替 .）
+      return `ME-${id}-${ext}`;
+    }
+    // 標準格式：ME-43XNR9K.jpg
+    return `ME-${id}.${ext}`;
+  },
+
+  // 解碼：ME-xxx → 圖片URL（支援兩種格式：ME-id.jpg 和 ME-id-jpg）
+  decode(text) {
+    if (!text || !text.startsWith('ME-')) return null;
+    const idPart = text.slice(3); // 去掉 "ME-"
+    if (!idPart || idPart.length < 5) return null;
+
+    // 檢查新格式 ME-43XNR9K-jpg（用 - 分隔）
+    const lastDashIndex = idPart.lastIndexOf('-');
+    if (lastDashIndex > 0) {
+      const possibleExt = idPart.slice(lastDashIndex + 1).toLowerCase();
+      if (['gif', 'png', 'jpg', 'jpeg', 'mp4'].includes(possibleExt)) {
+        const id = idPart.slice(0, lastDashIndex);
+        return `https://meee.com.tw/${id}.${possibleExt}`;
+      }
+    }
+
+    // 檢查舊格式 ME-43XNR9K.jpg（用 . 分隔）
+    const lastDotIndex = idPart.lastIndexOf('.');
+    if (lastDotIndex > 0) {
+      const possibleExt = idPart.slice(lastDotIndex + 1).toLowerCase();
+      if (['gif', 'png', 'jpg', 'jpeg', 'mp4'].includes(possibleExt)) {
+        return `https://meee.com.tw/${idPart}`;
+      }
+    }
+
+    // 無後綴，默認 .jpg
+    return `https://meee.com.tw/${idPart}.jpg`;
+  },
+
+  // 判斷是否視頻
+  isVideo(text) {
+    if (!text) return false;
+    return /-mp4$/i.test(text) || /.mp4$/i.test(text);
+  },
+
+  isValid(text) {
+    return text && text.startsWith('ME-') && text.length > 5;
+  }
+};
+
 // 掃描並替換聊天室中的 IM- 文字為圖片（同時檢測零寬字符編碼的隱藏訊息）
 function scanAndReplaceIMImages() {
   const walker = document.createTreeWalker(
@@ -3943,8 +4261,8 @@ function scanAndReplaceIMImages() {
     // 【加強】添加更多 Twitch 輸入框相關選擇器
     if (node.parentElement?.closest('[data-a-target="chat-input"], [data-a-target="chat-input-container"], .chat-wysiwyg-input__editor, [contenteditable="true"], .chatroom-input, .chat-input, [class*="chat-input"]')) continue;
     const text = node.textContent;
-    // 檢查常規 IM- 或零寬字符或 DL- 或 Twitch emote 格式
-    if (text.includes('IM-') || text.includes('DL-') || text.includes(':emote/mine/dlive/') || /[\u200B\u200C\u200D\uFEFF]/.test(text)) {
+    // 檢查常規 IM-/ME- 或零寬字符或 DL- 或 Twitch emote 格式
+    if (text.includes('IM-') || text.includes('ME-') || text.includes('DL-') || text.includes(':emote/mine/dlive/') || /[\u200B\u200C\u200D\uFEFF]/.test(text)) {
       textNodes.push(node);
     }
   }
@@ -3959,7 +4277,7 @@ function scanAndReplaceIMImages() {
     if (zwChars && zwChars.length >= 8) {
       try {
         const decoded = decodeFromZeroWidth(zwChars.join(''));
-        if (decoded && decoded.startsWith('IM-')) {
+        if (decoded && (decoded.startsWith('IM-') || decoded.startsWith('ME-'))) {
           hiddenStickerId = decoded;
         } else if (decoded && decoded.startsWith('DL-')) {
           hiddenStickerId = decoded;
@@ -3985,8 +4303,9 @@ function scanAndReplaceIMImages() {
         img.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 8px; cursor: default; display: block; margin: 4px 0; border: 2px solid transparent; object-fit: contain;';
         wrapper.appendChild(img);
       } else {
-        // IM 貼圖：顯示圖片
-        const url = DKIP.decode(hiddenStickerId);
+        // IM 或 ME 貼圖：顯示圖片
+        const isME = hiddenStickerId.startsWith('ME-');
+        const url = isME ? MEKP.decode(hiddenStickerId) : DKIP.decode(hiddenStickerId);
         if (url) {
           const isVideo = /\.mp4$/i.test(url);
           if (isVideo) {
@@ -4147,18 +4466,20 @@ function scanAndReplaceIMImages() {
       return; // 已處理 DL，跳過 IM- 檢查
     }
 
-    // 常規 IM- 檢查（DLive 用舊格式：IM-id.gif 或 IM-id）
-    const regex = /IM-[a-zA-Z0-9]+(?:\.(?:gif|png|jpg|jpeg|mp4))?/gi;
+    // 常規 IM-/ME- 檢查（DLive 用舊格式：IM-id.gif 或 IM-id）
+    const imRegex = /IM-[a-zA-Z0-9]+(?:\.(?:gif|png|jpg|jpeg|mp4))?/gi;
+    const meRegex = /ME-[a-zA-Z0-9]+(?:[.-](?:gif|png|jpg|jpeg|mp4))?/gi;
 
-    let match;
-    let lastIndex = 0;
-    const fragments = [];
+    // 處理 IM- 格式
+    let imMatch;
+    let imLastIndex = 0;
+    const imFragments = [];
 
-    while ((match = regex.exec(text)) !== null) {
-      const fullMatch = match[0];
+    while ((imMatch = imRegex.exec(text)) !== null) {
+      const fullMatch = imMatch[0];
 
-      if (match.index > lastIndex) {
-        fragments.push(document.createTextNode(text.slice(lastIndex, match.index)));
+      if (imMatch.index > imLastIndex) {
+        imFragments.push(document.createTextNode(text.slice(imLastIndex, imMatch.index)));
       }
 
       const url = DKIP.decode(fullMatch);
@@ -4173,31 +4494,96 @@ function scanAndReplaceIMImages() {
           video.loop = true;
           video.playsInline = true;
           video.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 8px; cursor: default; display: inline-block; vertical-align: middle; margin: 4px; border: 2px solid transparent;';
-          fragments.push(video);
+          imFragments.push(video);
         } else {
           const img = document.createElement('img');
           img.src = url;
           img.className = 'dlsq-im-replaced';
           img.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 8px; cursor: default; display: inline-block; vertical-align: middle; margin: 4px; border: 2px solid transparent;';
-          fragments.push(img);
+          imFragments.push(img);
         }
       } else {
-        fragments.push(document.createTextNode(fullMatch));
+        imFragments.push(document.createTextNode(fullMatch));
       }
 
-      lastIndex = regex.lastIndex;
+      imLastIndex = imRegex.lastIndex;
     }
 
-    if (lastIndex < text.length) {
-      fragments.push(document.createTextNode(text.slice(lastIndex)));
+    if (imLastIndex < text.length) {
+      imFragments.push(document.createTextNode(text.slice(imLastIndex)));
     }
 
-    if (fragments.length > 1 || (fragments.length === 1 && (fragments[0].tagName === 'IMG' || fragments[0].tagName === 'VIDEO'))) {
+    if (imFragments.length > 1 || (imFragments.length === 1 && (imFragments[0].tagName === 'IMG' || imFragments[0].tagName === 'VIDEO'))) {
       const wrapper = document.createElement('span');
       wrapper.className = 'dlsq-im-replaced';
-      fragments.forEach(f => wrapper.appendChild(f));
+      imFragments.forEach(f => wrapper.appendChild(f));
 
-      // 使用 replaceWith 代替 replaceChild，更兼容 React
+      try {
+        if (textNode.parentNode) {
+          textNode.replaceWith(wrapper);
+        }
+      } catch (e) {
+        try {
+          const parent = textNode.parentNode;
+          if (parent) {
+            parent.insertBefore(wrapper, textNode);
+            parent.removeChild(textNode);
+          }
+        } catch (e2) {
+          // 忽略錯誤
+        }
+      }
+      return; // 已處理 IM，跳過 ME 檢查
+    }
+
+    // 處理 ME- 格式
+    let meMatch;
+    let meLastIndex = 0;
+    const meFragments = [];
+
+    while ((meMatch = meRegex.exec(text)) !== null) {
+      const fullMatch = meMatch[0];
+
+      if (meMatch.index > meLastIndex) {
+        meFragments.push(document.createTextNode(text.slice(meLastIndex, meMatch.index)));
+      }
+
+      const url = MEKP.decode(fullMatch);
+      if (url) {
+        const isVideo = /\.mp4$/i.test(url);
+        if (isVideo) {
+          const video = document.createElement('video');
+          video.src = url;
+          video.className = 'dlsq-im-replaced';
+          video.muted = true;
+          video.autoplay = true;
+          video.loop = true;
+          video.playsInline = true;
+          video.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 8px; cursor: default; display: inline-block; vertical-align: middle; margin: 4px; border: 2px solid transparent;';
+          meFragments.push(video);
+        } else {
+          const img = document.createElement('img');
+          img.src = url;
+          img.className = 'dlsq-im-replaced';
+          img.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 8px; cursor: default; display: inline-block; vertical-align: middle; margin: 4px; border: 2px solid transparent;';
+          meFragments.push(img);
+        }
+      } else {
+        meFragments.push(document.createTextNode(fullMatch));
+      }
+
+      meLastIndex = meRegex.lastIndex;
+    }
+
+    if (meLastIndex < text.length) {
+      meFragments.push(document.createTextNode(text.slice(meLastIndex)));
+    }
+
+    if (meFragments.length > 1 || (meFragments.length === 1 && (meFragments[0].tagName === 'IMG' || meFragments[0].tagName === 'VIDEO'))) {
+      const wrapper = document.createElement('span');
+      wrapper.className = 'dlsq-im-replaced';
+      meFragments.forEach(f => wrapper.appendChild(f));
+
       try {
         if (textNode.parentNode) {
           textNode.replaceWith(wrapper);
@@ -4243,6 +4629,20 @@ function extractImgurId(url, useTwitchFormat = false) {
   return ext === 'gif' ? id : `${id}.${ext}`;
 }
 
+function extractMeeeId(url, useTwitchFormat = false) {
+  if (!url) return null;
+  const match = url.match(/meee\.com\.tw\/([a-zA-Z0-9]+)(?:\.(gif|png|jpg|jpeg|mp4))?/i);
+  if (!match) return null;
+  const id = match[1];
+  const ext = match[2] || 'jpg'; // 默認 jpg
+  if (useTwitchFormat) {
+    // Twitch 格式：ME-43XNR9K-jpg（用 - 代替 .）
+    return `${id}-${ext}`;
+  }
+  // 標準格式：43XNR9K.jpg
+  return `${id}.${ext}`;
+}
+
 // 初始化 IM 功能
 // 全局標誌：是否正在發送消息（用於暫停 IM 轉圖掃描）
 let isSendingMessage = false;
@@ -4286,14 +4686,27 @@ function initIMFeature() {
     }, 2000);
   }
 
-  // 右鍵 imgur 圖片選單（所有頁面）
+  // 右鍵 imgur/meee 圖片選單（所有頁面）
   document.addEventListener('contextmenu', (e) => {
     const url = getImageUrlFromTarget(e.target);
-    if (!url || !extractImgurId(url)) return;
+    if (!url) return;
+
+    // 檢查是否為 imgur 或 meee 圖片
+    const imgurId = extractImgurId(url);
+    const meeeId = extractMeeeId(url);
+
+    if (!imgurId && !meeeId) return;
+
     e.preventDefault();
-    // 【Twitch 格式】使用 -gif 格式（用 - 代替 .）
+
+    // 【Twitch 格式】使用 -gif/-jpg 格式（用 - 代替 .）
     const isTwitchPage = window.location.hostname.includes('twitch.tv');
-    const id = 'IM-' + extractImgurId(url, isTwitchPage);
+    let id;
+    if (imgurId) {
+      id = 'IM-' + extractImgurId(url, isTwitchPage);
+    } else {
+      id = 'ME-' + extractMeeeId(url, isTwitchPage);
+    }
     showContextMenuAt(e.clientX, e.clientY, id, e.target);
   }, true);
 }
@@ -4368,8 +4781,8 @@ function scanTwitchChatMessages(chatContainer) {
     let node;
     while (node = walker.nextNode()) {
       const text = node.textContent;
-      // 檢查 IM- 或 DL- 格式
-      if (text.includes('IM-') || text.includes('DL-') || /[\u200B\u200C\u200D\uFEFF]/.test(text)) {
+      // 檢查 IM-、ME- 或 DL- 格式
+      if (text.includes('IM-') || text.includes('ME-') || text.includes('DL-') || /[\u200B\u200C\u200D\uFEFF]/.test(text)) {
         // 確保不是輸入框內的節點
         if (!node.parentElement?.closest('[contenteditable="true"], [data-a-target="chat-input"]')) {
           textNodes.push(node);
@@ -4398,7 +4811,7 @@ function processTwitchIMTextNode(textNode, messageEl) {
   if (zwChars && zwChars.length >= 8) {
     try {
       const decoded = decodeFromZeroWidth(zwChars.join(''));
-      if (decoded && (decoded.startsWith('IM-') || decoded.startsWith('DL-'))) {
+      if (decoded && (decoded.startsWith('IM-') || decoded.startsWith('ME-') || decoded.startsWith('DL-'))) {
         // 創建圖片元素替換文字
         const img = createIMImage(decoded);
         if (img) {
@@ -4423,15 +4836,17 @@ function processTwitchIMTextNode(textNode, messageEl) {
     return;
   }
 
-  // 【Twitch 專用】合併匹配 IM 和 DL 格式，避免重複替換問題
-  const combinedRegex = /(IM-[a-zA-Z0-9-]+-(?:gif|png|jpg|jpeg|mp4))|(DL-[a-zA-Z0-9_]+)/gi;
+  // 【Twitch 專用】合併匹配 IM、ME 和 DL 格式，避免重複替換問題
+  const combinedRegex = /(IM-[a-zA-Z0-9-]+(?:[.-](?:gif|png|jpg|jpeg|mp4))?)|(ME-[a-zA-Z0-9-]+(?:[.-](?:gif|png|jpg|jpeg|mp4))?)|(DL-[a-zA-Z0-9_]+)/gi;
   const matches = [];
   let m;
   while ((m = combinedRegex.exec(text)) !== null) {
     if (m[1]) {
       matches.push({ type: 'IM', id: m[1], index: m.index, length: m[1].length });
     } else if (m[2]) {
-      matches.push({ type: 'DL', id: m[2], index: m.index, length: m[2].length });
+      matches.push({ type: 'ME', id: m[2], index: m.index, length: m[2].length });
+    } else if (m[3]) {
+      matches.push({ type: 'DL', id: m[3], index: m.index, length: m[3].length });
     }
   }
 
@@ -4471,9 +4886,10 @@ function processTwitchIMTextNode(textNode, messageEl) {
   });
 }
 
-// 創建 IM 圖片/視頻元素（根據類型自動選擇 img 或 video）
+// 創建 IM/ME 圖片/視頻元素（根據類型自動選擇 img 或 video）
 function createIMImage(imId) {
   const isDL = imId.startsWith('DL-');
+  const isME = imId.startsWith('ME-');
 
   if (isDL) {
     const dlId = imId.slice(3);
@@ -4485,8 +4901,13 @@ function createIMImage(imId) {
     return img;
   }
 
-  // IM 貼圖：先解碼 URL 判斷類型
-  const url = DKIP.decode(imId);
+  // IM 或 ME 貼圖：先解碼 URL 判斷類型
+  let url;
+  if (isME) {
+    url = MEKP.decode(imId);
+  } else {
+    url = DKIP.decode(imId);
+  }
   if (!url) return null;
 
   // 檢查是否為視頻（.mp4）

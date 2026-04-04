@@ -2,11 +2,14 @@
 (function initDlsqTags(global) {
   const MAX_TAG_LEN = 16;
   const MAX_TAGS_PER_STICKER = 4;
-  // 支援 DL- 前綴（DLive 貼圖）和 IM- 前綴（Imgur 圖片）
-  const DL_ID_RE = /^(?:DL-)?([A-Za-z0-9_]+)$/;
+  // 支援 DL- 前綴（DLive 貼圖）、IM- 前綴（Imgur 圖片）和 ME- 前綴（meee.com.tw 圖片）
+  const DL_ID_RE = /^(?:DL-)?[A-Za-z0-9_]+$/;
   const IM_ID_RE = /^IM-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4)$/i;
+  const ME_ID_RE = /^ME-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4)$/i;
 
   function isValidDLId(id) {
+    // DL ID 不能是 IM- 或 ME- 开头（避免与 IM/ME 类型混淆）
+    if (!id || id.startsWith('IM-') || id.startsWith('ME-')) return false;
     return DL_ID_RE.test(id);
   }
 
@@ -14,10 +17,18 @@
     return IM_ID_RE.test(id);
   }
 
+  function isValidMEId(id) {
+    return ME_ID_RE.test(id);
+  }
+
   function normalizeId(id) {
     if (!id) return id;
     // IM 格式：將 -gif, -png, -jpg, -jpeg, -mp4 結尾替換為 . 點格式
     if (id.startsWith('IM-')) {
+      return id.replace(/-(gif|png|jpg|jpeg|mp4)$/i, '.$1');
+    }
+    // ME 格式：將 -gif, -png, -jpg, -jpeg, -mp4 結尾替換為 . 點格式
+    if (id.startsWith('ME-')) {
       return id.replace(/-(gif|png|jpg|jpeg|mp4)$/i, '.$1');
     }
     // 已經有 DL- 前綴，直接返回
@@ -57,6 +68,12 @@
       // IM 格式：先正規化再驗證
       id = normalizeId(rawId);
       if (!isValidIMId(id)) {
+        return { error: 'bad_id', id: rawId, raw: trimmed };
+      }
+    } else if (rawId.startsWith('ME-')) {
+      // ME 格式：先正規化再驗證
+      id = normalizeId(rawId);
+      if (!isValidMEId(id)) {
         return { error: 'bad_id', id: rawId, raw: trimmed };
       }
     } else {
@@ -113,8 +130,8 @@
       .map((r) => {
         const id = r?.id;
         if (!id) return '';
-        // IM 格式直接返回，DL 格式確保有前綴
-        const normalizedId = id.startsWith('IM-') ? id : (id.startsWith('DL-') ? id : `DL-${id}`);
+        // IM/ME 格式直接返回，DL 格式確保有前綴
+        const normalizedId = (id.startsWith('IM-') || id.startsWith('ME-')) ? id : (id.startsWith('DL-') ? id : `DL-${id}`);
         const uniq = [];
         const seen = new Set();
         for (const t of Array.isArray(r.tags) ? r.tags : []) {
@@ -215,6 +232,7 @@
     normalizeId,
     isValidDLId,
     isValidIMId,
+    isValidMEId,
     codePointLength
   });
 })(typeof self !== 'undefined' ? self : window);

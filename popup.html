@@ -406,6 +406,20 @@
       -webkit-appearance: none;
     }
 
+    .config-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .config-title-row .page-tab {
+      padding: 4px 10px;
+      font-size: 11px;
+      width: auto;
+      flex-shrink: 0;
+    }
+
     .config-section button {
       width: 100%;
       padding: 8px;
@@ -616,14 +630,17 @@
   <!-- 主頁面：貼圖管理 -->
   <div id="mainPage" class="page-content active">
     <div class="config-section">
-      <div id="configTitle" style="font-size: 12px; color: #ced4da; font-weight: 600;">
-        貼圖 ID 與標籤
+      <div class="config-title-row">
+        <div id="configTitle" style="font-size: 12px; color: #ced4da; font-weight: 600;">
+          貼圖 ID 與標籤
+        </div>
+        <button id="openEditorBtn" class="page-tab">📚 圖庫編輯</button>
       </div>
       <div id="configHint" style="font-size: 11px; color: #868e96; margin-top: 5px;">
-        一行一組：DL-xxx 或 IM-xxx，後可接 #標籤（每張最多 4 個）
+        支援 DL / IM / ME 圖，後可接 #標籤，詳見 ❓
       </div>
       <textarea id="idListInput" autocomplete="off"
-        placeholder="DL-826c4ac1e004273_498281 #meme #reaction&#10;IM-ha3eTC7.gif #funny&#10;DL-826cd8c8b004273_335245&#10;IM-abc1234.png"></textarea>
+        placeholder="DL-826c4ac1e004273_498281 #meme #reaction&#10;IM-ha3eTC7.gif #funny&#10;ME-LXEcxGi.gif&#10;DL-826cd8c8b004273_335245&#10;IM-abc1234.png"></textarea>
       <div class="line-info">
         <span id="lineInfoText">第 1 行 / 共 1 行</span>
         <div class="goto-line">
