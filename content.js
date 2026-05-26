@@ -5259,10 +5259,13 @@ const MEKP = {
   }
 };
 
+// 贴图检测正则表达式（移到函数外部，避免每次调用都重新创建）
+const STICKER_PATTERN = /\b(IM-|ME-|YT-|DL-|CB-|GSS-)|:emote\/mine\/dlive\/|youtube\.com\/(watch|shorts)|youtu\.be\/|[\u200B\u200C\u200D\uFEFF]/i;
+
 // 掃描並替換聊天室中的 IM- 文字為圖片（同時檢測零寬字符編碼的隱藏訊息）
-function scanAndReplaceIMImages() {
+function scanAndReplaceIMImages(container = document.body) {
   const walker = document.createTreeWalker(
-    document.body,
+    container,
     NodeFilter.SHOW_TEXT,
     null,
     false
@@ -5276,10 +5279,14 @@ function scanAndReplaceIMImages() {
     // 跳過已處理過的節點 和 聊天輸入框
     // 【標記】檢查消息容器級標記和圖片標記，防止 React/KICK 重置 DOM 後重複處理
     // 【修復】YouTube 翻譯重置檢測：如果 .dlsq-im-replaced 內有 ID 但沒有圖片，需要重新處理
-    const inReplacedWrapper = node.parentElement?.closest('.dlsq-im-replaced');
+    // 缓存父元素，避免重复查询
+    const parent = node.parentElement;
+    if (!parent) continue;
+
+    const inReplacedWrapper = parent.closest('.dlsq-im-replaced');
     if (inReplacedWrapper) {
       const text = node.textContent || '';
-      const hasID = /\b(IM|ME|DL|CB)-[a-zA-Z0-9_-]{3,}/i.test(text);
+      const hasID = /\b(IM|ME|DL|CB|GSS)-[a-zA-Z0-9_-]{3,}/i.test(text);
       const hasImage = inReplacedWrapper.querySelector('img.dlsq-chat-img, video.dlsq-chat-video');
       if (hasID && !hasImage) {
         // 有 ID 但沒有圖片，說明被翻譯重置了，清除標記重新處理
@@ -5289,22 +5296,11 @@ function scanAndReplaceIMImages() {
         continue; // 正常情況，跳過已處理的
       }
     }
-    if (node.parentElement?.closest('.dlsq-message-processed, .dlsq-converted-image, img, video, script, style, textarea')) continue;
-    // 跳過 Twitch/DLive 聊天輸入框（避免在輸入框中轉換圖片）
-    // 【加強】添加更多 Twitch 輸入框相關選擇器
-    if (node.parentElement?.closest('[data-a-target="chat-input"], [data-a-target="chat-input-container"], .chat-wysiwyg-input__editor, [contenteditable="true"], .chatroom-input, .chat-input, [class*="chat-input"]')) continue;
+    if (parent.closest('.dlsq-message-processed, .dlsq-converted-image, img, video, script, style, textarea')) continue;
+    if (parent.closest('[data-a-target="chat-input"], [data-a-target="chat-input-container"], .chat-wysiwyg-input__editor, [contenteditable="true"], .chatroom-input, .chat-input, [class*="chat-input"]')) continue;
     const text = node.textContent;
-    // 檢查常規 IM-/ME-/YT-/CB- 或零寬字符或 DL- 或 Twitch emote 格式或 YouTube URL 或 GSS- 圖片連結
-    const hasIM = text.includes('IM-');
-    const hasME = text.includes('ME-');
-    const hasDL = text.includes('DL-');
-    const hasYT = text.includes('YT-');
-    const hasCB = text.includes('CB-');
-    const hasGSS = text.includes('GSS-');
-    if (hasIM || hasME || hasYT || hasDL || hasCB || hasGSS ||
-      text.includes(':emote/mine/dlive/') ||
-      text.includes('youtube.com/watch') || text.includes('youtube.com/shorts') || text.includes('youtu.be/') ||
-      /[\u200B\u200C\u200D\uFEFF]/.test(text)) {
+    // 使用外部定义的正则表达式常量
+    if (STICKER_PATTERN.test(text)) {
       textNodes.push(node);
     }
   }
@@ -5379,40 +5375,21 @@ function scanAndReplaceIMImages() {
     // 如果找到隱藏的貼圖ID，直接替換整個文本節點
     if (hiddenStickerId && !textNode.parentElement?.closest('.dlsq-hidden-decoded')) {
       const parentEl = textNode.parentElement;
+      if (!parentEl) return;
 
-      // 【防重複處理 1】檢查父元素是否已經標記處理過此ID
-      // 【修復】同時檢查是否真的存在對應的圖片，防止 YouTube 翻譯重置後無法重新處理
-      if (parentEl) {
-        const processedIds = parentEl.getAttribute('data-dlsq-processed') || '';
-        if (processedIds.includes(hiddenStickerId)) {
-          // 檢查是否真的有對應的圖片存在
-          const existingImg = parentEl.querySelector(`img[alt="${hiddenStickerId}"], img.dlsq-chat-img`);
-          if (existingImg) {
-            console.log('[GSS] 父元素已標記且圖片存在，跳過:', hiddenStickerId);
-            return;
-          } else {
-            // 標記存在但圖片不存在（被翻譯重置），清除標記重新處理
-            console.log('[GSS] 【翻譯重置】標記存在但圖片不存在，清除標記重新處理:', hiddenStickerId);
-            const newProcessedIds = processedIds.split(',').filter(id => id !== hiddenStickerId).join(',');
-            parentEl.setAttribute('data-dlsq-processed', newProcessedIds);
-          }
-        }
+      // 【防重複處理】合併檢查：先檢查是否已有圖片，再檢查標記
+      const existingImg = parentEl.querySelector(`img[alt="${hiddenStickerId}"], img.dlsq-chat-img`);
+      if (existingImg) {
+        console.log('[GSS] 已存在相同ID的貼圖圖片，跳過重複處理:', hiddenStickerId);
+        return;
       }
 
-      // 【防重複處理 2】檢查父元素是否已經有相同ID的貼圖圖片
-      if (parentEl) {
-        const existingImgs = parentEl.querySelectorAll('img.dlsq-chat-img');
-        for (const img of existingImgs) {
-          // 檢查是否已經有相同ID的圖片
-          const imgSrc = img.src || '';
-          const imgAlt = img.alt || '';
-          if (imgAlt === hiddenStickerId ||
-            (isDLSticker && imgSrc.includes(hiddenStickerId.slice(3))) ||
-            (!isDLSticker && imgSrc.includes(hiddenStickerId.replace(/IM-|ME-|CB-/, '').split('.')[0]))) {
-            console.log('[GSS] 已存在相同ID的貼圖圖片，跳過重複處理:', hiddenStickerId);
-            return;
-          }
-        }
+      // 檢查標記（如果沒有圖片，可能是被翻譯重置）
+      const processedIds = parentEl.getAttribute('data-dlsq-processed') || '';
+      if (processedIds.includes(hiddenStickerId)) {
+        console.log('[GSS] 【翻譯重置】標記存在但圖片不存在，清除標記重新處理:', hiddenStickerId);
+        const newProcessedIds = processedIds.split(',').filter(id => id !== hiddenStickerId).join(',');
+        parentEl.setAttribute('data-dlsq-processed', newProcessedIds);
       }
 
       const wrapper = document.createElement('span');
@@ -7016,7 +6993,7 @@ function initIMFeature() {
     // ===== Vaughn 頁面：使用 IM 轉圖邏輯 =====
     setInterval(() => {
       if (!isSendingMessage) scanAndReplaceIMImages();
-    }, 1500);
+    }, 1000);  // 从 1500ms 改为 1000ms，扫描更频繁，转图更快
 
     const chatContainer = document.querySelector('.vs_chatv9, .vs_chat_container, [class*="chat"]');
     if (chatContainer) {
@@ -7049,7 +7026,7 @@ function initIMFeature() {
         console.log('[GSS] Kick scanning for IM images...');
         scanAndReplaceIMImages();
       }
-    }, 1500);
+    }, 1000);  // 从 1500ms 改为 1000ms，扫描更频繁，转图更快
 
     // Kick 的聊天容器選擇器
     const chatContainer = document.querySelector('[class*="chat-container"], [class*="ChatContainer"], #chat-input-wrapper ~ div, [class*="overflow-y-auto"]');
@@ -7127,7 +7104,7 @@ function initIMFeature() {
       if (!isSendingMessage && !isWTVScrolling) {
         processWTVQueue();
       }
-    }, 2000); // WTV 使用 2 秒間隔，比 DLive 更長
+    }, 1000); // 从 2000ms 改为 1000ms，扫描更频繁，转图更快
 
     // MutationObserver 監聽新訊息
     if (wtvChatContainer) {
@@ -7163,7 +7140,7 @@ function initIMFeature() {
     // ===== DLive 頁面：完整 IM 轉圖功能 =====
     setInterval(() => {
       if (!isSendingMessage) scanAndReplaceIMImages();
-    }, 1500);
+    }, 1000);  // 从 1500ms 改为 1000ms，扫描更频繁，转图更快
 
     const chatContainer = document.querySelector('.chat-list, .chat-scroll-area, [class*="chat-list"], [class*="message-list"]');
     if (chatContainer) {
@@ -7273,7 +7250,7 @@ function initTwitchIMFeature() {
     if (!isSendingMessage) {
       scanTwitchChatMessages(chatList);
     }
-  }, 2000); // Twitch 用較長間隔，減少衝突
+  }, 1000); // 从 2000ms 改为 1000ms，扫描更频繁，转图更快
 
   // 只在聊天列表上監聽變化
   let mutationTimeout = null;
