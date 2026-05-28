@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extName__",
-  "version": "6.9",
+  "version": "7.0",
   "default_locale": "zh_TW",
   "icons": {
     "16": "icons/icon16.png",
@@ -10,20 +10,27 @@
   },
   "description": "__MSG_extDesc__",
   "permissions": [
-    "storage"
+    "storage",
+    "scripting"
   ],
   "host_permissions": [
     "https://*.twitch.tv/*",
+    "https://twitch.tv/*",
     "https://vaughn.live/*",
     "https://*.vaughn.live/*",
     "https://ms-hls.vaughn.live/*",
     "https://*.vaughnsoft.net/*",
     "https://*.kick.com/*",
+    "https://kick.com/*",
     "https://*.youtube.com/*",
     "https://youtube.com/*",
     "https://beamstream.gg/*",
     "https://*.beamstream.gg/*",
     "https://*.w.tv/*"
+  ],
+  "optional_host_permissions": [
+    "https://*/*",
+    "http://*/*"
   ],
   "action": {
     "default_popup": "popup.html",
@@ -62,6 +69,7 @@
         "libraries/catbox.js",
         "libraries/index.js",
         "platforms/base.js",
+        "platforms/custom.js",
         "platforms/twitch.js",
         "platforms/vaughn.js",
         "platforms/kick.js",
@@ -90,7 +98,9 @@
         "https://*.kick.com/*",
         "https://*.youtube.com/*",
         "https://*.beamstream.gg/*",
-        "https://*.w.tv/*"
+        "https://*.w.tv/*",
+        "https://*/*",
+        "http://*/*"
       ]
     }
   ]

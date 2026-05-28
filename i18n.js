@@ -108,6 +108,20 @@ const I18N = {
     disableNativeContextMenuTitle: '🖱️ 關閉右鍵面板',
     disableNativeContextMenuEnabled: '✅ 原生右鍵已啟用（已關閉 GSS 面板）',
     disableNativeContextMenuDisabled: '✅ GSS 右鍵面板已啟用',
+    generalSettings: '⚡ 通用設定',
+    customPlatformTitle: '🌐 自定義平台',
+    customPlatformHint: '為不支援的平台添加自定義腳本',
+    btnAddCustomPlatform: '➕ 新增平台',
+    btnEditCustomPlatform: '📝 編輯選中',
+    customPlatformDialogTitle: '編輯自定義平台',
+    customPlatformHostnameLabel: '🌐 發動網域 (如: rumble.com)',
+    customPlatformChatContainerLabel: '🏠 聊天室容器 (掃瞄 ID 用)',
+    customPlatformLogicLabel: '📜 自定義腳本邏輯',
+    customPlatformLogicPlaceholder: 'mount: .buttons (按鈕插在哪)\ninput: #chat-input (ID 貼去哪)\nsend: .send-btn (選填)',
+    customPlatformNoData: '尚無自定義平台',
+    customPlatformDeleteConfirm: (host) => `確定要刪除 ${host} 嗎？`,
+    customPlatformSaveSuccess: '✅ 自定義平台已儲存',
+    customPlatformFillRequired: '❌ 請填寫網域與腳本邏輯',
     helpContent: `<p><b>貼圖格式：</b></p>
 <ul>
   <li>CB-xxx：Catbox 圖片</li>
@@ -236,7 +250,21 @@ const I18N = {
     autoMatureDisabled: '✅ 记住 Mature 同意已关闭',
     disableNativeContextMenuTitle: '🖱️ 关闭右键面板',
     disableNativeContextMenuEnabled: '✅ 原生右键已启用（已关闭 GSS 面板）',
-    disableNativeContextMenuDisabled: '✅ GSS 右键面板已启用',
+    disableNativeContextMenuDisabled: '✅ GSS 右鍵面板已啟用',
+    generalSettings: '⚡ 通用设置',
+    customPlatformTitle: '🌐 自定义平台',
+    customPlatformHint: '為不支援的平台添加自定義腳本',
+    btnAddCustomPlatform: '➕ 新增平台',
+    btnEditCustomPlatform: '📝 編輯選中',
+    customPlatformDialogTitle: '編輯自定義平台',
+    customPlatformHostnameLabel: '🌐 發動網域 (如: rumble.com)',
+    customPlatformChatContainerLabel: '🏠 聊天室容器 (掃瞄 ID 用)',
+    customPlatformLogicLabel: '📜 自定義腳本邏輯',
+    customPlatformLogicPlaceholder: 'mount: .buttons (按鈕插在哪)\ninput: #chat-input (ID 貼去哪)\nsend: .send-btn (選填)',
+    customPlatformNoData: '尚無自定義平台',
+    customPlatformDeleteConfirm: (host) => `確定要刪除 ${host} 嗎？`,
+    customPlatformSaveSuccess: '✅ 自定義平台已儲存',
+    customPlatformFillRequired: '❌ 請填寫網域與腳本邏輯',
     helpContent: `<p><b>贴纸格式：</b></p>
 <ul>
   <li>CB-xxx：Catbox 图片</li>
@@ -366,6 +394,20 @@ const I18N = {
     disableNativeContextMenuTitle: '🖱️ Disable Right-Click Panel',
     disableNativeContextMenuEnabled: '✅ Native right-click enabled (GSS panel disabled)',
     disableNativeContextMenuDisabled: '✅ GSS right-click panel enabled',
+    generalSettings: '⚡ General Settings',
+    customPlatformTitle: '🌐 Custom Platforms',
+    customPlatformHint: 'Add custom scripts for unsupported platforms',
+    btnAddCustomPlatform: '➕ Add Platform',
+    btnEditCustomPlatform: '📝 Edit Selected',
+    customPlatformDialogTitle: 'Edit Custom Platform',
+    customPlatformHostnameLabel: '🌐 Domain (e.g., rumble.com)',
+    customPlatformChatContainerLabel: '🏠 Chat Container (for ID scanning)',
+    customPlatformLogicLabel: '📜 Custom Script Logic',
+    customPlatformLogicPlaceholder: 'mount: .buttons (where to put button)\ninput: #chat-input (where to paste ID)\nsend: .send-btn (optional)',
+    customPlatformNoData: 'No custom platforms added',
+    customPlatformDeleteConfirm: (host) => `Are you sure you want to delete ${host}?`,
+    customPlatformSaveSuccess: '✅ Custom platform saved',
+    customPlatformFillRequired: '❌ Please fill in domain and logic',
     helpContent: `<p><b>Sticker formats:</b></p>
 <ul>
   <li>CB-xxx：Catbox images</li>
@@ -498,6 +540,20 @@ const I18N = {
     disableNativeContextMenuTitle: '🖱️ 右クリックパネルを無効にする',
     disableNativeContextMenuEnabled: '✅ ネイティブ右クリック有効（GSSパネル無効）',
     disableNativeContextMenuDisabled: '✅ GSS右クリックパネル有効',
+    generalSettings: '⚡ 一般設定',
+    customPlatformTitle: '🌐 カスタムプラットフォーム',
+    customPlatformHint: 'サポートされていないプラットフォームのスクリプトを追加',
+    btnAddCustomPlatform: '➕ 追加',
+    btnEditCustomPlatform: '📝 編集',
+    customPlatformDialogTitle: 'カスタムプラットフォームの編集',
+    customPlatformHostnameLabel: '🌐 ドメイン (例: rumble.com)',
+    customPlatformChatContainerLabel: '🏠 チャットコンテナ (IDスキャン用)',
+    customPlatformLogicLabel: '📜 カスタムスクリプト',
+    customPlatformLogicPlaceholder: 'mount: .buttons (ボタンの挿入先)\ninput: #chat-input (IDの貼り付け先)\nsend: .send-btn (オプション)',
+    customPlatformNoData: 'カスタムプラットフォームはありません',
+    customPlatformDeleteConfirm: (host) => `${host} を削除してもよろしいですか？`,
+    customPlatformSaveSuccess: '✅ カスタムプラットフォームを保存しました',
+    customPlatformFillRequired: '❌ ドメインとスクリプトを入力してください',
     helpContent: `<p><b>ステッカー形式：</b></p>
 <ul>
   <li>CB-xxx：Catbox画像</li>
@@ -627,6 +683,20 @@ const I18N = {
     disableNativeContextMenuTitle: '🖱️ 우클릭 패널 끄기',
     disableNativeContextMenuEnabled: '✅ 기본 우클릭 활성화 (GSS 패널 비활성화)',
     disableNativeContextMenuDisabled: '✅ GSS 우클릭 패널 활성화됨',
+    generalSettings: '⚡ 일반 설정',
+    customPlatformTitle: '🌐 사용자 정의 플랫폼',
+    customPlatformHint: '지원되지 않는 플랫폼에 대한 스크립트 추가',
+    btnAddCustomPlatform: '➕ 플랫폼 추가',
+    btnEditCustomPlatform: '📝 선택 편집',
+    customPlatformDialogTitle: '사용자 정의 플랫폼 편집',
+    customPlatformHostnameLabel: '🌐 도메인 (예: rumble.com)',
+    customPlatformChatContainerLabel: '🏠 채팅 컨테이너 (ID 스캔용)',
+    customPlatformLogicLabel: '📜 사용자 정의 스크립트',
+    customPlatformLogicPlaceholder: 'mount: .buttons (버튼 삽입 위치)\ninput: #chat-input (ID 붙여넣기 위치)\nsend: .send-btn (선택 사항)',
+    customPlatformNoData: '사용자 정의 플랫폼이 없습니다',
+    customPlatformDeleteConfirm: (host) => `${host}을(를) 삭제하시겠습니까?`,
+    customPlatformSaveSuccess: '✅ 사용자 정의 플랫폼이 저장되었습니다',
+    customPlatformFillRequired: '❌ 도메인과 스크립트를 입력하세요',
     helpContent: `<p><b>스티커 형식：</b></p>
 <ul>
   <li>CB-xxx: Catbox 이미지</li>
@@ -846,6 +916,10 @@ function applyLanguage(lang) {
 
   const subtitleEl = document.getElementById('subtitleText');
   if (subtitleEl) subtitleEl.textContent = t('headerSubtitle');
+
+  // 【關鍵修正】在這裡呼叫更新設定按鈕文字，確保切換語言或初始化時也能更新自定義區塊
+  if (typeof updateSettingsButtonTexts === 'function') updateSettingsButtonTexts();
+  if (typeof updateTexoTexts === 'function') updateTexoTexts();
 
   const configTitleEl = document.getElementById('configTitle');
   if (configTitleEl) configTitleEl.textContent = t('configTitle');

@@ -40,12 +40,6 @@
             border-radius: 8px;
             border-left: 4px solid #2563eb;
         }
-
-        .lang-section {
-            margin-top: 40px;
-            padding-top: 30px;
-            border-top: 1px dashed #ccc;
-        }
     </style>
 </head>
 
@@ -55,74 +49,85 @@
 
     <div class="highlight">
         <strong>簡單來說 / TL;DR:</strong>
-        我們<strong>不會收集</strong>、<strong>不會儲存</strong>、<strong>無法存取</strong>您的任何資料。所有資料都只保存在您自己的裝置上。<br><br>
-        We <strong>do not collect</strong>, <strong>do not store</strong>, and <strong>cannot access</strong> any of
-        your data. All data is stored only on your own device.
+        我們<strong>不會收集</strong>、<strong>不會上傳</strong>、<strong>無法存取</strong>您的個人資料。貼圖與設定僅保存在您自己的裝置上。<br><br>
+        We <strong>do not collect</strong>, <strong>do not upload</strong>, and <strong>cannot access</strong> your personal data. Stickers and settings stay on your device only.
     </div>
 
     <h2>1. 資料收集與使用 / Data Collection and Use</h2>
-    <p>General Sticker System 擴充功能僅在您<strong>本地裝置</strong>上儲存以下資料：</p>
-    <p>The General Sticker System extension only stores the following data on your <strong>local device</strong>:</p>
+    <p>General Sticker System（以下稱「本擴充功能」）僅在您<strong>本地裝置</strong>上儲存以下資料：</p>
+    <p>This extension stores the following data on your <strong>local device</strong> only:</p>
     <ul>
-        <li>您添加的貼圖 ID 清單 / Your added sticker ID list</li>
-        <li>貼圖的標籤與分類資訊 / Sticker tags and category information</li>
-        <li>您標記的最愛貼圖 / Your favorited stickers</li>
-        <li>自訂的標籤詞彙 / Custom tag vocabulary</li>
+        <li>您添加的貼圖 ID 清單 / Your sticker ID list</li>
+        <li>貼圖的標籤與分類 / Tags and categories</li>
+        <li>常用貼圖 / Favorites</li>
+        <li>自訂標籤詞彙 / Custom tag vocabulary</li>
+        <li>自定義平台設定（網域、聊天室容器選擇器、掛載／輸入／發送邏輯）/ Custom platform settings (domain, chat container selectors, mount/input/send logic)</li>
+        <li>TSC（實況編織）相關設定與開台狀態快取（約 5 分鐘）/ TSC settings and short-lived stream status cache (~5 minutes)</li>
     </ul>
-    <p>這些資料使用 Chrome 瀏覽器的 <code>chrome.storage.local</code> API 儲存，<strong>完全保存在您的裝置上</strong>。</p>
-    <p>This data is stored using Chrome's <code>chrome.storage.local</code> API and is <strong>completely stored on your
-            device only</strong>.</p>
+    <p>上述資料使用瀏覽器擴充功能的<strong>本機儲存</strong>保存，<strong>不會上傳至開發者或任何伺服器</strong>。</p>
+    <p>Data is kept in the browser extension’s <strong>on-device storage</strong> and is <strong>not uploaded</strong> to the developer or any server.</p>
 
     <h2>2. 資料不上傳 / No Data Upload</h2>
     <p>我們<strong>不會</strong> / We <strong>do NOT</strong>:</p>
     <ul>
-        <li>將您的資料上傳到任何外部伺服器 / Upload your data to any external server</li>
-        <li>將資料傳輸給第三方 / Transmit data to third parties</li>
-        <li>追蹤您的使用行為或瀏覽紀錄 / Track your usage behavior or browsing history</li>
-        <li>分析或販售您的資料 / Analyze or sell your data</li>
+        <li>將您的資料上傳到任何外部伺服器 / Upload your data to external servers</li>
+        <li>將資料出售或提供給廣告商 / Sell or share data with advertisers</li>
+        <li>建立可識別個人的瀏覽紀錄檔案 / Build identifiable browsing profiles</li>
+        <li>在遠端分析您的聊天內容 / Remotely analyze your chat content</li>
     </ul>
 
     <h2>3. 開發者無法存取 / Developer Cannot Access</h2>
-    <p>由於資料僅儲存在您的本地裝置，<strong>開發者完全無法存取</strong>您的任何貼圖資料或設定。</p>
-    <p>Since data is only stored on your local device, the <strong>developer has absolutely no access</strong> to any of
-        your sticker data or settings.</p>
+    <p>資料僅在您的裝置上，<strong>開發者無法讀取</strong>您的貼圖清單、標籤或自定義平台設定。</p>
+    <p>Because data stays on your device, the <strong>developer cannot read</strong> your sticker lists, tags, or custom platform settings.</p>
 
     <h2>4. 第三方服務 / Third-Party Services</h2>
-    <p>本擴充功能與以下第三方服務互動：</p>
-    <p>This extension interacts with the following third-party services:</p>
+    <p>本擴充功能可能與以下服務互動（僅限您使用相關功能時）：</p>
+    <p>The extension may interact with these services only when you use related features:</p>
     <ul>
-        <li><strong>Twitch 聊天服務</strong>：用於發送聊天訊息 / For sending chat messages</li>
-        <li><strong>Twitch GQL API、Kick API、Vaughn API</strong>：用於 TSC（實況編織）功能的開台狀態檢測（僅查詢頻道是否在線，無需登入憑證）/
-            For TSC stream status checking (online/offline status only, no login credentials required)</li>
+        <li><strong>直播平台聊天</strong>：您手動發送的貼圖 ID 或訊息會出現在該平台聊天室 / Live chat: sticker IDs or messages you send manually appear in that site’s chat</li>
+        <li><strong>圖片／影片託管</strong>（如 Imgur、meee、Catbox 等）：顯示您或他人訊息中的貼圖連結 / Image hosts: to display sticker URLs in chat</li>
+        <li><strong>Twitch、Kick、Vaughn 等 API</strong>：TSC 開台狀態查詢（僅公開頻道是否在線等，不需您的登入密碼）/ Stream status APIs for TSC (public online/offline info; no login credentials)</li>
     </ul>
-    <p><strong>我們不會傳輸您的貼圖資料、標籤或任何個人資訊</strong>至第三方。發送的內容僅為您手動選擇的貼圖 ID，以及 TSC 功能中您手動設定的公開頻道 URL。</p>
-    <p><strong>We do not transmit your sticker data, tags, or any personal information</strong> to third parties. Only
-        the sticker ID you manually select is sent, along with public channel URLs you manually configure in the TSC
-        feature.</p>
-    <p>開台狀態查詢結果（在線狀態、觀看人數、實況標題）僅儲存在您的本地裝置快取中（5 分鐘），不會上傳至任何伺服器。/ Stream status results are cached locally only (5
-        minutes) and never uploaded to any server.</p>
+    <p><strong>我們不會</strong>把您的貼圖庫、標籤或自定義平台設定傳給上述服務。TSC 僅使用您自行輸入的公開頻道網址。</p>
+    <p><strong>We do not</strong> send your sticker library, tags, or custom platform settings to those services. TSC uses only public channel URLs you enter.</p>
 
     <h2>5. 權限使用說明 / Permissions Usage</h2>
-    <p>本擴充功能申請使用以下權限，僅用於所述功能：</p>
-    <p>This extension requests the following permissions solely for the stated purposes:</p>
+    <p>本擴充功能所請求的權限，僅用於下列功能：</p>
+    <p>Permissions are used only for the purposes below:</p>
 
-
-    <h3>all_frames 設定 / all_frames Setting</h3>
+    <h3>本機儲存 / Local storage</h3>
     <ul>
-        <li><strong>聊天室 iframe 支援 / Chat Room iframe Support：</strong>本擴充使用 <code>all_frames: true</code>
-            設定，將聊天面板等功能腳本注入 YouTube 等平台的聊天室 iframe 中。這是必要的技術方案，因為 YouTube 聊天室運行在獨立的 iframe 內（網址為
-            youtube.com/live_chat）。我們<strong>不會</strong>因此存取或收集任何 iframe 內的個人資料，僅用於顯示貼圖面板。</li>
+        <li>保存貼圖、標籤、常用與自定義平台設定 / Save stickers, tags, favorites, and custom platform settings</li>
     </ul>
+
+    <h3>內建直播平台（安裝時）/ Built-in sites at install</h3>
+    <ul>
+        <li>在已列出的直播平台（如 Twitch、Kick、YouTube、Vaughn、w.tv、beamstream 等）的聊天室中，顯示貼圖、將貼圖 ID 轉為圖片、協助發送訊息 / On listed live-streaming sites, show stickers, convert sticker IDs to images, and help send messages in chat</li>
+        <li>安裝時<strong>不會</strong>對未列出的網站啟用上述功能（除非您另行新增自定義平台）/ Other sites are not enabled at install unless you add a custom platform</li>
+    </ul>
+
+    <h3>自定義平台（使用者主動）/ Custom platforms (user-initiated)</h3>
+    <ul>
+        <li>僅當您在設定中<strong>手動新增平台、填寫網域並按儲存</strong>時，才會針對該網域請求額外存取權（若瀏覽器支援選用網站權限）/ Extra site access is requested only when you manually add a platform, enter a domain, and click Save (where the browser supports optional site permissions)</li>
+        <li>您可在瀏覽器提示中<strong>拒絕</strong>；拒絕則該站不會啟用 GSS / You may <strong>deny</strong> the prompt; the site will not be enabled</li>
+        <li>同意後，擴充功能才在該網域啟用與內建平台相同的貼圖腳本（部分瀏覽器透過動態註冊內容腳本實作）/ After approval, the same sticker features are enabled on that domain (some browsers use dynamic content script registration)</li>
+        <li>不會對您未設定、未同意的網站啟用功能 / Sites you have not configured and approved are not enabled</li>
+    </ul>
+
+    <h3>聊天室 iframe（all_frames）/ Chat iframes</h3>
+    <ul>
+        <li>部分平台（如 YouTube）聊天室在 iframe 內；本擴充可能將面板注入該 iframe，<strong>僅用於貼圖功能</strong>，不收集 iframe 內個人資料 / Some sites use chat iframes; the extension may inject the sticker UI there for sticker features only, without collecting personal data from the iframe</li>
+    </ul>
+
     <div class="highlight">
-        <strong>重要聲明 / Important Note：</strong><br>
-        本擴充功能<strong>絕不紀錄、儲存或傳輸您的瀏覽紀錄或任何分頁 URL 至外部伺服器</strong>。所有操作均在本地端即時完成。<br><br>
-        This extension <strong>NEVER logs, stores, or transmits your browsing history or any tab URLs to
-            external servers</strong>. All operations are performed locally in real-time.
+        <strong>重要聲明 / Important:</strong><br>
+        本擴充功能<strong>不會</strong>將您的瀏覽紀錄或分頁網址上傳至外部伺服器。聊天相關處理在您瀏覽器本機即時完成。<br><br>
+        This extension <strong>does not</strong> upload your browsing history or tab URLs to external servers. Chat-related processing happens locally in your browser.
     </div>
 
     <h2>6. 聯絡方式 / Contact</h2>
-    <p>如有任何隱私權相關問題，請透過 Chrome Web Store 的開發者資訊頁面與我們聯繫。</p>
-    <p>For any privacy-related questions, please contact us through the Chrome Web Store developer information page.</p>
+    <p>如有隱私權問題，請透過您安裝本擴充功能時所使用的瀏覽器擴充功能商店（如 Chrome Web Store、Firefox Add-ons）之開發者聯絡方式與我們聯繫。</p>
+    <p>For privacy questions, contact us via the developer contact listed on the extension store where you installed GSS (e.g. Chrome Web Store or Firefox Add-ons).</p>
 </body>
 
 </html>

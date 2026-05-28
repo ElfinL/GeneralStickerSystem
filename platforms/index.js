@@ -140,27 +140,32 @@
     return await adapter.sendMessage(message);
   }
 
-  // 自動註冊內建適配器 (如果類別已定義)
-  function autoRegister() {
-    if (typeof TwitchAdapter !== 'undefined') {
-      registerAdapter(TwitchAdapter);
-    }
-    if (typeof VaughnAdapter !== 'undefined') {
-      registerAdapter(VaughnAdapter);
-    }
-    if (typeof KickAdapter !== 'undefined') {
-      registerAdapter(KickAdapter);
-    }
-    if (typeof YouTubeAdapter !== 'undefined') {
-      registerAdapter(YouTubeAdapter);
-    }
-    if (typeof BeamstreamAdapter !== 'undefined') {
-      registerAdapter(BeamstreamAdapter);
-    }
-    if (typeof WTVAdapter !== 'undefined') {
-      registerAdapter(WTVAdapter);
-    }
-    // 立即初始化當前平台的適配器，確保定時器等功能啟動
+  // 自動註冊內建與自定義適配器
+  async function autoRegister() {
+    // 1. 載入自定義平台
+    try {
+      const result = await chrome.storage.local.get(['customPlatforms']);
+      if (result.customPlatforms && Array.isArray(result.customPlatforms)) {
+        result.customPlatforms.forEach(config => {
+          if (typeof CustomAdapter !== 'undefined') {
+            const DynamicAdapter = class extends CustomAdapter {
+              constructor() { super(config); }
+            };
+            registerAdapter(DynamicAdapter);
+          }
+        });
+      }
+    } catch (e) { console.error('[GSS] 載入自定義平台失敗', e); }
+
+    // 2. 註冊內建平台
+    if (typeof TwitchAdapter !== 'undefined') registerAdapter(TwitchAdapter);
+    if (typeof VaughnAdapter !== 'undefined') registerAdapter(VaughnAdapter);
+    if (typeof KickAdapter !== 'undefined') registerAdapter(KickAdapter);
+    if (typeof YouTubeAdapter !== 'undefined') registerAdapter(YouTubeAdapter);
+    if (typeof BeamstreamAdapter !== 'undefined') registerAdapter(BeamstreamAdapter);
+    if (typeof WTVAdapter !== 'undefined') registerAdapter(WTVAdapter);
+
+    // 立即初始化
     const adapter = getPlatformAdapter();
     if (adapter) {
       console.log('[GSS Platform] Auto-initialized adapter:', adapter.getName());

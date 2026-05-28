@@ -184,6 +184,61 @@
       </div>
 
       <div class="content-section">
+        <h2>🌐 自定義平台</h2>
+        <p style="font-size: 13px; color: #666; margin-top: -4px; margin-bottom: 12px;">
+          📍 <strong>功能位置：</strong> <code>主面板</code> ➔ <code>設定頁</code> ➔ <code>自定義平台設定</code>
+        </p>
+        <div class="highlight-box"
+          style="background: rgba(40, 167, 69, 0.08); border-color: rgba(40, 167, 69, 0.4); margin-bottom: 16px;">
+          <p style="color: #28a745; font-weight: bold;">✅ 內置原生支援平台，無需重複新增：</p>
+          <p style="margin-top: 4px; font-size: 12px; line-height: 1.5; color: #555;">
+            GSS 已經在底層內置了 <strong>Twitch、YouTube、Kick、VaughnLive、BeamStream、W.tv</strong> 的原生貼圖管理功能。<br>
+            除非這些官方網站的底層結構發生重大改變、導致原生功能失效，否則<strong>請勿</strong>將上述網域重複加到下方的自定義平台中，以免發生腳本執行衝突。
+          </p>
+        </div>
+        <p>GSS 支援透過「自定義腳本」來擴充對任何直播網站的支持。即使是目前未列出的平台，您也可以透過簡單的設定來啟用貼圖功能。</p>
+
+        <div class="highlight-box">
+          <p><strong>設定三個關鍵參數：</strong></p>
+          <ul style="margin-top: 8px; font-size: 13px; margin-left: 16px;">
+            <li><strong>發動網域：</strong> 決定插件在哪個網站啟動（例如：<code>rumble.com</code>）。</li>
+            <li><strong>聊天室容器：</strong> 決定插件要「掃描哪裡」來找出別人的貼圖 ID（CSS 選擇器）。</li>
+            <li><strong>自定義腳本邏輯：</strong> 使用標籤決定按鈕位置與發送行為。</li>
+          </ul>
+        </div>
+
+        <h3>📜 腳本邏輯語法</h3>
+        <p>在「自定義腳本邏輯」框中，每行輸入一個指令：</p>
+        <ul style="margin-bottom: 12px;">
+          <li><code>mount: .selector</code> － 決定貼圖按鈕要插在哪個元素旁邊。</li>
+          <li><code>input: .selector</code> － 決定貼圖 ID 要自動貼入哪個輸入框。</li>
+          <li><code>send: .selector</code> － (選填) 指定發送按鈕。若未填寫，則在輸入後按 Enter。</li>
+        </ul>
+
+        <div class="highlight-box" style="background: rgba(74, 144, 226, 0.08); border-color: rgba(74, 144, 226, 0.4);">
+          <p><strong>📝 實戰範例 (以 Rumble 為例)：</strong></p>
+          <ul style="margin-top: 8px; font-size: 12px; margin-left: 16px; list-style: none;">
+            <li>🌐 <strong>網域：</strong> <code>rumble.com</code></li>
+            <li>🏠 <strong>容器：</strong> <code>.chat-history</code></li>
+            <li>📜 <strong>邏輯：</strong><br>
+              <code>mount: .chat-message-form-section</code><br>
+              <code>input: #chat-message-text-input</code><br>
+              <code>send: .chat--send</code>
+            </li>
+          </ul>
+        </div>
+
+        <div class="highlight-box" style="background: rgba(255, 212, 59, 0.08); border-color: rgba(255, 212, 59, 0.4);">
+          <p><strong>💡 如何取得 CSS 選擇器？</strong></p>
+          <p style="margin-top: 8px; font-size: 12px;">
+            1. 在目標網站按下 <code>F12</code> 開啟開發者工具。<br>
+            2. 使用選擇工具 ↖️ 點擊網頁元素。<br>
+            3. 查看該元素的 <code>class</code> (用 <code>.</code> 開頭) 或 <code>id</code> (用 <code>#</code> 開頭)。
+          </p>
+        </div>
+      </div>
+
+      <div class="content-section">
         <h2>🎨 貼圖格式</h2>
         <h3>🌐 GSS 通用圖片連結</h3>
         <p>格式：<code>GSS-[圖片連結]</code></p>
@@ -284,7 +339,7 @@
         <div class="highlight-box">
           <p><strong>📋 平台支援狀態：</strong></p>
           <p style="margin-top: 8px; font-size: 12px;">
-            <strong>DLive / Twitch / KICK：</strong>完整支援縮略圖與播放器<br>
+            <strong>Twitch / KICK：</strong>完整支援縮略圖與播放器<br>
             <strong>Vaughn Live：</strong>YT- 會顯示縮略圖，但完整 YouTube 連結不會轉換（避免官方攔截）
           </p>
         </div>
@@ -314,23 +369,7 @@
         </ul>
       </div>
 
-      <div class="content-section">
-        <h2>🎭 DLive 劇院模式</h2>
-        <p>DLive 設定頁提供多種視覺調整功能：</p>
-        <ul>
-          <li><strong>劇院模式：</strong>全屏觀看體驗</li>
-          <li><strong>聊天室控制：</strong>調整聊天室寬度或隱藏</li>
-          <li><strong>元素控制：</strong>隱藏導航欄、標題、送禮區等</li>
-        </ul>
-        <div class="highlight-box">
-          <p><strong>🎮 全屏模式快捷鍵：</strong></p>
-          <ul style="margin-top: 8px;">
-            <li>按 <code>C</code> 鍵：快速開關聊天室</li>
-            <li>滑鼠移到畫面右側：自動展開聊天室</li>
-          </ul>
-          <p style="margin-top: 8px; font-size: 10px; color: rgba(255,255,255,0.5);">※ 快捷鍵僅在全屏模式下有效，劇院模式不適用</p>
-        </div>
-      </div>
+
 
       <div class="content-section">
         <h2>🧶 TexoStreamCore (TSC) 實況管理</h2>
@@ -342,7 +381,6 @@
           <pre style="margin:0; font-size:11px;"><code>&gt;Elfin
 !https://www.twitch.tv/elfinl
 #https://www.twitch.tv/elfinl
-#https://dlive.tv/ElfinL
 #https://kick.com/elfinl
 #https://vaughn.live/elfinl
 #https://www.youtube.com/@Elfin-Lee</code></pre>
@@ -358,7 +396,7 @@
           <li><strong>多位實況主管理：</strong>同時追蹤多位實況主的開台狀態</li>
           <li><strong>實時狀態顯示：</strong>🟢 在線 / 🔴 離線 / ⚫ 未知</li>
           <li><strong>面板控制：</strong>點擊網站標誌右側的 ▼ 箭頭展開/收合 TSC 面板，再點擊平台徽章直接跳轉</li>
-          <li><strong>共用聊天室：</strong>例如將 Twitch / KICK 聊天嵌入 DLive / Vaughn 頁面，完全支援 GSS 貼圖（注意：Twitch 聊天因安全策略無法在 KICK
+          <li><strong>共用聊天室：</strong>例如將 Twitch / KICK 聊天嵌入 Vaughn 頁面，完全支援 GSS 貼圖（注意：Twitch 聊天因安全策略無法在 KICK
             頁面嵌入；KICK 聊天因 CSRF 保護限制，在第三方頁面只能查看無法發言（等待 KICK 官方開放嵌入 API）；Vaughn Live 因無可靠檢測方法，開台狀態暫時顯示 ⚫ 未知）</li>
           <li><strong>自動抓取：</strong>在直播頁面放置 <code>#GSS-TexoStreamCore</code> 標記，插件會自動讀取下方資料</li>
         </ul>
@@ -372,20 +410,19 @@
 &gt;Elfin
 !https://www.twitch.tv/elfinl
 #https://www.twitch.tv/elfinl
-#https://dlive.tv/ElfinL
 #https://kick.com/elfinl
 #https://vaughn.live/elfinl
 #https://www.youtube.com/@Elfin-Lee</code></pre>
           <p style="margin-top:8px; font-size:11px; color:#868e96;">
             <span style="color:#ffaa66;">&gt;</span> 實況主名稱<br>
-            <span style="color:#ffaa66;">#</span> 直播平台網址（支援 DLive / Twitch / KICK / Vaughn / YouTube）<br>
+            <span style="color:#ffaa66;">#</span> 直播平台網址（支援 Twitch / KICK / Vaughn / YouTube）<br>
             <span style="color:#ffaa66;">!</span> 共用聊天室（支援 Twitch / KICK）
           </p>
         </div>
 
         <h3>🌐 支援平台</h3>
-        <p><strong>貼圖發送：</strong>DLive、Twitch、KICK、YouTube、Vaughn Live</p>
-        <p><strong>開台狀態檢測：</strong>DLive、Twitch、KICK、YouTube、Vaughn Live（⚫ 尚未支持）</p>
+        <p><strong>貼圖發送：</strong>Twitch、KICK、YouTube、Vaughn Live</p>
+        <p><strong>開台狀態檢測：</strong>Twitch、KICK、YouTube、Vaughn Live（⚫ 尚未支持）</p>
       </div>
     </div>
 
@@ -401,6 +438,65 @@
             <li>Click the GSS icon next to the chat to open the sticker panel</li>
             <li>Click sticker to send (e.g. Twitch/KICK: auto-send, others: auto-fill)</li>
           </ol>
+        </div>
+      </div>
+
+      <div class="content-section">
+        <h2>🌐 Custom Platforms</h2>
+        <p style="font-size: 13px; color: #666; margin-top: -4px; margin-bottom: 12px;">📍 <strong>Location:</strong>
+          <code>Main Panel</code> ➔ <code>Settings</code> ➔ <code>Custom Platform Settings</code>
+        </p>
+        <div class="highlight-box"
+          style="background: rgba(40, 167, 69, 0.08); border-color: rgba(40, 167, 69, 0.4); margin-bottom: 16px;">
+          <p style="color: #28a745; font-weight: bold;">✅ Native Platforms Supported (No Setup Required):</p>
+          <p style="margin-top: 4px; font-size: 12px; line-height: 1.5; color: #555;">
+            GSS has natively integrated sticker management for <strong>Twitch, YouTube, Kick, VaughnLive, BeamStream,
+              and W.tv</strong>.<br>
+            Unless these official websites undergo major structural changes that break native support, <strong>DO
+              NOT</strong> add these domains to the custom platforms below to prevent script execution conflicts.
+          </p>
+        </div>
+        <p>GSS supports adding support for any live streaming website via "Custom Scripts". Even if a platform is not
+          currently listed, you can enable sticker functionality through simple configuration.</p>
+
+        <div class="highlight-box">
+          <p><strong>Set three key parameters:</strong></p>
+          <ul style="margin-top: 8px; font-size: 13px; margin-left: 16px;">
+            <li><strong>Domain:</strong> Where the script activates (e.g., <code>rumble.com</code>).</li>
+            <li><strong>Chat Container:</strong> Where the extension scans for sticker IDs (CSS selector).</li>
+            <li><strong>Custom Script Logic:</strong> Use tags to define button placement and sending behavior.</li>
+          </ul>
+        </div>
+
+        <h3>📜 Script Logic Syntax</h3>
+        <p>Enter one command per line in the "Custom Script Logic" box:</p>
+        <ul style="margin-bottom: 12px;">
+          <li><code>mount: .selector</code> － Where to insert the sticker button.</li>
+          <li><code>input: .selector</code> － Where to paste the sticker ID.</li>
+          <li><code>send: .selector</code> － (Optional) Specify send button. If empty, presses Enter after pasting.</li>
+        </ul>
+
+        <div class="highlight-box" style="background: rgba(74, 144, 226, 0.08); border-color: rgba(74, 144, 226, 0.4);">
+          <p><strong>📝 Real Example (Rumble):</strong></p>
+          <ul style="margin-top: 8px; font-size: 12px; margin-left: 16px; list-style: none;">
+            <li>🌐 <strong>Domain:</strong> <code>rumble.com</code></li>
+            <li>🏠 <strong>Container:</strong> <code>.chat-history</code></li>
+            <li>📜 <strong>Logic:</strong><br>
+              <code>mount: .chat-message-form-section</code><br>
+              <code>input: #chat-message-text-input</code><br>
+              <code>send: .chat--send</code>
+            </li>
+          </ul>
+        </div>
+
+        <div class="highlight-box" style="background: rgba(255, 212, 59, 0.08); border-color: rgba(255, 212, 59, 0.4);">
+          <p><strong>💡 How to get CSS Selectors?</strong></p>
+          <p style="margin-top: 8px; font-size: 12px;">
+            1. Press <code>F12</code> on the target site to open DevTools.<br>
+            2. Use the picker tool ↖️ to click on web elements.<br>
+            3. Find the element's <code>class</code> (starts with <code>.</code>) or <code>id</code> (starts with
+            <code>#</code>).
+          </p>
         </div>
       </div>
 
@@ -508,7 +604,7 @@
         <div class="highlight-box">
           <p><strong>📋 Platform Support:</strong></p>
           <p style="margin-top: 8px; font-size: 12px;">
-            <strong>DLive / Twitch / KICK:</strong> Full thumbnail and player support<br>
+            <strong>Twitch / KICK:</strong> Full thumbnail and player support<br>
             <strong>Vaughn Live:</strong> YT- shows thumbnail, but full YouTube URLs are not converted (to avoid
             platform interception)
           </p>
@@ -539,24 +635,6 @@
         </ul>
       </div>
 
-      <div class="content-section">
-        <h2>🎭 DLive Theater Mode</h2>
-        <p>The DLive settings page provides various visual adjustment features:</p>
-        <ul>
-          <li><strong>Theater Mode:</strong> Fullscreen viewing experience</li>
-          <li><strong>Chat Control:</strong> Adjust chat width or hide it</li>
-          <li><strong>Element Control:</strong> Hide navbar, title, gift area, etc.</li>
-        </ul>
-        <div class="highlight-box">
-          <p><strong>🎮 Fullscreen Shortcuts:</strong></p>
-          <ul style="margin-top: 8px;">
-            <li>Press <code>C</code> key: Toggle chat on/off</li>
-            <li>Hover mouse to right edge: Auto-expand chat room</li>
-          </ul>
-          <p style="margin-top: 8px; font-size: 10px; color: rgba(255,255,255,0.5);">※ Shortcuts only work in fullscreen
-            mode, not in theater mode</p>
-        </div>
-      </div>
 
       <div class="content-section">
         <h2>🧶 TexoStreamCore (TSC) Streamer Management</h2>
@@ -569,7 +647,6 @@
           <pre style="margin:0; font-size:11px;"><code>&gt;Elfin
 !https://www.twitch.tv/elfinl
 #https://www.twitch.tv/elfinl
-#https://dlive.tv/ElfinL
 #https://kick.com/elfinl
 #https://vaughn.live/elfinl
 #https://www.youtube.com/@Elfin-Lee</code></pre>
@@ -586,7 +663,7 @@
           <li><strong>Real-time Status:</strong> 🟢 Online / 🔴 Offline / ⚫ Unknown</li>
           <li><strong>Panel Control:</strong> Click the ▼ arrow next to the site logo to expand/collapse the TSC panel,
             then click platform badges to navigate</li>
-          <li><strong>Shared Chat:</strong> For example, embed Twitch / KICK chat on DLive / Vaughn pages, fully
+          <li><strong>Shared Chat:</strong> For example, embed Twitch / KICK chat on Vaughn pages, fully
             supports GSS stickers (Note: Twitch chat cannot be embedded on KICK pages due to security policy;
             KICK chat can only be viewed but not interacted with on third-party pages due to CSRF protection (waiting
             for KICK to release embed API); Vaughn Live status shows ⚫ Unknown as no reliable detection method is
@@ -605,20 +682,19 @@
 &gt;Elfin
 !https://www.twitch.tv/elfinl
 #https://www.twitch.tv/elfinl
-#https://dlive.tv/ElfinL
 #https://kick.com/elfinl
 #https://vaughn.live/elfinl
 #https://www.youtube.com/@Elfin-Lee</code></pre>
           <p style="margin-top:8px; font-size:11px; color:#868e96;">
             <span style="color:#ffaa66;">&gt;</span> Streamer name<br>
-            <span style="color:#ffaa66;">#</span> Platform URL (supports DLive / Twitch / KICK / Vaughn / YouTube)<br>
+            <span style="color:#ffaa66;">#</span> Platform URL (supports Twitch / KICK / Vaughn / YouTube)<br>
             <span style="color:#ffaa66;">!</span> Shared chat (Twitch / KICK supported)
           </p>
         </div>
 
         <h3>🌐 Supported Platforms</h3>
-        <p><strong>Sticker Sending:</strong> DLive, Twitch, KICK, YouTube, Vaughn Live</p>
-        <p><strong>Live Status Detection:</strong> DLive, Twitch, KICK, YouTube, Vaughn Live (⚫ Not yet supported)</p>
+        <p><strong>Sticker Sending:</strong> Twitch, KICK, YouTube, Vaughn Live</p>
+        <p><strong>Live Status Detection:</strong> Twitch, KICK, YouTube, Vaughn Live (⚫ Not yet supported)</p>
       </div>
     </div>
 
@@ -634,6 +710,61 @@
             <li>点击聊天室旁的 GSS 图标开启贴纸面板</li>
             <li>点击贴图快速发送（例如 Twitch/KICK 全自动，其他平台自动填入）</li>
           </ol>
+        </div>
+      </div>
+
+      <div class="content-section">
+        <h2>🌐 自定义平台</h2>
+        <p style="font-size: 13px; color: #666; margin-top: -4px; margin-bottom: 12px;">📍 <strong>功能位置：</strong>
+          <code>主面板</code> ➔ <code>设置页</code> ➔ <code>自定义平台设置</code>
+        </p>
+        <div class="highlight-box"
+          style="background: rgba(40, 167, 69, 0.08); border-color: rgba(40, 167, 69, 0.4); margin-bottom: 16px;">
+          <p style="color: #28a745; font-weight: bold;">✅ 内置原生支持平台，无需重复添加：</p>
+          <p style="margin-top: 4px; font-size: 12px; line-height: 1.5; color: #555;">
+            GSS 已在底层内置了 <strong>Twitch、YouTube、Kick、VaughnLive、BeamStream、W.tv</strong> 的原生表情管理功能。<br>
+            除非这些官方网站的底层结构发生重大改变、导致原生功能失效，否则<strong>请勿</strong>将上述域名重复添加到下方的自定义平台中，以免发生脚本执行冲突。
+          </p>
+        </div>
+        <p>GSS 支持通过“自定义脚本”来扩展对任何直播网站的支持。即使是目前未列出的平台，您也可以通过简单的设置來启用贴纸功能。</p>
+
+        <div class="highlight-box">
+          <p><strong>设置三个关键参数：</strong></p>
+          <ul style="margin-top: 8px; font-size: 13px; margin-left: 16px;">
+            <li><strong>发动网域：</strong> 决定插件在哪個网站启动（例如：<code>rumble.com</code>）。</li>
+            <li><strong>聊天室容器：</strong> 决定插件要“扫描哪里”來找出别人的贴纸 ID（CSS 选择器）。</li>
+            <li><strong>自定义脚本逻辑：</strong> 使用标签决定按钮位置与发送行为。</li>
+          </ul>
+        </div>
+
+        <h3>📜 脚本逻辑语法</h3>
+        <p>在“自定义脚本逻辑”框中，每行输入一个指令：</p>
+        <ul style="margin-bottom: 12px;">
+          <li><code>mount: .selector</code> － 决定贴纸按钮要插在哪个元素旁边。</li>
+          <li><code>input: .selector</code> － 决定贴纸 ID 要自动贴入哪个输入框。</li>
+          <li><code>send: .selector</code> － (选填) 指定发送按钮。若未填写，则在输入后按 Enter。</li>
+        </ul>
+
+        <div class="highlight-box" style="background: rgba(74, 144, 226, 0.08); border-color: rgba(74, 144, 226, 0.4);">
+          <p><strong>📝 实战范例 (以 Rumble 为例)：</strong></p>
+          <ul style="margin-top: 8px; font-size: 12px; margin-left: 16px; list-style: none;">
+            <li>🌐 <strong>网域：</strong> <code>rumble.com</code></li>
+            <li>🏠 <strong>容器：</strong> <code>.chat-history</code></li>
+            <li>📜 <strong>逻辑：</strong><br>
+              <code>mount: .chat-message-form-section</code><br>
+              <code>input: #chat-message-text-input</code><br>
+              <code>send: .chat--send</code>
+            </li>
+          </ul>
+        </div>
+
+        <div class="highlight-box" style="background: rgba(255, 212, 59, 0.08); border-color: rgba(255, 212, 59, 0.4);">
+          <p><strong>💡 如何取得 CSS 选择器？</strong></p>
+          <p style="margin-top: 8px; font-size: 12px;">
+            1. 在目标网站按下 <code>F12</code> 开启开发者工具。<br>
+            2. 使用选择工具 ↖️ 点击网页元素。<br>
+            3. 查看该元素的 <code>class</code> (用 <code>.</code> 开头) 或 <code>id</code> (用 <code>#</code> 开头)。
+          </p>
         </div>
       </div>
 
@@ -738,7 +869,7 @@
         <div class="highlight-box">
           <p><strong>📋 平台支持状态：</strong></p>
           <p style="margin-top: 8px; font-size: 12px;">
-            <strong>DLive / Twitch / KICK：</strong>完整支持缩略图与播放器<br>
+            <strong>Twitch / KICK：</strong>完整支持缩略图与播放器<br>
             <strong>Vaughn Live：</strong>YT- 会显示缩略图，但完整 YouTube 链接不会转换（避免官方拦截）
           </p>
         </div>
@@ -767,23 +898,6 @@
         </ul>
       </div>
 
-      <div class="content-section">
-        <h2>🎭 DLive 剧院模式</h2>
-        <p>DLive 设定页提供多种视觉调整功能：</p>
-        <ul>
-          <li><strong>剧院模式：</strong>全屏观看体验</li>
-          <li><strong>聊天室控制：</strong>调整聊天室宽度或隐藏</li>
-          <li><strong>元素控制：</strong>隐藏导航栏、标题、送礼区等</li>
-        </ul>
-        <div class="highlight-box">
-          <p><strong>🎮 全屏模式快捷键：</strong></p>
-          <ul style="margin-top: 8px;">
-            <li>按 <code>C</code> 键：快速开关聊天室</li>
-            <li>鼠标移到画面右侧：自动展开聊天室</li>
-          </ul>
-          <p style="margin-top: 8px; font-size: 10px; color: rgba(255,255,255,0.5);">※ 快捷键仅在全屏模式下有效，剧院模式不适用</p>
-        </div>
-      </div>
 
       <div class="content-section">
         <h2>🧶 TexoStreamCore (TSC) 实况管理</h2>
@@ -795,7 +909,6 @@
           <pre style="margin:0; font-size:11px;"><code>&gt;Elfin
 !https://www.twitch.tv/elfinl
 #https://www.twitch.tv/elfinl
-#https://dlive.tv/ElfinL
 #https://kick.com/elfinl
 #https://vaughn.live/elfinl
 #https://www.youtube.com/@Elfin-Lee</code></pre>
@@ -811,7 +924,7 @@
           <li><strong>多位实况主管理：</strong>同时追踪多位实况主的开台状态</li>
           <li><strong>实时状态显示：</strong>🟢 在线 / 🔴 离线 / ⚫ 未知</li>
           <li><strong>面板控制：</strong>点击网站标志右侧的 ▼ 箭头展开/收合 TSC 面板，再点击平台徽章直接跳转</li>
-          <li><strong>共用聊天室：</strong>例如将 Twitch / KICK 聊天嵌入 DLive / Vaughn 页面，完全支持 GSS 贴纸（注意：Twitch 聊天因安全策略无法在 KICK
+          <li><strong>共用聊天室：</strong>例如将 Twitch / KICK 聊天嵌入 Vaughn 页面，完全支持 GSS 贴纸（注意：Twitch 聊天因安全策略无法在 KICK
             页面嵌入；KICK 聊天因 CSRF 保护限制，在第三方页面只能查看无法发言（等待 KICK 官方开放嵌入 API）；Vaughn Live 因无可靠检测方法，开台状态暂时显示 ⚫ 未知）</li>
           <li><strong>自动抓取：</strong>在直播页面放置 <code>#GSS-TexoStreamCore</code> 标记，插件会自动读取下方资料</li>
         </ul>
@@ -825,20 +938,19 @@
 &gt;Elfin
 !https://www.twitch.tv/elfinl
 #https://www.twitch.tv/elfinl
-#https://dlive.tv/ElfinL
 #https://kick.com/elfinl
 #https://vaughn.live/elfinl
 #https://www.youtube.com/@Elfin-Lee</code></pre>
           <p style="margin-top:8px; font-size:11px; color:#868e96;">
             <span style="color:#ffaa66;">&gt;</span> 实况主名称<br>
-            <span style="color:#ffaa66;">#</span> 直播平台网址（支持 DLive / Twitch / KICK / Vaughn / YouTube）<br>
+            <span style="color:#ffaa66;">#</span> 直播平台网址（支持 Twitch / KICK / Vaughn / YouTube）<br>
             <span style="color:#ffaa66;">!</span> 共用聊天室（支持 Twitch / KICK）
           </p>
         </div>
 
         <h3>🌐 支持平台</h3>
-        <p><strong>贴图发送：</strong>DLive、Twitch、KICK、YouTube、Vaughn Live</p>
-        <p><strong>开台状态检测：</strong>DLive、Twitch、KICK、YouTube、Vaughn Live（⚫ 尚未支持）</p>
+        <p><strong>贴图发送：</strong>Twitch、KICK、YouTube、Vaughn Live</p>
+        <p><strong>开台状态检测：</strong>Twitch、KICK、YouTube、Vaughn Live（⚫ 尚未支持）</p>
       </div>
     </div>
 
@@ -854,6 +966,61 @@
             <li>チャット横の GSS アイコンをクリックしてパネルを開く</li>
             <li>ステッカーをクリックして送信（例: Twitch/KICK: 自動送信、他のプラットフォーム: 自動入力）</li>
           </ol>
+        </div>
+      </div>
+
+      <div class="content-section">
+        <h2>🌐 カスタムプラットフォーム</h2>
+        <p style="font-size: 13px; color: #666; margin-top: -4px; margin-bottom: 12px;">📍 <strong>機能の場所：</strong>
+          <code>メインパネル</code> ➔ <code>設定ページ</code> ➔ <code>カスタムプラットフォーム設定</code>
+        </p>
+        <div class="highlight-box"
+          style="background: rgba(40, 167, 69, 0.08); border-color: rgba(40, 167, 69, 0.4); margin-bottom: 16px;">
+          <p style="color: #28a745; font-weight: bold;">✅ 標準対応プラットフォーム（追加不要）：</p>
+          <p style="margin-top: 4px; font-size: 12px; line-height: 1.5; color: #555;">
+            GSS は既にシステム標準で <strong>Twitch、YouTube、Kick、VaughnLive、BeamStream、W.tv</strong> のネイティブスタンプ管理機能を搭載しています。<br>
+            プラットフォーム側の仕様変更により標準機能が動作しなくなった場合を除き、スクリプトの衝突を防ぐため、上記のドメインを下のカスタムプラットフォームに<strong>重複して追加しないでください</strong>。
+          </p>
+        </div>
+        <p>GSSは「カスタムスクリプト」を通じて、あらゆるライブ配信サイトへの対応を拡張できます。現在リストにないプラットフォームでも、簡単な設定でステッカー機能を有効にできます。</p>
+
+        <div class="highlight-box">
+          <p><strong>3つの主要パラメータを設定：</strong></p>
+          <ul style="margin-top: 8px; font-size: 13px; margin-left: 16px;">
+            <li><strong>発動ドメイン：</strong> 拡張機能が起動するサイト（例：<code>rumble.com</code>）。</li>
+            <li><strong>チャットコンテナ：</strong> ステッカーIDをスキャンする場所（CSSセレクター）。</li>
+            <li><strong>カスタムスクリプト：</strong> ボタンの位置と送信動作をタグで決定。</li>
+          </ul>
+        </div>
+
+        <h3>📜 スクリプト構文</h3>
+        <p>「カスタムスクリプト」ボックスに、1行に1つのコマンドを入力します：</p>
+        <ul style="margin-bottom: 12px;">
+          <li><code>mount: .selector</code> － ステッカーボタンの挿入先。</li>
+          <li><code>input: .selector</code> － ステッカーIDの貼り付け先。</li>
+          <li><code>send: .selector</code> － (任意) 送信ボタンの指定。未入力の場合は貼り付け後にEnterキー。</li>
+        </ul>
+
+        <div class="highlight-box" style="background: rgba(74, 144, 226, 0.08); border-color: rgba(74, 144, 226, 0.4);">
+          <p><strong>📝 実践例 (Rumbleの場合)：</strong></p>
+          <ul style="margin-top: 8px; font-size: 12px; margin-left: 16px; list-style: none;">
+            <li>🌐 <strong>ドメイン：</strong> <code>rumble.com</code></li>
+            <li>🏠 <strong>コンテナ：</strong> <code>.chat-history</code></li>
+            <li>📜 <strong>ロジック：</strong><br>
+              <code>mount: .chat-message-form-section</code><br>
+              <code>input: #chat-message-text-input</code><br>
+              <code>send: .chat--send</code>
+            </li>
+          </ul>
+        </div>
+
+        <div class="highlight-box" style="background: rgba(255, 212, 59, 0.08); border-color: rgba(255, 212, 59, 0.4);">
+          <p><strong>💡 CSSセレクターの取得方法</strong></p>
+          <p style="margin-top: 8px; font-size: 12px;">
+            1. 対象サイトで <code>F12</code> を押してデベロッパーツールを開く。<br>
+            2. 選択ツール ↖️ で要素をクリック。<br>
+            3. 要素の <code>class</code> (<code>.</code> で開始) または <code>id</code> (<code>#</code> で開始) を確認。
+          </p>
         </div>
       </div>
 
@@ -958,7 +1125,7 @@
         <div class="highlight-box">
           <p><strong>📋 プラットフォームのサポート状況：</strong></p>
           <p style="margin-top: 8px; font-size: 12px;">
-            <strong>DLive / Twitch / KICK：</strong>サムネイルとプレーヤーを完全サポート<br>
+            <strong>Twitch / KICK：</strong>サムネイルとプレーヤーを完全サポート<br>
             <strong>Vaughn Live：</strong>YT- はサムネイルを表示しますが、完全な YouTube URL は変換されません（プラットフォームの妨害を避けるため）
           </p>
         </div>
@@ -987,24 +1154,7 @@
         </ul>
       </div>
 
-      <div class="content-section">
-        <h2>🎭 DLive シアターモード</h2>
-        <p>DLive 設定ページでは、さまざまな視覚調整機能を提供しています：</p>
-        <ul>
-          <li><strong>シアターモード：</strong>全画面表示体験</li>
-          <li><strong>チャット制御：</strong>チャット幅の調整または非表示</li>
-          <li><strong>要素制御：</strong>ナビバー、タイトル、ギフトエリアなどを非表示</li>
-        </ul>
-        <div class="highlight-box">
-          <p><strong>🎮 全画面ショートカット：</strong></p>
-          <ul style="margin-top: 8px;">
-            <li><code>C</code> キー：チャットのオン/オフ切り替え</li>
-            <li>マウスを右端に移動：チャットを自動展開</li>
-          </ul>
-          <p style="margin-top: 8px; font-size: 10px; color: rgba(255,255,255,0.5);">※ ショートカットは全画面モードでのみ有効。シアターモードでは無効
-          </p>
-        </div>
-      </div>
+
 
       <div class="content-section">
         <h2>🧶 TexoStreamCore (TSC) 配信者管理</h2>
@@ -1016,7 +1166,6 @@
           <pre style="margin:0; font-size:11px;"><code>&gt;Elfin
 !https://www.twitch.tv/elfinl
 #https://www.twitch.tv/elfinl
-#https://dlive.tv/ElfinL
 #https://kick.com/elfinl
 #https://vaughn.live/elfinl
 #https://www.youtube.com/@Elfin-Lee</code></pre>
@@ -1032,7 +1181,7 @@
           <li><strong>複数配信者管理：</strong>複数の配信者の配信状態を同時に追跡</li>
           <li><strong>リアルタイム状態：</strong>🟢 配信中 / 🔴 オフライン / ⚫ 不明</li>
           <li><strong>パネルコントロール：</strong>サイトロゴの右側にある ▼ 矢印をクリックして TSC パネルを展開/折りたたみ、プラットフォームバッジをクリックして移動</li>
-          <li><strong>共用チャット：</strong>例えばTwitch / KICKチャットをDLive /
+          <li><strong>共用チャット：</strong>例えばTwitch / KICKチャットを
             Vaughnページに埋め込み、GSSステッカーを完全サポート（注意：TwitchチャットはセキュリティポリシーによりKICKページに埋め込めません；KICKチャットはCSRF保護のため、第三者ページでは表示のみで発言できません（KICKの埋め込みAPI公開を待機中）；Vaughn
             Live は信頼できる検出方法がないため、配信状態は一時的に ⚫ 不明と表示されます）
           </li>
@@ -1048,20 +1197,19 @@
 &gt;Elfin
 !https://www.twitch.tv/elfinl
 #https://www.twitch.tv/elfinl
-#https://dlive.tv/ElfinL
 #https://kick.com/elfinl
 #https://vaughn.live/elfinl
 #https://www.youtube.com/@Elfin-Lee</code></pre>
           <p style="margin-top:8px; font-size:11px; color:#868e96;">
             <span style="color:#ffaa66;">&gt;</span> 配信者名<br>
-            <span style="color:#ffaa66;">#</span> プラットフォームURL（DLive / Twitch / KICK / Vaughn / YouTube対応）<br>
+            <span style="color:#ffaa66;">#</span> プラットフォームURL（Twitch / KICK / Vaughn / YouTube対応）<br>
             <span style="color:#ffaa66;">!</span> 共用チャット（Twitch / KICK対応）
           </p>
         </div>
 
         <h3>🌐 対応プラットフォーム</h3>
-        <p><strong>スタンプ送信：</strong>DLive、Twitch、KICK、YouTube、Vaughn Live</p>
-        <p><strong>配信状態検出：</strong>DLive、Twitch、KICK、YouTube、Vaughn Live（⚫ 未サポート）</p>
+        <p><strong>スタンプ送信：</strong>Twitch、KICK、YouTube、Vaughn Live</p>
+        <p><strong>配信状態検出：</strong>Twitch、KICK、YouTube、Vaughn Live（⚫ 未サポート）</p>
       </div>
     </div>
 
@@ -1077,6 +1225,63 @@
             <li>채팅창 옆 GSS 아이콘을 클릭하여 스티커 패널 열기</li>
             <li>스티커 클릭으로 빠른 전송 (예: Twitch/KICK: 자동 전송, 다른 플랫폼: 자동 입력)</li>
           </ol>
+        </div>
+      </div>
+
+      <div class="content-section">
+        <h2>🌐 사용자 정의 플랫폼</h2>
+        <p style="font-size: 13px; color: #666; margin-top: -4px; margin-bottom: 12px;">📍 <strong>기능 위치:</strong>
+          <code>메인 패널</code> ➔ <code>설정 페이지</code> ➔ <code>커스텀 플랫폼 설정</code></p>
+        <div class="highlight-box"
+          style="background: rgba(40, 167, 69, 0.08); border-color: rgba(40, 167, 69, 0.4); margin-bottom: 16px;">
+          <p style="color: #28a745; font-weight: bold;">✅ 기본 지원 플랫폼 (중복 추가 불필요):</p>
+          <p style="margin-top: 4px; font-size: 12px; line-height: 1.5; color: #555;">
+            GSS는 이미 내장 기능으로 <strong>Twitch, YouTube, Kick, VaughnLive, BeamStream, W.tv</strong>의 네이티브 스티커 관리 기능을 지원하고
+            있습니다.<br>
+            해당 공식 웹사이트의 구조가 완전히 변경되어 기본 기능이 손상되지 않는 한, 스크립트 실행 충돌을 방지하기 위해 위의 도메인을 아래 커스텀 플랫폼에 <strong>중복으로 추가하지
+              마십시오</strong>.
+          </p>
+        </div>
+        <p>GSS는 "사용자 정의 스크립트"를 통해 모든 라이브 스트리밍 사이트에 대한 지원을 확장할 수 있습니다. 현재 목록에 없는 플랫폼이라도 간단한 설정을 통해 스티커 기능을 활성화할 수 있습니다.
+        </p>
+
+        <div class="highlight-box">
+          <p><strong>세 가지 핵심 매개변수 설정:</strong></p>
+          <ul style="margin-top: 8px; font-size: 13px; margin-left: 16px;">
+            <li><strong>발동 도메인:</strong> 확장 프로그램이 작동할 사이트 (예: <code>rumble.com</code>).</li>
+            <li><strong>채팅 컨테이너:</strong> 스티커 ID를 스캔할 위치 (CSS 선택자).</li>
+            <li><strong>사용자 정의 스크립트:</strong> 버튼 위치와 전송 동작을 태그로 결정.</li>
+          </ul>
+        </div>
+
+        <h3>📜 스크립트 구문</h3>
+        <p>「사용자 정의 스크립트」 상자에 한 줄에 하나의 명령을 입력합니다:</p>
+        <ul style="margin-bottom: 12px;">
+          <li><code>mount: .selector</code> － 스티커 버튼을 삽입할 위치.</li>
+          <li><code>input: .selector</code> － 스티커 ID를 붙여넣을 입력창.</li>
+          <li><code>send: .selector</code> － (선택 사항) 전송 버튼 지정. 미입력 시 붙여넣기 후 Enter 키 입력.</li>
+        </ul>
+
+        <div class="highlight-box" style="background: rgba(74, 144, 226, 0.08); border-color: rgba(74, 144, 226, 0.4);">
+          <p><strong>📝 실전 예시 (Rumble 기준):</strong></p>
+          <ul style="margin-top: 8px; font-size: 12px; margin-left: 16px; list-style: none;">
+            <li>🌐 <strong>도메인:</strong> <code>rumble.com</code></li>
+            <li>🏠 <strong>컨테이너:</strong> <code>.chat-history</code></li>
+            <li>📜 <strong>로직:</strong><br>
+              <code>mount: .chat-message-form-section</code><br>
+              <code>input: #chat-message-text-input</code><br>
+              <code>send: .chat--send</code>
+            </li>
+          </ul>
+        </div>
+
+        <div class="highlight-box" style="background: rgba(255, 212, 59, 0.08); border-color: rgba(255, 212, 59, 0.4);">
+          <p><strong>💡 CSS 선택자를 어떻게 가져오나요?</strong></p>
+          <p style="margin-top: 8px; font-size: 12px;">
+            1. 대상 사이트에서 <code>F12</code>를 눌러 개발자 도구를 엽니다.<br>
+            2. 선택 도구 ↖️를 사용하여 웹 요소를 클릭합니다.<br>
+            3. 해당 요소의 <code>class</code> (<code>.</code>으로 시작) 또는 <code>id</code> (<code>#</code>으로 시작)를 확인합니다.
+          </p>
         </div>
       </div>
 
@@ -1181,7 +1386,7 @@
         <div class="highlight-box">
           <p><strong>📋 플랫폼 지원 상태:</strong></p>
           <p style="margin-top: 8px; font-size: 12px;">
-            <strong>DLive / Twitch / KICK:</strong> 썸네일과 플레이어 완전 지원<br>
+            <strong>Twitch / KICK:</strong> 썸네일과 플레이어 완전 지원<br>
             <strong>Vaughn Live:</strong> YT- 는 썸네일을 표시하지만, 전체 YouTube 링크는 변환되지 않습니다 (플랫폼 차단 방지)
           </p>
         </div>
@@ -1210,24 +1415,7 @@
         </ul>
       </div>
 
-      <div class="content-section">
-        <h2>🎭 DLive 극장 모드</h2>
-        <p>DLive 설정 페이지는 다양한 시각 조정 기능을 제공합니다:</p>
-        <ul>
-          <li><strong>극장 모드:</strong> 전체 화면 시청 경험</li>
-          <li><strong>채팅 제어:</strong> 채팅창 너비 조정 또는 숨기기</li>
-          <li><strong>요소 제어:</strong> 네비바, 제목, 선물 영역 등 숨기기</li>
-        </ul>
-        <div class="highlight-box">
-          <p><strong>🎮 전체 화면 단축키:</strong></p>
-          <ul style="margin-top: 8px;">
-            <li><code>C</code> 키: 채팅 켜기/끄기 전환</li>
-            <li>마우스를 오른쪽 가장자리로 이동: 채팅창 자동 펼치기</li>
-          </ul>
-          <p style="margin-top: 8px; font-size: 10px; color: rgba(255,255,255,0.5);">※ 단축키는 전체 화면 모드에서만 작동하며, 극장 모드에서는
-            적용되지 않음</p>
-        </div>
-      </div>
+
 
       <div class="content-section">
         <h2>🧶 TexoStreamCore (TSC) 스트리머 관리</h2>
@@ -1239,7 +1427,6 @@
           <pre style="margin:0; font-size:11px;"><code>&gt;Elfin
 !https://www.twitch.tv/elfinl
 #https://www.twitch.tv/elfinl
-#https://dlive.tv/ElfinL
 #https://kick.com/elfinl
 #https://vaughn.live/elfinl
 #https://www.youtube.com/@Elfin-Lee</code></pre>
@@ -1255,7 +1442,7 @@
           <li><strong>다중 스트리머 관리:</strong> 여러 스트리머의 방송 상태를 동시에 추적</li>
           <li><strong>실시간 상태:</strong> 🟢 방송중 / 🔴 오프라인 / ⚫ 알 수 없음</li>
           <li><strong>패널 제어:</strong> 사이트 로고 오른쪽의 ▼ 화살표를 클릭하여 TSC 패널을 펼치기/접기, 플랫폼 배지를 클릭하여 이동</li>
-          <li><strong>공용 채팅:</strong> 예를 들어 Twitch / KICK 채팅을 DLive / Vaughn 페이지에 임베드, GSS 스티커 완전 지원 (참고: Twitch 채팅은 보안
+          <li><strong>공용 채팅:</strong> 예를 들어 Twitch / KICK 채팅을 Vaughn 페이지에 임베드, GSS 스티커 완전 지원 (참고: Twitch 채팅은 보안
             정책으로 인해 KICK 페이지에 임베드할 수 없습니다；KICK 채팅은 CSRF 보호로 인해 타사 페이지에서는 조회만 가능하고 발언할 수 없습니다 (KICK 임베드 API 공개 대기
             중)；Vaughn Live는 신뢰할 수 있는 감지 방법이 없어 방송 상태가 일시적으로 ⚫ 알 수 없음으로 표시됩니다)
           </li>
@@ -1271,20 +1458,19 @@
 &gt;Elfin
 !https://www.twitch.tv/elfinl
 #https://www.twitch.tv/elfinl
-#https://dlive.tv/ElfinL
 #https://kick.com/elfinl
 #https://vaughn.live/elfinl
 #https://www.youtube.com/@Elfin-Lee</code></pre>
           <p style="margin-top:8px; font-size:11px; color:#868e96;">
             <span style="color:#ffaa66;">&gt;</span> 스트리머 이름<br>
-            <span style="color:#ffaa66;">#</span> 플랫폼 URL（DLive / Twitch / KICK / Vaughn / YouTube 지원）<br>
+            <span style="color:#ffaa66;">#</span> 플랫폼 URL（Twitch / KICK / Vaughn / YouTube 지원）<br>
             <span style="color:#ffaa66;">!</span> 공용 채팅（Twitch / KICK 지원）
           </p>
         </div>
 
         <h3>🌐 지원 플랫폼</h3>
-        <p><strong>스티커 전송:</strong> DLive、Twitch、KICK、YouTube、Vaughn Live</p>
-        <p><strong>방송 상태 감지:</strong> DLive、Twitch、KICK、YouTube、Vaughn Live（⚫ 미지원）</p>
+        <p><strong>스티커 전송:</strong> Twitch、KICK、YouTube、Vaughn Live</p>
+        <p><strong>방송 상태 감지:</strong> Twitch、KICK、YouTube、Vaughn Live（⚫ 미지원）</p>
       </div>
     </div>
 

@@ -763,59 +763,37 @@
     }
 
     .custom-dialog {
-      background: linear-gradient(180deg, rgba(32, 34, 40, 1), rgba(20, 22, 28, 1));
+      background: #14161c;
       border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 12px;
-      width: 100%;
-      max-width: 320px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-      overflow: hidden;
+      border-radius: 8px;
+      width: 95%;
+      /* 寬度稍微縮小 */
+      max-width: 340px;
+      max-height: 90vh;
+      /* 限制最高高度 */
+      display: flex;
+      flex-direction: column;
     }
 
     .custom-dialog-header {
-      padding: 16px 16px 12px;
+      padding: 10px 12px;
+      /* 縮減 padding */
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       display: flex;
       align-items: center;
       gap: 10px;
     }
 
-    .custom-dialog-icon {
-      font-size: 20px;
-      flex-shrink: 0;
-    }
-
-    .custom-dialog-title {
-      font-size: 15px;
-      font-weight: 600;
-      color: rgba(255, 255, 255, 0.95);
-    }
-
     .custom-dialog-content {
-      padding: 14px 16px;
-      font-size: 12px;
-      line-height: 1.7;
-      color: rgba(255, 255, 255, 0.85);
-      white-space: pre-wrap;
-      word-wrap: break-word;
-    }
-
-    .custom-dialog-content .highlight {
-      color: #ffd43b;
-      font-weight: 500;
-    }
-
-    .custom-dialog-content ol {
-      margin: 10px 0;
-      padding-left: 20px;
-    }
-
-    .custom-dialog-content li {
-      margin: 6px 0;
+      padding: 10px 12px;
+      overflow-y: auto;
+      /* 超出時可滾動 */
     }
 
     .custom-dialog-footer {
-      padding: 12px 16px 16px;
+      padding: 8px 12px 10px;
+      /* 縮減 padding */
+      background: rgba(0, 0, 0, 0.2);
       display: flex;
       gap: 10px;
       justify-content: flex-end;
@@ -848,6 +826,50 @@
 
     .custom-dialog-btn.confirm:hover {
       background: #ffec4d;
+    }
+
+    /* 自定義平台列表樣式 */
+    .custom-platform-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .custom-platform-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .custom-platform-item.selected {
+      background: rgba(74, 144, 226, 0.15);
+      border-color: #4a90e2;
+    }
+
+    .custom-platform-item .hostname {
+      flex: 1;
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .custom-platform-item .actions button {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.4);
+      padding: 4px 8px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: color 0.2s;
+    }
+
+    .custom-platform-item .actions button:hover {
+      color: #ff5050;
     }
   </style>
 </head>
@@ -1010,49 +1032,67 @@
     <div class="settings-page">
       <!-- 區塊 1: 通用設定 -->
       <div class="settings-section">
-        <div class="settings-section-title">⚡ 通用設定</div>
+        <div class="settings-section-title" id="generalSettingsTitle">⚡ 通用設定</div>
         <div class="settings-btn-grid">
-          <button class="settings-btn" id="btnDisableNativeContextMenu">🖱️ 關閉右鍵面板</button>
+          <button class="settings-btn" id="btnDisableNativeContextMenu">🖱️ <span
+              class="btn-text">關閉右鍵面板</span></button>
         </div>
       </div>
 
-      <!-- 區塊 2: 劇院模式 (通用功能) -->
+      <!-- 區塊 2: 自定義平台 -->
       <div class="settings-section">
-        <div class="settings-section-title">🎭 劇院模式</div>
-        <div class="settings-btn-grid">
-          <button class="settings-btn" id="btnTheater13">🎭 劇院模式</button>
-          <button class="settings-btn" id="btnTestZoomReset">🔄 縮放重置</button>
-          <button class="settings-btn" id="btnTestZoomOut">🔍- 縮小10%</button>
-          <button class="settings-btn" id="btnTestZoomIn">🔍+ 放大10%</button>
+        <div class="settings-section-title" id="customPlatformSectionTitle">🌐 自定義平台</div>
+        <div id="customPlatformSectionHint"
+          style="font-size: 11px; color: rgba(255,255,255,0.6); margin-bottom: 10px; line-height: 1.5;">
+          為不支援的平台添加自定義腳本，格式：網域一行，聊天室選擇器一行，輸入框選擇器一行
         </div>
-      </div>
-
-      <!-- 區塊 3: 聊天室控制 (通用功能) -->
-      <div class="settings-section">
-        <div class="settings-section-title">💬 聊天室控制</div>
-        <div class="settings-btn-grid">
-          <button class="settings-btn" id="btnChatNarrow">💬 聊天室變窄</button>
-          <button class="settings-btn" id="btnChatHidden">🚫 隱藏聊天室</button>
-          <button class="settings-btn" id="btnChatOverlayFix1">🎬 浮動聊天室</button>
-        </div>
-      </div>
-
-      <!-- 區塊 4: 元素控制 (通用功能) -->
-      <div class="settings-section">
-        <div class="settings-section-title">👁️ 元素控制</div>
-        <div class="settings-btn-grid">
-          <button class="settings-btn" id="btnNavbar">📌 隱藏頂部欄</button>
-          <button class="settings-btn" id="btnTitleFix1">👁️ 隱藏標題</button>
-          <button class="settings-btn" id="btnDonation">💰 隱藏送禮區</button>
-          <button class="settings-btn" id="btnSidebar">📁 隱藏側邊欄</button>
-          <button class="settings-btn" id="btnAboutFix1">📦 隱藏下方區</button>
-          <button class="settings-btn" id="btnTestBlackFix1">🖤 黑色背景</button>
+        <div id="customPlatformsList" style="max-height: 200px; overflow-y: auto; margin-bottom: 12px;"></div>
+        <div style="display: flex; gap: 8px;">
+          <button id="btnAddCustomPlatform"
+            style="flex: 1; padding: 10px; background: #28a745; border: none; border-radius: 6px; color: #fff; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+            <span class="btn-text">新增平台</span>
+          </button>
+          <button id="btnEditCustomPlatform"
+            style="flex: 1; padding: 10px; background: #4a90e2; border: none; border-radius: 6px; color: #fff; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+            <span class="btn-text">編輯選中</span>
+          </button>
         </div>
       </div>
 
       <!-- 狀態顯示 -->
-      <div class="settings-status" id="settingsStatus">
-        ℹ️ 需要在支援的直播平台頁面才能使用這些功能
+
+    </div>
+    <!-- 自定義平台編輯對話框 -->
+    <div id="customPlatformDialog" class="custom-dialog-overlay">
+      <div class="custom-dialog">
+        <div class="custom-dialog-header">
+          <span class="custom-dialog-icon">🌐</span>
+          <span class="custom-dialog-title" id="customPlatformDialogTitle">編輯自定義平台</span>
+        </div>
+        <div class="custom-dialog-content" style="padding: 10px 14px;">
+          <div style="margin-bottom: 8px;">
+            <label style="display: block; font-size: 11px; color: #ffd43b; margin-bottom: 2px; font-weight: 600;">🌐
+              發動網域 (如: rumble.com)</label>
+            <input type="text" id="customPlatformHostname" placeholder="rumble.com"
+              style="width: 100%; padding: 6px 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #fff; font-size: 13px; outline: none; box-sizing: border-box;">
+          </div>
+          <div style="margin-bottom: 8px;">
+            <label style="display: block; font-size: 11px; color: #28a745; margin-bottom: 2px; font-weight: 600;">🏠
+              聊天室容器 (掃瞄 ID 用)</label>
+            <input type="text" id="customPlatformChatContainer" placeholder=".chat-history"
+              style="width: 100%; padding: 6px 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #fff; font-size: 13px; outline: none; box-sizing: border-box;">
+          </div>
+          <div style="margin-bottom: 4px;">
+            <label style="display: block; font-size: 11px; color: #4a90e2; margin-bottom: 2px; font-weight: 600;">📜
+              自定義腳本邏輯</label>
+            <textarea id="customPlatformLogic" placeholder="mount: .buttons&#10;input: #chat-input&#10;send: .send-btn"
+              style="width: 100%; height: 80px; padding: 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #fff; font-size: 12px; font-family: 'Consolas', monospace; resize: none; line-height: 1.4; outline: none; box-sizing: border-box;"></textarea>
+          </div>
+        </div>
+        <div class="custom-dialog-footer">
+          <button class="custom-dialog-btn cancel" id="btnCancelCustomPlatform">取消</button>
+          <button class="custom-dialog-btn confirm" id="btnSaveCustomPlatform">儲存</button>
+        </div>
       </div>
     </div>
   </div>

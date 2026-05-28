@@ -3219,6 +3219,13 @@ async function refreshPanelStickers() {
 }
 
 function findChatContainer() {
+  // 優先使用新架構的適配器尋找容器
+  const adapter = getPlatformAdapter();
+  if (adapter && typeof adapter.findChatContainer === 'function') {
+    const el = adapter.findChatContainer();
+    if (el) return el;
+  }
+
   // DLive: .chatroom-input
   // Twitch: 需要找到包含輸入框和表情按鈕的容器
   // Vaughn: .vs_chatv9_input_box (容器), #vs_chatv9_input_box (textarea)
@@ -3256,10 +3263,14 @@ function findChatContainer() {
 }
 
 function ensureChatButton() {
+  // 1. 關鍵檢查：如果完全沒有匹配的平台適配器，就不要做任何事情
+  const adapter = getPlatformAdapter();
+  if (!adapter) return false;
+
   const chat = findChatContainer();
   if (!chat) return false;
 
-  // 檢查是否已存在 GSS 按鈕（包括傳統按鈕和 w.tv 按鈕）
+  // 檢查是否已存在 GSS 按鈕
   if (document.getElementById(UI.btnId)) return true;
 
   // w.tv 特殊檢查：檢查是否已存在按鈕並更新圖標大小
@@ -3647,6 +3658,34 @@ function ensureChatButton() {
         btn.id = UI.btnId;
         chat.appendChild(btn);
       }
+    }
+  } else if (getPlatformAdapter()) {
+    // 自定義平台：使用適配器提供的掛載點
+    const adapter = getPlatformAdapter();
+    const mountPoint = adapter.findEmoteButton ? adapter.findEmoteButton() : null;
+
+    if (mountPoint) {
+      btn.style.cssText = '';
+      btn.style.background = 'transparent';
+      btn.style.border = 'none';
+      btn.style.cursor = 'pointer';
+      btn.style.padding = '4px';
+      btn.style.marginLeft = '4px';
+      btn.style.width = '30px';
+      btn.style.height = '30px';
+      btn.style.display = 'inline-flex';
+      btn.style.alignItems = 'center';
+      btn.style.justifyContent = 'center';
+      btn.style.verticalAlign = 'middle';
+      
+      // 根據情況插入
+      if (mountPoint.tagName === 'INPUT' || mountPoint.tagName === 'TEXTAREA') {
+        mountPoint.after(btn);
+      } else {
+        mountPoint.appendChild(btn);
+      }
+    } else {
+      chat.appendChild(btn);
     }
   } else {
     // DLive / Vaughn 備援: 直接附加到聊天輸入框
@@ -6983,6 +7022,13 @@ function extractMeeeId(url, useTwitchFormat = false) {
 let isSendingMessage = false;
 
 function initIMFeature() {
+  // 【關鍵修正】如果沒有匹配的平台適配器，直接退出，不啟動任何掃描器
+  const adapter = getPlatformAdapter();
+  if (!adapter) {
+    console.log('[GSS] 未偵測到匹配平台，掃描器不啟動');
+    return;
+  }
+
   // 【修復】Twitch、Vaughn、Kick、WTV 分開處理
   const isTwitchPage = window.location.hostname.includes('twitch.tv');
   const isVaughnPage = window.location.hostname.includes('vaughn.live');

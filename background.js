@@ -5,6 +5,98 @@ const statusCache = new Map();
 const CACHE_DURATION = 60000; // 1 分鐘快取
 const pendingRequests = new Map(); // 進行中的請求去重
 
+// ========= 自定義平台：動態注入 content script =========
+const GSS_CONTENT_JS = [
+  'stickerStorage.js',
+  'stickerTags.js',
+  'stickerRegistry.js',
+  'libraries/base.js',
+  'libraries/imgur.js',
+  'libraries/meee.js',
+  'libraries/catbox.js',
+  'libraries/index.js',
+  'platforms/base.js',
+  'platforms/custom.js',
+  'platforms/twitch.js',
+  'platforms/vaughn.js',
+  'platforms/kick.js',
+  'platforms/youtube.js',
+  'platforms/beamstream.js',
+  'platforms/wtv.js',
+  'platforms/index.js',
+  'modules/gsstracker.js',
+  'TexoStreamCore/sharedChat.js',
+  'TexoStreamCore/panel.js',
+  'content.js'
+];
+
+function normalizeHostname(input) {
+  return String(input || '')
+    .replace(/^https?:\/\//i, '')
+    .replace(/\/.*$/, '')
+    .trim();
+}
+
+function hostnameToOrigins(hostname) {
+  const host = normalizeHostname(hostname);
+  if (!host) return [];
+  return [
+    `https://${host}/*`,
+    `https://*.${host}/*`,
+    `http://${host}/*`,
+    `http://*.${host}/*`
+  ];
+}
+
+function hostnameToMatches(hostname) {
+  return hostnameToOrigins(hostname);
+}
+
+function scriptIdForHost(hostname) {
+  return 'gss-custom-' + normalizeHostname(hostname).replace(/[^a-zA-Z0-9]/g, '-');
+}
+
+async function registerCustomPlatformScripts(hostname) {
+  const host = normalizeHostname(hostname);
+  const matches = hostnameToMatches(host);
+  if (!matches.length) return { ok: false, error: 'invalid hostname' };
+
+  const id = scriptIdForHost(host);
+  try {
+    await chrome.scripting.unregisterContentScripts({ ids: [id] });
+  } catch (e) { /* 首次註冊可能不存在 */ }
+
+  await chrome.scripting.registerContentScripts([{
+    id,
+    matches,
+    js: GSS_CONTENT_JS,
+    allFrames: true,
+    runAt: 'document_idle'
+  }]);
+
+  return { ok: true, id, host };
+}
+
+async function unregisterCustomPlatformScripts(hostname) {
+  const id = scriptIdForHost(hostname);
+  try {
+    await chrome.scripting.unregisterContentScripts({ ids: [id] });
+  } catch (e) { /* ignore */ }
+  return { ok: true };
+}
+
+async function syncAllCustomPlatformScripts() {
+  const { customPlatforms } = await chrome.storage.local.get(['customPlatforms']);
+  const list = Array.isArray(customPlatforms) ? customPlatforms : [];
+  for (const p of list) {
+    if (!p?.hostname) continue;
+    const origins = hostnameToOrigins(p.hostname);
+    const has = await chrome.permissions.contains({ origins });
+    if (has) {
+      await registerCustomPlatformScripts(p.hostname);
+    }
+  }
+}
 // Listen for messages from content scripts
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === 'OPEN_TAB') {
@@ -24,7 +116,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     });
     return true; // 保持消息通道開啟
   }
+  if (request.type === 'GSS_REGISTER_CUSTOM_PLATFORM') {
+    registerCustomPlatformScripts(request.hostname)
+      .then(sendResponse)
+      .catch((err) => sendResponse({ ok: false, error: err?.message || String(err) }));
+    return true;
+  }
 
+  if (request.type === 'GSS_UNREGISTER_CUSTOM_PLATFORM') {
+    unregisterCustomPlatformScripts(request.hostname)
+      .then(sendResponse)
+      .catch((err) => sendResponse({ ok: false, error: err?.message || String(err) }));
+    return true;
+  }
 });
 
 // 在 background 中檢測開台狀態（解決 CORS 問題 + 全域快取）
@@ -325,6 +429,10 @@ async function checkYouTubeStatus(url) {
 
 // Handle extension install/update
 chrome.runtime.onInstalled.addListener(() => {
-  // Extension installed/updated
+  syncAllCustomPlatformScripts();
+});
+
+chrome.runtime.onStartup.addListener(() => {
+  syncAllCustomPlatformScripts();
 });
 

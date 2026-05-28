@@ -900,13 +900,68 @@ function notifyAllTabs(message) {
 
 // 當語言切換時更新所有設定按鈕文字
 function updateSettingsButtonTexts() {
+  // 通用設定標題
+  const generalSettingsTitle = document.getElementById('generalSettingsTitle');
+  if (generalSettingsTitle) generalSettingsTitle.textContent = t('generalSettings');
+
   // 更新右鍵面板按鈕
   const btnDisableNativeContextMenu = document.getElementById('btnDisableNativeContextMenu');
   if (btnDisableNativeContextMenu) {
-    const isDisabled = btnDisableNativeContextMenu.classList.contains('active');
-    const baseText = t('disableNativeContextMenuTitle') || '🖱️ 關閉右鍵面板';
-    btnDisableNativeContextMenu.textContent = isDisabled ? `${baseText} (✓)` : baseText;
-    updateDisableNativeContextMenuButtonState(btnDisableNativeContextMenu, isDisabled);
+    const textEl = btnDisableNativeContextMenu.querySelector('.btn-text');
+    if (textEl) {
+      const isDisabled = btnDisableNativeContextMenu.classList.contains('active');
+      const baseText = t('disableNativeContextMenuTitle') || '關閉右鍵面板';
+      textEl.textContent = isDisabled ? `${baseText} (✓)` : baseText;
+    }
+  }
+
+  const openEditorBtn = document.getElementById('openEditorBtn');
+  if (openEditorBtn) openEditorBtn.textContent = t('openEditor');
+
+  // 自定義平台翻譯
+  const customPlatformSectionTitle = document.getElementById('customPlatformSectionTitle');
+  if (customPlatformSectionTitle) customPlatformSectionTitle.textContent = t('customPlatformTitle');
+
+  const customPlatformSectionHint = document.getElementById('customPlatformSectionHint');
+  if (customPlatformSectionHint) customPlatformSectionHint.textContent = t('customPlatformHint');
+
+  const btnAddCustomPlatform = document.getElementById('btnAddCustomPlatform');
+  if (btnAddCustomPlatform) {
+    const textEl = btnAddCustomPlatform.querySelector('.btn-text');
+    if (textEl) textEl.textContent = t('btnAddCustomPlatform');
+  }
+
+  const btnEditCustomPlatform = document.getElementById('btnEditCustomPlatform');
+  if (btnEditCustomPlatform) {
+    const textEl = btnEditCustomPlatform.querySelector('.btn-text');
+    if (textEl) textEl.textContent = t('btnEditCustomPlatform');
+  }
+
+  // 對話框翻譯
+  const customPlatformDialogTitle = document.getElementById('customPlatformDialogTitle');
+  if (customPlatformDialogTitle) customPlatformDialogTitle.textContent = t('customPlatformDialogTitle');
+
+  const hostnameLabel = document.querySelector('#customPlatformDialog label[style*="color: #ffd43b"]');
+  if (hostnameLabel) hostnameLabel.textContent = t('customPlatformHostnameLabel');
+
+  const chatContainerLabel = document.querySelector('#customPlatformDialog label[style*="color: #28a745"]');
+  if (chatContainerLabel) chatContainerLabel.textContent = t('customPlatformChatContainerLabel');
+
+  const logicLabel = document.querySelector('#customPlatformDialog label[style*="color: #4a90e2"]');
+  if (logicLabel) logicLabel.textContent = t('customPlatformLogicLabel');
+
+  const logicTextarea = document.getElementById('customPlatformLogic');
+  if (logicTextarea) logicTextarea.placeholder = t('customPlatformLogicPlaceholder');
+
+  const btnCancelCustomPlatform = document.getElementById('btnCancelCustomPlatform');
+  if (btnCancelCustomPlatform) btnCancelCustomPlatform.textContent = t('deleteCancelBtn');
+
+  const btnSaveCustomPlatform = document.getElementById('btnSaveCustomPlatform');
+  if (btnSaveCustomPlatform) btnSaveCustomPlatform.textContent = t('texoSave');
+
+  // 重新渲染列表以更新「無數據」文字
+  if (typeof renderCustomPlatforms === 'function') {
+    renderCustomPlatforms();
   }
 }
 
@@ -992,11 +1047,14 @@ function showSettingsStatus(message, color) {
 
 // DOM 載入後初始化頁面切換
 document.addEventListener('DOMContentLoaded', () => {
-  initPageToggle();
-  initHelpPopover();
-  initUpdateButton();
-  initTscToggles();
-  initSaveIdsButton();
+  initLanguage(() => {
+    initPageToggle();
+    initHelpPopover();
+    initUpdateButton();
+    initTscToggles();
+    initSaveIdsButton();
+    initCustomPlatformManager();
+  });
 });
 
 // ==================== Help Button 功能 ====================
@@ -1081,4 +1139,160 @@ function showToast(message) {
     }, 3000);
   }
 }
+function normalizeHostname(input) {
+  return String(input || '')
+    .replace(/^https?:\/\//i, '')
+    .replace(/\/.*$/, '')
+    .trim();
+}
 
+function hostnameToOrigins(hostname) {
+  const host = normalizeHostname(hostname);
+  if (!host) return [];
+  return [
+    `https://${host}/*`,
+    `https://*.${host}/*`,
+    `http://${host}/*`,
+    `http://*.${host}/*`
+  ];
+}
+
+async function requestCustomPlatformPermission(hostname) {
+  const origins = hostnameToOrigins(hostname);
+  if (!origins.length) return false;
+  if (!chrome.permissions?.request) return true;
+  return await chrome.permissions.request({ origins });
+}
+
+function registerCustomPlatformInBackground(hostname) {
+  return chrome.runtime.sendMessage({
+    type: 'GSS_REGISTER_CUSTOM_PLATFORM',
+    hostname: normalizeHostname(hostname)
+  });
+}
+
+// ==================== 自定義平台管理邏輯 (簡化版) ====================
+let customPlatforms = [];
+let editingIndex = -1;
+
+function initCustomPlatformManager() {
+  const listEl = document.getElementById('customPlatformsList');
+  const addBtn = document.getElementById('btnAddCustomPlatform');
+  const editBtn = document.getElementById('btnEditCustomPlatform');
+  const dialog = document.getElementById('customPlatformDialog');
+  const saveBtn = document.getElementById('btnSaveCustomPlatform');
+  const cancelBtn = document.getElementById('btnCancelCustomPlatform');
+
+  if (!listEl || !addBtn || !dialog) return;
+
+  chrome.storage.local.get(['customPlatforms'], (r) => {
+    customPlatforms = Array.isArray(r.customPlatforms) ? r.customPlatforms : [];
+    renderCustomPlatforms();
+  });
+
+  function renderCustomPlatforms() {
+    listEl.textContent = '';
+      const empty = document.createElement('div');
+      empty.style.cssText = 'text-align:center; color:rgba(255,255,255,0.3); padding:20px; font-size:12px;';
+      empty.textContent = '尚無自定義平台';
+      listEl.appendChild(empty);
+    if (customPlatforms.length === 0) {
+      listEl.innerHTML = '<div style="text-align:center; color:rgba(255,255,255,0.3); padding:20px; font-size:12px;">尚無自定義平台</div>';
+      return;
+    }
+    customPlatforms.forEach((p, i) => {
+      const item = document.createElement('div');
+      item.className = 'custom-platform-item' + (editingIndex === i ? ' selected' : '');
+
+      const hostDiv = document.createElement('div');
+      hostDiv.className = 'hostname';
+      hostDiv.textContent = '🌐 ' + (p.hostname || '');
+
+      const actions = document.createElement('div');
+      actions.className = 'actions';
+
+      const delBtn = document.createElement('button');
+      delBtn.className = 'delete';
+      delBtn.title = '刪除';
+      delBtn.textContent = '✕';
+
+      actions.appendChild(delBtn);
+      item.appendChild(hostDiv);
+      item.appendChild(actions);
+
+      item.onclick = () => { editingIndex = i; renderCustomPlatforms(); };
+      delBtn.onclick = (e) => {
+        e.stopPropagation();
+        if (confirm('確定要刪除 ' + (p.hostname || '') + ' 嗎？')) {
+          const removed = customPlatforms.splice(i, 1)[0];
+          editingIndex = -1;
+          if (removed?.hostname && typeof chrome.scripting !== 'undefined') {
+            chrome.runtime.sendMessage({
+              type: 'GSS_UNREGISTER_CUSTOM_PLATFORM',
+              hostname: removed.hostname
+            });
+          }
+          saveAndRefresh();
+        }
+      };
+      listEl.appendChild(item);
+    });
+  }
+
+  function saveAndRefresh() {
+    chrome.storage.local.set({ customPlatforms }, () => {
+      renderCustomPlatforms();
+      showSettingsStatus('自定義平台已儲存', '#28a745');
+    });
+  }
+
+  addBtn.onclick = () => {
+    editingIndex = -1;
+    document.getElementById('customPlatformHostname').value = '';
+    document.getElementById('customPlatformChatContainer').value = '';
+    document.getElementById('customPlatformLogic').value = '';
+    dialog.classList.add('show');
+  };
+
+  editBtn.onclick = () => {
+    if (editingIndex < 0) return showSettingsStatus('請先選擇一個平台', '#dc3545');
+    const p = customPlatforms[editingIndex];
+    document.getElementById('customPlatformHostname').value = p.hostname;
+    document.getElementById('customPlatformChatContainer').value = p.chatContainer || '';
+    document.getElementById('customPlatformLogic').value = p.logic || '';
+    dialog.classList.add('show');
+  };
+
+  cancelBtn.onclick = () => dialog.classList.remove('show');
+
+  saveBtn.onclick = async () => {
+    const hostname = normalizeHostname(
+      document.getElementById('customPlatformHostname').value
+    );
+    const chatContainer = document.getElementById('customPlatformChatContainer').value.trim();
+    const logic = document.getElementById('customPlatformLogic').value.trim();
+
+    if (!hostname || !logic) {
+      return showSettingsStatus('請填寫網域與腳本邏輯', '#dc3545');
+    }
+
+    const granted = await requestCustomPlatformPermission(hostname);
+    if (!granted) {
+      return showSettingsStatus('未授予網域權限，無法在此站使用 GSS', '#dc3545');
+    }
+
+    const reg = await registerCustomPlatformInBackground(hostname);
+    if (!reg?.ok) {
+      return showSettingsStatus('註冊失敗：' + (reg?.error || '未知'), '#dc3545');
+    }
+
+    const config = { hostname, chatContainer, logic };
+    if (editingIndex >= 0) customPlatforms[editingIndex] = config;
+    else customPlatforms.push(config);
+
+    dialog.classList.remove('show');
+    saveAndRefresh();
+    showSettingsStatus('已儲存。請重新整理該平台分頁', '#28a745');
+  };
+}
+document.addEventListener('DOMContentLoaded', initCustomPlatformManager);
