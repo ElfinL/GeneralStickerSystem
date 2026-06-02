@@ -657,6 +657,9 @@ function initPageToggle() {
 // 禁用原生右鍵面板按鈕
 initDisableNativeContextMenuButton();
 
+// 貼圖大小控制
+initStickerSizeControl();
+
 // ==================== 自動關閉 Mature 警告功能 ====================
 
 // 自定義確認對話框
@@ -813,8 +816,81 @@ function initDisableNativeContextMenuButton() {
 
 function updateDisableNativeContextMenuButtonState(btn, isDisabled) {
   btn.classList.toggle('active', isDisabled);
-  const baseText = t('disableNativeContextMenuTitle') || '🖱️ 關閉右鍵面板';
-  btn.textContent = isDisabled ? `${baseText} (✓)` : baseText;
+  const baseText = t('disableNativeContextMenuTitle') || '關閉右鍵面板';
+  // 【修改】只更新 .btn-text 元素的內容
+  const textEl = btn.querySelector('.btn-text');
+  if (textEl) {
+    textEl.textContent = isDisabled ? `${baseText} (✓)` : baseText;
+  } else {
+    // 如果沒有 .btn-text 元素，則更新整個按鈕（向後兼容）
+    btn.textContent = isDisabled ? `${baseText} (✓)` : baseText;
+  }
+}
+
+// ==================== 貼圖大小設定功能 ====================
+
+function initStickerSizeControl() {
+  const decreaseBtn = document.getElementById('btnStickerSizeDecrease');
+  const increaseBtn = document.getElementById('btnStickerSizeIncrease');
+  const input = document.getElementById('inputStickerSize');
+  
+  if (!decreaseBtn || !increaseBtn || !input) return;
+  
+  // 載入當前設定
+  chrome.storage.local.get(['stickerSizePercent'], (result) => {
+    const size = result.stickerSizePercent || 100;
+    input.value = size;
+  });
+  
+  // 減少按鈕
+  decreaseBtn.addEventListener('click', () => {
+    let current = parseInt(input.value) || 100;
+    current = Math.max(5, current - 5); // 最小 5%
+    input.value = current;
+    saveStickerSize(current);
+  });
+  
+  // 增加按鈕
+  increaseBtn.addEventListener('click', () => {
+    let current = parseInt(input.value) || 100;
+    current = Math.min(200, current + 5); // 最大 200%
+    input.value = current;
+    saveStickerSize(current);
+  });
+  
+  // 手動輸入
+  input.addEventListener('change', () => {
+    let value = parseInt(input.value) || 100;
+    value = Math.max(5, Math.min(200, value)); // 限制範圍 5% - 200%
+    input.value = value;
+    saveStickerSize(value);
+  });
+  
+  // 防止輸入無效字符
+  input.addEventListener('input', () => {
+    input.value = input.value.replace(/[^0-9]/g, '');
+  });
+}
+
+function saveStickerSize(size) {
+  chrome.storage.local.set({ stickerSizePercent: size }, () => {
+    // 使用翻譯
+    const message = chrome.i18n.getMessage('stickerSizeAdjusted', [size]) || `貼圖大小已調整為 ${size}%`;
+    showSettingsStatus(message, '#4CAF50');
+    
+    // 通知所有頁面更新設定
+    chrome.tabs.query({}, (tabs) => {
+      tabs.forEach(tab => {
+        chrome.tabs.sendMessage(tab.id, {
+          type: 'GSS_CONTROL',
+          command: 'updateStickerSize',
+          data: { size: size }
+        }).catch(() => {
+          // 忽略無法連接的頁面錯誤
+        });
+      });
+    });
+  });
 }
 
 // ==================== TSC 開關功能 ====================
@@ -901,8 +977,8 @@ function notifyAllTabs(message) {
 // 當語言切換時更新所有設定按鈕文字
 function updateSettingsButtonTexts() {
   // 通用設定標題
-  const generalSettingsTitle = document.getElementById('generalSettingsTitle');
-  if (generalSettingsTitle) generalSettingsTitle.textContent = t('generalSettings');
+  const generalSettingsText = document.getElementById('generalSettingsText');
+  if (generalSettingsText) generalSettingsText.textContent = t('generalSettings') || '通用設定';
 
   // 更新右鍵面板按鈕
   const btnDisableNativeContextMenu = document.getElementById('btnDisableNativeContextMenu');
@@ -1034,6 +1110,19 @@ function updateTexoTexts() {
   // Tab 按鈕（只更新文字部分，保留 emoji）
   const tabTexoSpan = document.querySelector('#tabTexo [data-i18n="tabTexo"]');
   if (tabTexoSpan) tabTexoSpan.textContent = t('tabTexo') || '編織';
+  
+  const tabSettingsText = document.getElementById('tabSettingsText');
+  if (tabSettingsText) tabSettingsText.textContent = t('tabSettings') || '設定';
+  
+  // 【新增】貼圖大小調整翻譯
+  const stickerSizeTitle = document.getElementById('stickerSizeTitle');
+  if (stickerSizeTitle) stickerSizeTitle.textContent = t('stickerSizeTitle') || '📏 貼圖大小調整';
+  
+  const stickerSizeDesc = document.getElementById('stickerSizeDesc');
+  if (stickerSizeDesc) stickerSizeDesc.textContent = t('stickerSizeDesc') || '調整所有貼圖的顯示大小（預設 100%）';
+  
+  const stickerSizeRange = document.getElementById('stickerSizeRange');
+  if (stickerSizeRange) stickerSizeRange.textContent = t('stickerSizeRange') || '範圍：5% - 200% • 每次 ±5%';
 }
 
 
@@ -1175,6 +1264,59 @@ function registerCustomPlatformInBackground(hostname) {
 let customPlatforms = [];
 let editingIndex = -1;
 
+// 解析新版配置格式（支持 @hostname/@chatContainer/@logic 指令）
+function parseCustomPlatformConfig(text) {
+  const lines = text.split('\n');
+  const config = {
+    hostname: '',
+    chatContainer: '',
+    logic: ''
+  };
+  
+  let currentSection = null;
+  let logicLines = [];
+  
+  for (const line of lines) {
+    const trimmed = line.trim();
+    
+    // 检测新的 @ 指令
+    if (/^@hostname\s+/i.test(trimmed)) {
+      config.hostname = trimmed.replace(/^@hostname\s+/i, '').trim();
+      currentSection = 'hostname';
+    } else if (/^@chatcontainer\s+/i.test(trimmed)) {
+      config.chatContainer = trimmed.replace(/^@chatcontainer\s+/i, '').trim();
+      currentSection = 'chatContainer';
+    } else if (/^@logic\s*/i.test(trimmed)) {
+      // 提取 @logic 后的第一行内容
+      const firstLine = trimmed.replace(/^@logic\s*/i, '').trim();
+      if (firstLine) {
+        logicLines.push(firstLine);
+      }
+      currentSection = 'logic';
+    } else if (currentSection === 'logic' && trimmed) {
+      // 继续收集 logic 的多行内容
+      logicLines.push(line); // 保留原始缩进
+    } else if (trimmed && !config.hostname) {
+      // 兼容旧格式：第一行非空且没有 @ 指令，视为 hostname
+      config.hostname = trimmed;
+    } else if (trimmed && !config.chatContainer && config.hostname) {
+      // 兼容旧格式：第二行视为 chatContainer
+      config.chatContainer = trimmed;
+    } else if (trimmed && config.chatContainer) {
+      // 兼容旧格式：后续行视为 logic
+      logicLines.push(line);
+    }
+  }
+  
+  config.logic = logicLines.join('\n').trim();
+  return config;
+}
+
+// 将配置转换为可编辑的文本格式
+function formatCustomPlatformConfig(config) {
+  return `@hostname ${config.hostname || ''}\n@chatContainer ${config.chatContainer || ''}\n@logic ${config.logic || ''}`;
+}
+
 function initCustomPlatformManager() {
   const listEl = document.getElementById('customPlatformsList');
   const addBtn = document.getElementById('btnAddCustomPlatform');
@@ -1192,10 +1334,7 @@ function initCustomPlatformManager() {
 
   function renderCustomPlatforms() {
     listEl.textContent = '';
-      const empty = document.createElement('div');
-      empty.style.cssText = 'text-align:center; color:rgba(255,255,255,0.3); padding:20px; font-size:12px;';
-      empty.textContent = '尚無自定義平台';
-      listEl.appendChild(empty);
+    
     if (customPlatforms.length === 0) {
       listEl.innerHTML = '<div style="text-align:center; color:rgba(255,255,255,0.3); padding:20px; font-size:12px;">尚無自定義平台</div>';
       return;
@@ -1248,29 +1387,49 @@ function initCustomPlatformManager() {
 
   addBtn.onclick = () => {
     editingIndex = -1;
-    document.getElementById('customPlatformHostname').value = '';
-    document.getElementById('customPlatformChatContainer').value = '';
-    document.getElementById('customPlatformLogic').value = '';
+    // 使用新的大文本框
+    const configTextarea = document.getElementById('customPlatformConfig');
+    if (configTextarea) {
+      configTextarea.value = '@hostname \n@chatContainer \n@logic ';
+      configTextarea.focus();
+    }
     dialog.classList.add('show');
   };
 
   editBtn.onclick = () => {
     if (editingIndex < 0) return showSettingsStatus('請先選擇一個平台', '#dc3545');
     const p = customPlatforms[editingIndex];
-    document.getElementById('customPlatformHostname').value = p.hostname;
-    document.getElementById('customPlatformChatContainer').value = p.chatContainer || '';
-    document.getElementById('customPlatformLogic').value = p.logic || '';
+    
+    // 使用新的大文本框，格式化显示
+    const configTextarea = document.getElementById('customPlatformConfig');
+    if (configTextarea) {
+      configTextarea.value = formatCustomPlatformConfig(p);
+      configTextarea.focus();
+    }
     dialog.classList.add('show');
   };
 
   cancelBtn.onclick = () => dialog.classList.remove('show');
 
   saveBtn.onclick = async () => {
-    const hostname = normalizeHostname(
-      document.getElementById('customPlatformHostname').value
-    );
-    const chatContainer = document.getElementById('customPlatformChatContainer').value.trim();
-    const logic = document.getElementById('customPlatformLogic').value.trim();
+    // 优先使用新的大文本框
+    const configTextarea = document.getElementById('customPlatformConfig');
+    let hostname, chatContainer, logic;
+    
+    if (configTextarea) {
+      // 解析新格式
+      const parsed = parseCustomPlatformConfig(configTextarea.value);
+      hostname = normalizeHostname(parsed.hostname);
+      chatContainer = parsed.chatContainer;
+      logic = parsed.logic;
+    } else {
+      // 兼容旧格式（如果 HTML 还没更新）
+      hostname = normalizeHostname(
+        document.getElementById('customPlatformHostname').value
+      );
+      chatContainer = document.getElementById('customPlatformChatContainer').value.trim();
+      logic = document.getElementById('customPlatformLogic').value.trim();
+    }
 
     if (!hostname || !logic) {
       return showSettingsStatus('請填寫網域與腳本邏輯', '#dc3545');
@@ -1294,5 +1453,19 @@ function initCustomPlatformManager() {
     saveAndRefresh();
     showSettingsStatus('已儲存。請重新整理該平台分頁', '#28a745');
   };
+  
+  // 【新增】点击 overlay 背景关闭对话框（但在 textarea 内点击不关闭）
+  dialog.addEventListener('click', (e) => {
+    if (e.target === dialog) {
+      // 检查当前焦点是否在配置文本框内
+      const configTextarea = document.getElementById('customPlatformConfig');
+      const activeElement = document.activeElement;
+      
+      // 如果焦点不在 textarea 内，才关闭对话框
+      if (!configTextarea || activeElement !== configTextarea) {
+        dialog.classList.remove('show');
+      }
+    }
+  });
 }
 document.addEventListener('DOMContentLoaded', initCustomPlatformManager);

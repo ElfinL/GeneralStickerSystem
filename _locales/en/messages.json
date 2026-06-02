@@ -42,5 +42,21 @@
   "helpAutoCollectSettings": {
     "message": "Auto Collect Settings",
     "description": "Help page auto collect settings title"
+  },
+  "stickerSizeTitle": {
+    "message": "📏 Sticker Size Adjustment",
+    "description": "Sticker size adjustment title"
+  },
+  "stickerSizeDesc": {
+    "message": "Adjust the display size of all stickers (default 100%)",
+    "description": "Sticker size adjustment description"
+  },
+  "stickerSizeRange": {
+    "message": "Range: 5% - 200% • ±5% each time",
+    "description": "Sticker size range info"
+  },
+  "stickerSizeAdjusted": {
+    "message": "Sticker size adjusted to ${size}%",
+    "description": "Sticker size adjusted message"
   }
 }

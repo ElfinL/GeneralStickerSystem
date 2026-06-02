@@ -42,5 +42,21 @@
   "helpAutoCollectSettings": {
     "message": "自動収集設定",
     "description": "Help page auto collect settings title"
+  },
+  "stickerSizeTitle": {
+    "message": "📏 ステッカーサイズ調整",
+    "description": "Sticker size adjustment title"
+  },
+  "stickerSizeDesc": {
+    "message": "すべてのステッカーの表示サイズを調整（デフォルト 100%）",
+    "description": "Sticker size adjustment description"
+  },
+  "stickerSizeRange": {
+    "message": "範囲：5% - 200% • 毎回 ±5%",
+    "description": "Sticker size range info"
+  },
+  "stickerSizeAdjusted": {
+    "message": "ステッカーサイズが ${size}% に調整されました",
+    "description": "Sticker size adjusted message"
   }
 }

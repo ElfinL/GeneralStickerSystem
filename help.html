@@ -203,29 +203,35 @@
           <ul style="margin-top: 8px; font-size: 13px; margin-left: 16px;">
             <li><strong>發動網域：</strong> 決定插件在哪個網站啟動（例如：<code>rumble.com</code>）。</li>
             <li><strong>聊天室容器：</strong> 決定插件要「掃描哪裡」來找出別人的貼圖 ID（CSS 選擇器）。</li>
-            <li><strong>自定義腳本邏輯：</strong> 使用標籤決定按鈕位置與發送行為。</li>
+            <li><strong>平台設定：</strong> 使用 <code>@</code> 指令格式定義按鈕位置與發送行為。</li>
           </ul>
         </div>
 
-        <h3>📜 腳本邏輯語法</h3>
-        <p>在「自定義腳本邏輯」框中，每行輸入一個指令：</p>
+        <h3>📜 平台設定語法</h3>
+        <p>在「平台設定」大文本框中，使用以下 <code>@</code> 指令格式（每行一個指令）：</p>
         <ul style="margin-bottom: 12px;">
-          <li><code>mount: .selector</code> － 決定貼圖按鈕要插在哪個元素旁邊。</li>
-          <li><code>input: .selector</code> － 決定貼圖 ID 要自動貼入哪個輸入框。</li>
-          <li><code>send: .selector</code> － (選填) 指定發送按鈕。若未填寫，則在輸入後按 Enter。</li>
+          <li><code>@hostname domain.com</code> － 發動網域（可選填，若已在上方的網域欄填寫則可省略）。</li>
+          <li><code>@chatContainer .selector</code> － 聊天室容器，決定插件要掃描哪裡來找出別人的貼圖 ID（可選填，若已在上方的容器欄填寫則可省略）。</li>
+          <li><code>@logic</code> － 開始定義腳本邏輯，後續每行一個指令：</li>
+          <ul style="margin-top: 4px; margin-left: 20px;">
+            <li><code>mount: .selector</code> － 決定貼圖按鈕要插在哪個元素旁邊。</li>
+            <li><code>input: .selector</code> － 決定貼圖 ID 要自動貼入哪個輸入框。</li>
+            <li><code>send: .selector</code> － (選填) 指定發送按鈕。若未填寫，則在輸入後按 Enter。</li>
+          </ul>
         </ul>
 
         <div class="highlight-box" style="background: rgba(74, 144, 226, 0.08); border-color: rgba(74, 144, 226, 0.4);">
           <p><strong>📝 實戰範例 (以 Rumble 為例)：</strong></p>
-          <ul style="margin-top: 8px; font-size: 12px; margin-left: 16px; list-style: none;">
-            <li>🌐 <strong>網域：</strong> <code>rumble.com</code></li>
-            <li>🏠 <strong>容器：</strong> <code>.chat-history</code></li>
-            <li>📜 <strong>邏輯：</strong><br>
-              <code>mount: .chat-message-form-section</code><br>
-              <code>input: #chat-message-text-input</code><br>
-              <code>send: .chat--send</code>
-            </li>
+          <p style="margin-top: 8px; font-size: 12px; color: #555;">您可以直接在「平台設定」文本框中貼上以下完整配置：</p>
+          <ul style="margin-top: 8px; font-size: 12px; margin-left: 16px; list-style: none; font-family: 'Consolas', 'Monaco', monospace; background: rgba(0,0,0,0.05); padding: 12px; border-radius: 6px;">
+            <li style="color: #4a90e2;">@hostname rumble.com</li>
+            <li style="color: #4a90e2;">@chatContainer .chat-history</li>
+            <li style="color: #4a90e2;">@logic</li>
+            <li style="padding-left: 20px; color: #333;">mount: .chat-message-form-section</li>
+            <li style="padding-left: 20px; color: #333;">input: #chat-message-text-input</li>
+            <li style="padding-left: 20px; color: #333;">send: .chat--send</li>
           </ul>
+          <p style="margin-top: 8px; font-size: 11px; color: #666;">💡 提示：您也可以分開填寫，上方填寫網域和容器，下方只填寫 @logic 及其後續指令。</p>
         </div>
 
         <div class="highlight-box" style="background: rgba(255, 212, 59, 0.08); border-color: rgba(255, 212, 59, 0.4);">
@@ -464,29 +470,35 @@
           <ul style="margin-top: 8px; font-size: 13px; margin-left: 16px;">
             <li><strong>Domain:</strong> Where the script activates (e.g., <code>rumble.com</code>).</li>
             <li><strong>Chat Container:</strong> Where the extension scans for sticker IDs (CSS selector).</li>
-            <li><strong>Custom Script Logic:</strong> Use tags to define button placement and sending behavior.</li>
+            <li><strong>Platform Config:</strong> Use <code>@</code> command format to define button placement and sending behavior.</li>
           </ul>
         </div>
 
-        <h3>📜 Script Logic Syntax</h3>
-        <p>Enter one command per line in the "Custom Script Logic" box:</p>
+        <h3>📜 Platform Config Syntax</h3>
+        <p>In the "Platform Config" large text box, use the following <code>@</code> command format (one command per line):</p>
         <ul style="margin-bottom: 12px;">
-          <li><code>mount: .selector</code> － Where to insert the sticker button.</li>
-          <li><code>input: .selector</code> － Where to paste the sticker ID.</li>
-          <li><code>send: .selector</code> － (Optional) Specify send button. If empty, presses Enter after pasting.</li>
+          <li><code>@hostname domain.com</code> － Domain (optional, can be omitted if already filled in the domain field above).</li>
+          <li><code>@chatContainer .selector</code> － Chat container, where to scan for sticker IDs (optional, can be omitted if already filled in the container field above).</li>
+          <li><code>@logic</code> － Start defining script logic, followed by one command per line:</li>
+          <ul style="margin-top: 4px; margin-left: 20px;">
+            <li><code>mount: .selector</code> － Where to insert the sticker button.</li>
+            <li><code>input: .selector</code> － Where to paste the sticker ID.</li>
+            <li><code>send: .selector</code> － (Optional) Specify send button. If empty, presses Enter after pasting.</li>
+          </ul>
         </ul>
 
         <div class="highlight-box" style="background: rgba(74, 144, 226, 0.08); border-color: rgba(74, 144, 226, 0.4);">
           <p><strong>📝 Real Example (Rumble):</strong></p>
-          <ul style="margin-top: 8px; font-size: 12px; margin-left: 16px; list-style: none;">
-            <li>🌐 <strong>Domain:</strong> <code>rumble.com</code></li>
-            <li>🏠 <strong>Container:</strong> <code>.chat-history</code></li>
-            <li>📜 <strong>Logic:</strong><br>
-              <code>mount: .chat-message-form-section</code><br>
-              <code>input: #chat-message-text-input</code><br>
-              <code>send: .chat--send</code>
-            </li>
+          <p style="margin-top: 8px; font-size: 12px; color: #555;">You can directly paste the following complete configuration into the "Platform Config" text box:</p>
+          <ul style="margin-top: 8px; font-size: 12px; margin-left: 16px; list-style: none; font-family: 'Consolas', 'Monaco', monospace; background: rgba(0,0,0,0.05); padding: 12px; border-radius: 6px;">
+            <li style="color: #4a90e2;">@hostname rumble.com</li>
+            <li style="color: #4a90e2;">@chatContainer .chat-history</li>
+            <li style="color: #4a90e2;">@logic</li>
+            <li style="padding-left: 20px; color: #333;">mount: .chat-message-form-section</li>
+            <li style="padding-left: 20px; color: #333;">input: #chat-message-text-input</li>
+            <li style="padding-left: 20px; color: #333;">send: .chat--send</li>
           </ul>
+          <p style="margin-top: 8px; font-size: 11px; color: #666;">💡 Tip: You can also fill them separately - enter domain and container in the fields above, and only enter @logic and its subsequent commands below.</p>
         </div>
 
         <div class="highlight-box" style="background: rgba(255, 212, 59, 0.08); border-color: rgba(255, 212, 59, 0.4);">
@@ -731,31 +743,47 @@
         <div class="highlight-box">
           <p><strong>设置三个关键参数：</strong></p>
           <ul style="margin-top: 8px; font-size: 13px; margin-left: 16px;">
-            <li><strong>发动网域：</strong> 决定插件在哪個网站启动（例如：<code>rumble.com</code>）。</li>
-            <li><strong>聊天室容器：</strong> 决定插件要“扫描哪里”來找出别人的贴纸 ID（CSS 选择器）。</li>
-            <li><strong>自定义脚本逻辑：</strong> 使用标签决定按钮位置与发送行为。</li>
+            <li><strong>发动网域：</strong> 决定插件在哪个网站启动（例如：<code>rumble.com</code>）。</li>
+            <li><strong>聊天室容器：</strong> 决定插件要"扫描哪里"来找出别人的贴图 ID（CSS 选择器）。</li>
+            <li><strong>平台设定：</strong> 使用 <code>@</code> 指令格式定义按钮位置与发送行为。</li>
           </ul>
         </div>
-
-        <h3>📜 脚本逻辑语法</h3>
-        <p>在“自定义脚本逻辑”框中，每行输入一个指令：</p>
+        
+        <h3>📜 平台设定语法</h3>
+        <p>在「平台设定」大文本框中，使用以下 <code>@</code> 指令格式：</p>
         <ul style="margin-bottom: 12px;">
-          <li><code>mount: .selector</code> － 决定贴纸按钮要插在哪个元素旁边。</li>
-          <li><code>input: .selector</code> － 决定贴纸 ID 要自动贴入哪个输入框。</li>
-          <li><code>send: .selector</code> － (选填) 指定发送按钮。若未填写，则在输入后按 Enter。</li>
+          <li><code>@hostname domain.com</code> － 发动网域（可选填）。</li>
+          <li><code>@chatContainer .selector</code> － 聊天室容器（可选填）。</li>
+          <li><code>@logic</code> － 开始定义脚本逻辑，之后每行输入一个指令：</li>
+          <ul style="margin-top: 8px; margin-left: 20px;">
+            <li><code>mount: .selector</code> － 决定贴图按钮要插在哪个元素旁边。</li>
+            <li><code>input: .selector</code> － 决定贴图 ID 要自动贴入哪个输入框。</li>
+            <li><code>send: .selector</code> － (选填) 指定发送按钮。若未填写，则在输入后按 Enter。</li>
+          </ul>
         </ul>
-
+        
         <div class="highlight-box" style="background: rgba(74, 144, 226, 0.08); border-color: rgba(74, 144, 226, 0.4);">
           <p><strong>📝 实战范例 (以 Rumble 为例)：</strong></p>
           <ul style="margin-top: 8px; font-size: 12px; margin-left: 16px; list-style: none;">
             <li>🌐 <strong>网域：</strong> <code>rumble.com</code></li>
             <li>🏠 <strong>容器：</strong> <code>.chat-history</code></li>
-            <li>📜 <strong>逻辑：</strong><br>
-              <code>mount: .chat-message-form-section</code><br>
-              <code>input: #chat-message-text-input</code><br>
-              <code>send: .chat--send</code>
+            <li>📜 <strong>平台设定：</strong><br>
+              <span style="font-family: 'Consolas', 'Monaco', monospace; font-size: 11px; color: #4a90e2;">@hostname</span> <code>rumble.com</code><br>
+              <span style="font-family: 'Consolas', 'Monaco', monospace; font-size: 11px; color: #4a90e2;">@chatContainer</span> <code>.chat-history</code><br>
+              <span style="font-family: 'Consolas', 'Monaco', monospace; font-size: 11px; color: #4a90e2;">@logic</code><br>
+              &nbsp;&nbsp;<code>mount: .chat-message-form-section</code><br>
+              &nbsp;&nbsp;<code>input: #chat-message-text-input</code><br>
+              &nbsp;&nbsp;<code>send: .chat--send</code>
             </li>
           </ul>
+        </div>
+        
+        <div class="highlight-box" style="background: rgba(255, 212, 59, 0.08); border-color: rgba(255, 212, 59, 0.4);">
+          <p><strong>💡 提示：</strong></p>
+          <p style="margin-top: 8px; font-size: 12px;">
+            您可以分开填写这三个参数，也可以一次性贴上完整的 @ 指令配置。<br>
+            系统会自动识别并解析所有指令。
+          </p>
         </div>
 
         <div class="highlight-box" style="background: rgba(255, 212, 59, 0.08); border-color: rgba(255, 212, 59, 0.4);">
@@ -989,16 +1017,21 @@
           <ul style="margin-top: 8px; font-size: 13px; margin-left: 16px;">
             <li><strong>発動ドメイン：</strong> 拡張機能が起動するサイト（例：<code>rumble.com</code>）。</li>
             <li><strong>チャットコンテナ：</strong> ステッカーIDをスキャンする場所（CSSセレクター）。</li>
-            <li><strong>カスタムスクリプト：</strong> ボタンの位置と送信動作をタグで決定。</li>
+            <li><strong>プラットフォーム設定：</strong> <code>@</code> コマンド形式でボタン位置と送信動作を定義。</li>
           </ul>
         </div>
 
-        <h3>📜 スクリプト構文</h3>
-        <p>「カスタムスクリプト」ボックスに、1行に1つのコマンドを入力します：</p>
+        <h3>📜 プラットフォーム設定構文</h3>
+        <p>「プラットフォーム設定」大テキストボックスで、以下の <code>@</code> コマンド形式を使用します：</p>
         <ul style="margin-bottom: 12px;">
-          <li><code>mount: .selector</code> － ステッカーボタンの挿入先。</li>
-          <li><code>input: .selector</code> － ステッカーIDの貼り付け先。</li>
-          <li><code>send: .selector</code> － (任意) 送信ボタンの指定。未入力の場合は貼り付け後にEnterキー。</li>
+          <li><code>@hostname domain.com</code> － 発動ドメイン（任意）。</li>
+          <li><code>@chatContainer .selector</code> － チャットコンテナ（任意）。</li>
+          <li><code>@logic</code> － スクリプトロジックの定義を開始、その後1行に1つのコマンドを入力：</li>
+          <ul style="margin-top: 8px; margin-left: 20px;">
+            <li><code>mount: .selector</code> － ステッカーボタンの挿入先。</li>
+            <li><code>input: .selector</code> － ステッカーIDの貼り付け先。</li>
+            <li><code>send: .selector</code> － (任意) 送信ボタンの指定。未入力の場合は貼り付け後にEnterキー。</li>
+          </ul>
         </ul>
 
         <div class="highlight-box" style="background: rgba(74, 144, 226, 0.08); border-color: rgba(74, 144, 226, 0.4);">
@@ -1006,12 +1039,23 @@
           <ul style="margin-top: 8px; font-size: 12px; margin-left: 16px; list-style: none;">
             <li>🌐 <strong>ドメイン：</strong> <code>rumble.com</code></li>
             <li>🏠 <strong>コンテナ：</strong> <code>.chat-history</code></li>
-            <li>📜 <strong>ロジック：</strong><br>
-              <code>mount: .chat-message-form-section</code><br>
-              <code>input: #chat-message-text-input</code><br>
-              <code>send: .chat--send</code>
+            <li>📜 <strong>プラットフォーム設定：</strong><br>
+              <span style="font-family: 'Consolas', 'Monaco', monospace; font-size: 11px; color: #4a90e2;">@hostname</span> <code>rumble.com</code><br>
+              <span style="font-family: 'Consolas', 'Monaco', monospace; font-size: 11px; color: #4a90e2;">@chatContainer</span> <code>.chat-history</code><br>
+              <span style="font-family: 'Consolas', 'Monaco', monospace; font-size: 11px; color: #4a90e2;">@logic</code><br>
+              &nbsp;&nbsp;<code>mount: .chat-message-form-section</code><br>
+              &nbsp;&nbsp;<code>input: #chat-message-text-input</code><br>
+              &nbsp;&nbsp;<code>send: .chat--send</code>
             </li>
           </ul>
+        </div>
+
+        <div class="highlight-box" style="background: rgba(255, 212, 59, 0.08); border-color: rgba(255, 212, 59, 0.4);">
+          <p><strong>💡 ヒント：</strong></p>
+          <p style="margin-top: 8px; font-size: 12px;">
+            これらの3つのパラメータを別々に入力することも、完全な @ コマンド設定を一度に貼り付けることもできます。<br>
+            システムは自動的にすべてのコマンドを認識して解析します。
+          </p>
         </div>
 
         <div class="highlight-box" style="background: rgba(255, 212, 59, 0.08); border-color: rgba(255, 212, 59, 0.4);">
@@ -1250,16 +1294,21 @@
           <ul style="margin-top: 8px; font-size: 13px; margin-left: 16px;">
             <li><strong>발동 도메인:</strong> 확장 프로그램이 작동할 사이트 (예: <code>rumble.com</code>).</li>
             <li><strong>채팅 컨테이너:</strong> 스티커 ID를 스캔할 위치 (CSS 선택자).</li>
-            <li><strong>사용자 정의 스크립트:</strong> 버튼 위치와 전송 동작을 태그로 결정.</li>
+            <li><strong>플랫폼 설정:</strong> <code>@</code> 명령 형식으로 버튼 위치와 전송 동작을 정의.</li>
           </ul>
         </div>
 
-        <h3>📜 스크립트 구문</h3>
-        <p>「사용자 정의 스크립트」 상자에 한 줄에 하나의 명령을 입력합니다:</p>
+        <h3>📜 플랫폼 설정 구문</h3>
+        <p>「플랫폼 설정」대 텍스트 상자에서 다음 <code>@</code> 명령 형식을 사용합니다:</p>
         <ul style="margin-bottom: 12px;">
-          <li><code>mount: .selector</code> － 스티커 버튼을 삽입할 위치.</li>
-          <li><code>input: .selector</code> － 스티커 ID를 붙여넣을 입력창.</li>
-          <li><code>send: .selector</code> － (선택 사항) 전송 버튼 지정. 미입력 시 붙여넣기 후 Enter 키 입력.</li>
+          <li><code>@hostname domain.com</code> － 발동 도메인 (선택 사항).</li>
+          <li><code>@chatContainer .selector</code> － 채팅 컨테이너 (선택 사항).</li>
+          <li><code>@logic</code> － 스크립트 로직 정의 시작, 그 후 한 줄에 하나의 명령 입력:</li>
+          <ul style="margin-top: 8px; margin-left: 20px;">
+            <li><code>mount: .selector</code> － 스티커 버튼을 삽입할 위치.</li>
+            <li><code>input: .selector</code> － 스티커 ID를 붙여넣을 입력창.</li>
+            <li><code>send: .selector</code> － (선택 사항) 전송 버튼 지정. 미입력 시 붙여넣기 후 Enter 키 입력.</li>
+          </ul>
         </ul>
 
         <div class="highlight-box" style="background: rgba(74, 144, 226, 0.08); border-color: rgba(74, 144, 226, 0.4);">
@@ -1267,12 +1316,23 @@
           <ul style="margin-top: 8px; font-size: 12px; margin-left: 16px; list-style: none;">
             <li>🌐 <strong>도메인:</strong> <code>rumble.com</code></li>
             <li>🏠 <strong>컨테이너:</strong> <code>.chat-history</code></li>
-            <li>📜 <strong>로직:</strong><br>
-              <code>mount: .chat-message-form-section</code><br>
-              <code>input: #chat-message-text-input</code><br>
-              <code>send: .chat--send</code>
+            <li>📜 <strong>플랫폼 설정:</strong><br>
+              <span style="font-family: 'Consolas', 'Monaco', monospace; font-size: 11px; color: #4a90e2;">@hostname</span> <code>rumble.com</code><br>
+              <span style="font-family: 'Consolas', 'Monaco', monospace; font-size: 11px; color: #4a90e2;">@chatContainer</span> <code>.chat-history</code><br>
+              <span style="font-family: 'Consolas', 'Monaco', monospace; font-size: 11px; color: #4a90e2;">@logic</code><br>
+              &nbsp;&nbsp;<code>mount: .chat-message-form-section</code><br>
+              &nbsp;&nbsp;<code>input: #chat-message-text-input</code><br>
+              &nbsp;&nbsp;<code>send: .chat--send</code>
             </li>
           </ul>
+        </div>
+
+        <div class="highlight-box" style="background: rgba(255, 212, 59, 0.08); border-color: rgba(255, 212, 59, 0.4);">
+          <p><strong>💡 팁:</strong></p>
+          <p style="margin-top: 8px; font-size: 12px;">
+            이 세 가지 매개변수를 별도로 입력하거나, 완전한 @ 명령 구성을 한 번에 붙여넣을 수 있습니다.<br>
+            시스템은 자동으로 모든 명령을 인식하고 파싱합니다.
+          </p>
         </div>
 
         <div class="highlight-box" style="background: rgba(255, 212, 59, 0.08); border-color: rgba(255, 212, 59, 0.4);">

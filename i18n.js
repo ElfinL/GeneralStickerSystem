@@ -105,10 +105,11 @@ const I18N = {
     autoMatureConfirm: '⚠️ 請注意\n\n本功能僅為了省去每次刷新頁面都需要重新同意的麻煩。\n\n開啟此功能前，請確認：\n\n1. 您已詳細閱讀並了解相關平台的年齡限制、地區政策、服務條款及隱私權政策\n2. 您符合當地法律規定之觀看年齡要求\n3. 您同意自行承擔使用此功能的責任\n\n本擴充功能不代表任何平台官方立場，僅為便利使用者而設計。\n\n點擊「確定」表示您已了解並同意上述說明。',
     autoMatureEnabled: '✅ 記住 Mature 同意已開啟',
     autoMatureDisabled: '✅ 記住 Mature 同意已關閉',
-    disableNativeContextMenuTitle: '🖱️ 關閉右鍵面板',
+    disableNativeContextMenuTitle: '關閉右鍵面板',
     disableNativeContextMenuEnabled: '✅ 原生右鍵已啟用（已關閉 GSS 面板）',
     disableNativeContextMenuDisabled: '✅ GSS 右鍵面板已啟用',
-    generalSettings: '⚡ 通用設定',
+    generalSettings: '通用設定',
+    tabSettings: '設定',
     customPlatformTitle: '🌐 自定義平台',
     customPlatformHint: '為不支援的平台添加自定義腳本',
     btnAddCustomPlatform: '➕ 新增平台',
@@ -122,6 +123,10 @@ const I18N = {
     customPlatformDeleteConfirm: (host) => `確定要刪除 ${host} 嗎？`,
     customPlatformSaveSuccess: '✅ 自定義平台已儲存',
     customPlatformFillRequired: '❌ 請填寫網域與腳本邏輯',
+    stickerSizeTitle: '📏 貼圖大小調整',
+    stickerSizeDesc: '調整所有貼圖的顯示大小（預設 100%）',
+    stickerSizeRange: '範圍：5% - 200% • 每次 ±5%',
+    stickerSizeAdjusted: (size) => `貼圖大小已調整為 ${size}%`,
     helpContent: `<p><b>貼圖格式：</b></p>
 <ul>
   <li>CB-xxx：Catbox 圖片</li>
@@ -248,10 +253,11 @@ const I18N = {
     autoMatureConfirm: '⚠️ 请注意\n\n本功能仅为了省去每次刷新页面都需要重新同意的麻烦。\n\n开启此功能前，请确认：\n\n1. 您已详细阅读并了解相关平台的年龄限制、地区政策、服务条款及隐私权政策\n2. 您符合当地法律规定之观看年龄要求\n3. 您同意自行承担使用此功能的责任\n\n本扩展功能不代表任何平台官方立场，仅为便利使用者而设计。\n\n点击「确定」表示您已了解并同意上述说明。',
     autoMatureEnabled: '✅ 记住 Mature 同意已开启',
     autoMatureDisabled: '✅ 记住 Mature 同意已关闭',
-    disableNativeContextMenuTitle: '🖱️ 关闭右键面板',
+    disableNativeContextMenuTitle: '关闭右键面板',
     disableNativeContextMenuEnabled: '✅ 原生右键已启用（已关闭 GSS 面板）',
     disableNativeContextMenuDisabled: '✅ GSS 右鍵面板已啟用',
-    generalSettings: '⚡ 通用设置',
+    generalSettings: '通用设置',
+    tabSettings: '设置',
     customPlatformTitle: '🌐 自定义平台',
     customPlatformHint: '為不支援的平台添加自定義腳本',
     btnAddCustomPlatform: '➕ 新增平台',
@@ -265,6 +271,10 @@ const I18N = {
     customPlatformDeleteConfirm: (host) => `確定要刪除 ${host} 嗎？`,
     customPlatformSaveSuccess: '✅ 自定義平台已儲存',
     customPlatformFillRequired: '❌ 請填寫網域與腳本邏輯',
+    stickerSizeTitle: '📏 贴图大小调整',
+    stickerSizeDesc: '调整所有贴图的显示大小（预设 100%）',
+    stickerSizeRange: '范围：5% - 200% • 每次 ±5%',
+    stickerSizeAdjusted: (size) => `贴图大小已调整为 ${size}%`,
     helpContent: `<p><b>贴纸格式：</b></p>
 <ul>
   <li>CB-xxx：Catbox 图片</li>
@@ -391,10 +401,11 @@ const I18N = {
     autoMatureConfirm: '⚠️ Notice\n\nThis feature is designed only to save you from having to re-confirm every time you refresh the page.\n\nBefore enabling, please confirm:\n\n1. You have read and understood the relevant platform\'s age restrictions, regional policies, Terms of Service, and Privacy Policy\n2. You meet the legal age requirements for viewing in your jurisdiction\n3. You agree to take responsibility for using this feature\n\nThis extension is not affiliated with any platform and is designed solely for user convenience.\n\nClick "OK" to acknowledge and agree to the above.',
     autoMatureEnabled: '✅ Remember Mature Consent enabled',
     autoMatureDisabled: '✅ Remember Mature Consent disabled',
-    disableNativeContextMenuTitle: '🖱️ Disable Right-Click Panel',
+    disableNativeContextMenuTitle: 'Disable Right-Click Panel',
     disableNativeContextMenuEnabled: '✅ Native right-click enabled (GSS panel disabled)',
     disableNativeContextMenuDisabled: '✅ GSS right-click panel enabled',
-    generalSettings: '⚡ General Settings',
+    generalSettings: 'General Settings',
+    tabSettings: 'Settings',
     customPlatformTitle: '🌐 Custom Platforms',
     customPlatformHint: 'Add custom scripts for unsupported platforms',
     btnAddCustomPlatform: '➕ Add Platform',
@@ -408,6 +419,10 @@ const I18N = {
     customPlatformDeleteConfirm: (host) => `Are you sure you want to delete ${host}?`,
     customPlatformSaveSuccess: '✅ Custom platform saved',
     customPlatformFillRequired: '❌ Please fill in domain and logic',
+    stickerSizeTitle: '📏 Sticker Size Adjustment',
+    stickerSizeDesc: 'Adjust the display size of all stickers (default 100%)',
+    stickerSizeRange: 'Range: 5% - 200% • ±5% each time',
+    stickerSizeAdjusted: (size) => `Sticker size adjusted to ${size}%`,
     helpContent: `<p><b>Sticker formats:</b></p>
 <ul>
   <li>CB-xxx：Catbox images</li>
@@ -537,10 +552,11 @@ const I18N = {
     autoMatureConfirm: '⚠️ ご注意\n\n本機能は、ページを更新するたびに同意ボタンを押す手間を省くためのものです。\n\n本機能を有効にする前に、以下を確認してください：\n\n1. DLIVEの年齢制限、地域ポリシー、利用規約、プライバシーポリシーをよくお読みください\n2. お住まいの地域の法律で定められた視聴年齢要件を満たしていること\n3. 本機能の使用に関する責任を負うことに同意すること\n\n本拡張機能はDLIVE公式とは関係なく、ユーザーの利便性のために設計されています。\n\n「OK」をクリックすると、上記の内容を理解し同意したものとみなされます。',
     autoMatureEnabled: '✅ Mature同意の記憶を有効にしました',
     autoMatureDisabled: '✅ Mature同意の記憶を無効にしました',
-    disableNativeContextMenuTitle: '🖱️ 右クリックパネルを無効にする',
+    disableNativeContextMenuTitle: '右クリックパネルを無効にする',
     disableNativeContextMenuEnabled: '✅ ネイティブ右クリック有効（GSSパネル無効）',
     disableNativeContextMenuDisabled: '✅ GSS右クリックパネル有効',
-    generalSettings: '⚡ 一般設定',
+    generalSettings: '一般設定',
+    tabSettings: '設定',
     customPlatformTitle: '🌐 カスタムプラットフォーム',
     customPlatformHint: 'サポートされていないプラットフォームのスクリプトを追加',
     btnAddCustomPlatform: '➕ 追加',
@@ -554,6 +570,10 @@ const I18N = {
     customPlatformDeleteConfirm: (host) => `${host} を削除してもよろしいですか？`,
     customPlatformSaveSuccess: '✅ カスタムプラットフォームを保存しました',
     customPlatformFillRequired: '❌ ドメインとスクリプトを入力してください',
+    stickerSizeTitle: '📏 ステッカーサイズ調整',
+    stickerSizeDesc: 'すべてのステッカーの表示サイズを調整（デフォルト 100%）',
+    stickerSizeRange: '範囲：5% - 200% • 毎回 ±5%',
+    stickerSizeAdjusted: (size) => `ステッカーサイズが ${size}% に調整されました`,
     helpContent: `<p><b>ステッカー形式：</b></p>
 <ul>
   <li>CB-xxx：Catbox画像</li>
@@ -680,10 +700,11 @@ const I18N = {
     autoMatureConfirm: '⚠️ 주의\n\n본 기능은 페이지를 새로고침할 때마다 동의 버튼을 다시 누르는 불편함을 해소하기 위한 것입니다.\n\n본 기능을 활성화하기 전에 다음을 확인하세요:\n\n1. DLIVE의 연령 제한, 지역 정책, 서비스 약관 및 개인정보처리방침을 자세히 읽고 이해했습니다\n2. 해당 지역 법률에서 규정한 시청 연령 요건을 충족합니다\n3. 본 기능 사용에 대한 책임을 지겠습니다\n\n본 확장 프로그램은 DLIVE 공식과 관련이 없으며 사용자의 편의를 위해 설계되었습니다.\n\n「확인」을 클릭하면 위 내용을 이해하고 동의한 것으로 간주됩니다.',
     autoMatureEnabled: '✅ Mature 동의 기억 활성화됨',
     autoMatureDisabled: '✅ Mature 동의 기억 비활성화됨',
-    disableNativeContextMenuTitle: '🖱️ 우클릭 패널 끄기',
+    disableNativeContextMenuTitle: '우클릭 패널 끄기',
     disableNativeContextMenuEnabled: '✅ 기본 우클릭 활성화 (GSS 패널 비활성화)',
     disableNativeContextMenuDisabled: '✅ GSS 우클릭 패널 활성화됨',
-    generalSettings: '⚡ 일반 설정',
+    generalSettings: '일반 설정',
+    tabSettings: '설정',
     customPlatformTitle: '🌐 사용자 정의 플랫폼',
     customPlatformHint: '지원되지 않는 플랫폼에 대한 스크립트 추가',
     btnAddCustomPlatform: '➕ 플랫폼 추가',
@@ -697,6 +718,10 @@ const I18N = {
     customPlatformDeleteConfirm: (host) => `${host}을(를) 삭제하시겠습니까?`,
     customPlatformSaveSuccess: '✅ 사용자 정의 플랫폼이 저장되었습니다',
     customPlatformFillRequired: '❌ 도메인과 스크립트를 입력하세요',
+    stickerSizeTitle: '📏 스티커 크기 조정',
+    stickerSizeDesc: '모든 스티커의 표시 크기 조정 (기본값 100%)',
+    stickerSizeRange: '범위: 5% - 200% •每次 ±5%',
+    stickerSizeAdjusted: (size) => `스티커 크기가 ${size}%로 조정되었습니다`,
     helpContent: `<p><b>스티커 형식：</b></p>
 <ul>
   <li>CB-xxx: Catbox 이미지</li>

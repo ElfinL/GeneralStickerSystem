@@ -43,6 +43,122 @@ function isNewPlatformAvailable() {
   return USE_NEW_PLATFORM_ADAPTER && getPlatformAdapter() !== null;
 }
 
+// ==================== 通用配置常量 ====================
+
+/**
+ * 多平台聊天容器選擇器（按優先級排序）
+ * 注意：WTV 使用獨立的 [data-chat-scroll-container]，不包含在此列表中
+ */
+const CHAT_CONTAINER_SELECTORS = [
+  '#chatroom-messages',                   // Kick 虛擬滾動容器
+  '.overflow-y-auto.height-100',          // DLive
+  '.scrollable-area',                     // Twitch 真正可滾動的容器
+  '[data-a-target="chat-list"]',          // Twitch 備援
+  '.chat-scroll-area',                    // Twitch 備援
+  '.chat-room__content',                  // Twitch 舊版
+  '.chat-list',                           // 通用
+  '[data-chat="true"] [class*="overflow-y"]', // Kick 新版
+  '[class*="ChatContainer"] [class*="overflow"]', // Kick 容器
+  '#chat-input-wrapper ~ div [class*="overflow-y"]', // Kick 舊版
+  '.chat-container [class*="overflow"]',  // Kick 備援
+  '[class*="chat-scroll"]',              // Kick 滾動容器
+  '[class*="ChatMessageList"]',          // Kick 消息列表
+  '[class*="chat-messages"]',            // Kick 聊天消息
+  '.vs_chatv9_messages',                 // Vaughn
+  '[class*="message-list"]'              // 通用
+];
+
+/**
+ * 查找聊天容器元素
+ * @param {boolean} requireScrollable - 是否要求容器可滾動
+ * @returns {HTMLElement|null}
+ */
+function findChatContainer(requireScrollable = false) {
+  for (const selector of CHAT_CONTAINER_SELECTORS) {
+    const el = document.querySelector(selector);
+    if (el) {
+      if (!requireScrollable || el.scrollHeight > el.clientHeight) {
+        return el;
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * 執行聊天室滾動到底部（通用版本，不適用於 WTV）
+ * @param {HTMLElement} wrapper - 貼圖包裝元素
+ * @param {string} platform - 平台名稱（可選，自動檢測）
+ */
+function scrollToBottom(wrapper, platform = null) {
+  const currentPlatform = platform || getCurrentPlatform();
+  
+  // WTV 使用獨立邏輯，不走這裡
+  if (currentPlatform === 'wtv') {
+    console.warn('[GSS] WTV should use its own scroll logic');
+    return;
+  }
+  
+  const chatContainer = findChatContainer(true);
+  
+  if (!chatContainer) {
+    // fallback: 使用 scrollIntoView
+    wrapper?.parentElement?.scrollIntoView(false);
+    return;
+  }
+  
+  // 檢查用戶是否在底部附近
+  const distanceToBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight;
+  if (distanceToBottom > 500) {
+    console.log('[GSS] Skip scroll: user not near bottom');
+    return;
+  }
+  
+  // 根據不同平台執行滾動
+  if (currentPlatform === 'kick') {
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  } else if (currentPlatform === 'twitch') {
+    const targetScroll = chatContainer.scrollHeight;
+    chatContainer.scrollTo({ top: targetScroll, behavior: 'auto' });
+    chatContainer.dispatchEvent(new Event('scroll', { bubbles: true }));
+    window.dispatchEvent(new Event('scroll', { bubbles: true }));
+    
+    // 點擊"暫停"按鈕恢復自動滾動
+    const resumeBtn = document.querySelector('button[class*="scroll"], button[dir="ltr"]');
+    if (resumeBtn && resumeBtn.textContent.includes('暂停')) {
+      resumeBtn.click();
+    }
+    
+    setTimeout(() => {
+      chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'auto' });
+    }, 100);
+  } else {
+    // 其他平台使用 scrollIntoView
+    wrapper?.parentElement?.scrollIntoView(false);
+  }
+}
+
+/**
+ * 為媒體元素綁定滾動事件（通用版本，不適用於 WTV）
+ * @param {HTMLElement} mediaEl - 圖片或視頻元素
+ * @param {HTMLElement} wrapper - 包裝元素
+ */
+function bindMediaScroll(mediaEl, wrapper) {
+  if (!mediaEl || mediaEl.dataset.dlsqScrollBound) return;
+  
+  mediaEl.dataset.dlsqScrollBound = 'true';
+  
+  const doScroll = () => scrollToBottom(wrapper);
+  
+  mediaEl.addEventListener('load', doScroll);
+  mediaEl.addEventListener('error', doScroll);
+  
+  // 如果已經加載完成，延遲執行
+  if (mediaEl.complete) {
+    setTimeout(doScroll, 200);
+  }
+}
+
 // ========= 語言設定 =========
 let currentLang = 'zh';
 
@@ -525,8 +641,8 @@ function ensureStyles() {
 
     /* ===== 统一图片样式 - 全部在下一行 (display: block) ===== */
     .dlsq-chat-img {
-      max-width: 100px;
-      max-height: 100px;
+      max-width: var(--gss-sticker-max-width, 100px);
+      max-height: var(--gss-sticker-max-height, 100px);
       width: auto;
       height: auto;
       border-radius: 8px;
@@ -537,10 +653,19 @@ function ensureStyles() {
       object-fit: contain;
       clear: both;
     }
+    /* WTV 平台贴图样式 */
+    .dlsq-wtv-sticker {
+      max-width: var(--gss-sticker-max-width, 100px);
+      max-height: var(--gss-sticker-max-height, 100px);
+      width: auto;
+      height: auto;
+      border-radius: 4px;
+      display: inline-block;
+    }
     /* 视频样式 - 也在下一行 */
     .dlsq-chat-video {
-      max-width: 100px;
-      max-height: 100px;
+      max-width: var(--gss-sticker-max-width, 100px);
+      max-height: var(--gss-sticker-max-height, 100px);
       width: auto;
       height: auto;
       border-radius: 8px;
@@ -571,6 +696,9 @@ function ensureStyles() {
 }
 .dlsq-yt-shorts {
   display: block !important;
+  max-width: var(--gss-sticker-max-width, 100px) !important;
+  width: var(--gss-sticker-max-width, 100px) !important;
+  aspect-ratio: 9 / 16 !important;
   margin: 4px 0 !important;
   clear: both !important;
 }
@@ -3712,6 +3840,48 @@ function setupUiAutoMount() {
 
   // 載入 TSC 系統設置
   loadTscSettings();
+  
+  // 載入貼圖大小設定
+  loadStickerSizeSetting();
+  
+  // 【新增】全局監聽新貼圖創建，自動應用大小設定
+  let stickerSizeObserverTimeout = null;
+  const stickerSizeObserver = new MutationObserver((mutations) => {
+    if (stickerSizeObserverTimeout) return; // 節流
+    
+    stickerSizeObserverTimeout = setTimeout(() => {
+      stickerSizeObserverTimeout = null;
+      
+      // 檢查是否有新貼圖
+      let hasNewStickers = false;
+      for (const mutation of mutations) {
+        for (const node of mutation.addedNodes) {
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            // 檢查是否是貼圖元素
+            if (node.classList?.contains('dlsq-converted-image') || 
+                node.classList?.contains('gss-converted-image') ||
+                node.classList?.contains('dlsq-yt-thumbnail') ||
+                node.classList?.contains('gss-yt-thumbnail') ||
+                node.classList?.contains('dlsq-yt-shorts') ||
+                node.classList?.contains('gss-yt-shorts') ||
+                node.querySelector?.('.dlsq-converted-image, .gss-converted-image, .dlsq-yt-thumbnail, .gss-yt-thumbnail, .dlsq-yt-shorts, .gss-yt-shorts')) {
+              hasNewStickers = true;
+              break;
+            }
+          }
+        }
+        if (hasNewStickers) break;
+      }
+      
+      // 如果有新貼圖，應用大小設定
+      if (hasNewStickers && window.gssStickerSizePercent && window.gssStickerSizePercent !== 100) {
+        applyStickerSizeToAllImages(window.gssStickerSizePercent);
+      }
+    }, 300); // 300ms 節流
+  });
+  
+  // 開始監聽整個文檔
+  stickerSizeObserver.observe(document.body, { childList: true, subtree: true });
 
   // 初次嘗試
   ensureChatButton();
@@ -5070,6 +5240,15 @@ function handleGssControlCommand(command, sendResponse) {
         break;
       }
 
+      // 貼圖大小更新
+      case 'updateStickerSize': {
+        const newSize = request.data?.size || 100;
+        window.gssStickerSizePercent = newSize;
+        applyStickerSizeToAllImages(newSize);
+        sendResponse({ success: true, message: `✅ 貼圖大小已調整為 ${newSize}%`, size: newSize });
+        break;
+      }
+
       default:
         sendResponse({ success: false, message: '❌ 未知 GSS 命令' });
         break;
@@ -5090,6 +5269,149 @@ function loadDisableNativeContextMenuSetting() {
   } catch (e) {
     // 如果無法存取 storage，預設不禁用
     window.gssDisableNativeContextMenu = false;
+  }
+}
+
+/**
+ * 載入貼圖大小設定
+ */
+function loadStickerSizeSetting() {
+  try {
+    chrome.storage.local.get(['stickerSizePercent'], (result) => {
+      const size = result.stickerSizePercent || 100;
+      window.gssStickerSizePercent = size;
+      console.log('[GSS] Sticker size percent loaded:', size);
+      // 應用到現有貼圖
+      applyStickerSizeToAllImages(size);
+    });
+  } catch (e) {
+    window.gssStickerSizePercent = 100;
+  }
+}
+
+/**
+ * 將貼圖大小設定應用到所有現有貼圖
+ * @param {number} percent - 百分比（5-200）
+ */
+function applyStickerSizeToAllImages(percent) {
+  const scale = percent / 100;
+  const baseSize = 100; // 基礎尺寸 100px
+  const newSize = baseSize * scale;
+  
+  // 【核心修改】直接設置 CSS 變量，這樣所有使用該變量的元素都會自動更新
+  document.documentElement.style.setProperty('--gss-sticker-max-width', `${newSize}px`);
+  document.documentElement.style.setProperty('--gss-sticker-max-height', `${newSize}px`);
+  
+  // 【額外保險】檢查是否有 CB- 貼圖，並手動應用樣式
+  const cbImages = document.querySelectorAll('img.dlsq-chat-img');
+  cbImages.forEach((img) => {
+    if (img.alt && img.alt.startsWith('CB-')) {
+      // 強制應用 CSS 變量
+      img.style.setProperty('max-width', `${newSize}px`, 'important');
+      img.style.setProperty('max-height', `${newSize}px`, 'important');
+    }
+  });
+  
+  // 處理 YouTube Shorts 容器（它們不使用 CSS 變量，需要單獨處理）
+  const shortsContainers = document.querySelectorAll('.dlsq-yt-shorts, .gss-yt-shorts');
+  shortsContainers.forEach((container) => {
+    applySizeToShortsContainer(container, scale);
+  });
+}
+
+/**
+ * 應用大小到單個圖片元素
+ * @param {HTMLImageElement} img - 圖片元素
+ * @param {number} scale - 縮放比例
+ * @param {string} property - 要調整的屬性 ('maxWidth' 或 'width')
+ */
+function applySizeToImage(img, scale, property = 'maxWidth') {
+  if (!img || !img.parentElement) return;
+  
+  const applyWhenLoaded = () => {
+    // 優先使用 naturalWidth（真實圖片尺寸），其次使用 offsetWidth（渲染後尺寸）
+    let currentWidth = img.naturalWidth;
+    
+    // 如果 naturalWidth 為 0（圖片未加載或失敗），嘗試使用 offsetWidth
+    if (!currentWidth || currentWidth === 0) {
+      currentWidth = img.offsetWidth || img.clientWidth;
+    }
+    
+    // 如果還是沒有寬度，使用 dataset 中記錄的原始寬度（如果有）
+    if (!currentWidth || currentWidth === 0) {
+      if (img.dataset.originalWidth) {
+        currentWidth = parseInt(img.dataset.originalWidth);
+      } else {
+        // 最後手段：使用默認值 100px
+        console.warn('[GSS] Cannot determine image width, using default 100px');
+        currentWidth = 100;
+      }
+    }
+    
+    // 記錄原始寬度（如果還沒有記錄）
+    if (!img.dataset.originalWidth) {
+      img.dataset.originalWidth = currentWidth;
+    }
+    
+    // 應用縮放後的寬度（使用 setProperty 添加 !important 以覆蓋 CSS 規則）
+    const newWidth = currentWidth * scale;
+    
+    // 對於 maxWidth 屬性，需要同時設置 width 和 maxWidth
+    if (property === 'maxWidth') {
+      img.style.setProperty('max-width', `${newWidth}px`, 'important');
+      img.style.setProperty('width', 'auto', 'important');
+    } else {
+      img.style.setProperty(property, `${newWidth}px`, 'important');
+    }
+    
+    console.log(`[GSS] Applied size to image: ${property}=${newWidth}px (scale=${scale}, original=${currentWidth})`);
+  };
+  
+  if (img.complete && (img.naturalWidth > 0 || img.offsetWidth > 0)) {
+    // 已經加載完成或有尺寸
+    applyWhenLoaded();
+  } else {
+    // 等待加載完成
+    img.addEventListener('load', applyWhenLoaded, { once: true });
+    // 如果加載失敗，也嘗試應用
+    img.addEventListener('error', () => {
+      console.warn('[GSS] Image load failed, applying size anyway');
+      applyWhenLoaded();
+    }, { once: true });
+    
+    // 額外保險：500ms 後強制應用（防止 load 事件不觸發）
+    setTimeout(() => {
+      if (!img.dataset.originalWidth) {
+        console.warn('[GSS] Force applying size after timeout');
+        applyWhenLoaded();
+      }
+    }, 500);
+  }
+}
+
+/**
+ * 應用大小到 Shorts 容器
+ * @param {HTMLElement} container - Shorts 容器
+ * @param {number} scale - 縮放比例
+ */
+function applySizeToShortsContainer(container, scale) {
+  if (!container) return;
+  
+  if (container.dataset.originalWidth) {
+    const originalWidth = parseInt(container.dataset.originalWidth);
+    const originalHeight = parseInt(container.dataset.originalHeight);
+    container.style.width = `${originalWidth * scale}px`;
+    container.style.height = `${originalHeight * scale}px`;
+    console.log(`[GSS] Applied size to Shorts container: ${originalWidth * scale}x${originalHeight * scale}px (scale=${scale}, original=${originalWidth}x${originalHeight})`);
+  } else {
+    // 【修改】使用新的基礎尺寸（100px × 178px）
+    const currentWidth = container.offsetWidth || 100;
+    const currentHeight = container.offsetHeight || 178;
+    container.dataset.originalWidth = currentWidth;
+    container.dataset.originalHeight = currentHeight;
+    container.style.width = `${currentWidth * scale}px`;
+    container.style.height = `${currentHeight * scale}px`;
+    console.log(`[GSS] Recorded Shorts container size: ${currentWidth}x${currentHeight}px, applied: ${currentWidth * scale}x${currentHeight * scale}px`);
   }
 }
 
@@ -5443,15 +5765,58 @@ function scanAndReplaceIMImages(container = document.body) {
           img.src = url;
           img.alt = hiddenStickerId;
           img.className = 'dlsq-im-replaced dlsq-converted-image dlsq-chat-img';
-          img.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 4px; border: 2px solid #FF0000; display: block;'; wrapper.appendChild(img);
+          // 【修改】移除硬編碼的 max-width/max-height，改用 CSS 變量
+          img.style.borderRadius = '4px';
+          img.style.border = '2px solid #FF0000';
+          img.style.display = 'block'; wrapper.appendChild(img);
         }
       } else if (hiddenStickerId.startsWith('CB-')) {
         // DL 貼圖：顯示實際圖片
         const dlId = hiddenStickerId.slice(3); // 去掉 "DL-" 前綴
+        const imgUrl = `https://images.prd.dlivecdn.com/emote/${dlId}`;
         const img = document.createElement('img');
-        img.src = `https://images.prd.dlivecdn.com/emote/${dlId}`;
+        img.src = imgUrl;
         img.alt = hiddenStickerId;
         img.className = 'dlsq-im-replaced dlsq-converted-image dlsq-chat-img'; // 【標記】標記為已轉換圖片
+        
+        // 【新增】添加點擊事件：點擊放大媒體
+        img.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          // 創建放大圖片覆蓋層
+          const overlay = document.createElement('div');
+          overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.9);
+            z-index: 999999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+          `;
+
+          const largeImg = document.createElement('img');
+          largeImg.src = imgUrl;
+          largeImg.style.cssText = `
+            max-width: 90vw;
+            max-height: 90vh;
+            object-fit: contain;
+            border-radius: 8px;
+          `;
+
+          overlay.appendChild(largeImg);
+          document.body.appendChild(overlay);
+
+          // 點擊關閉
+          overlay.addEventListener('click', () => {
+            document.body.removeChild(overlay);
+          });
+        });
+        
         wrapper.appendChild(img);
       } else if (hiddenStickerId.startsWith('GSS-')) {
         // 【新功能】GSS- 圖片/影片連結處理
@@ -5486,7 +5851,9 @@ function scanAndReplaceIMImages(container = document.body) {
             mediaElement.alt = hiddenStickerId;
             mediaElement.dataset.gssUrl = imageUrl;
             mediaElement.className = 'dlsq-im-replaced dlsq-converted-image dlsq-chat-img dlsq-gss-image';
-            mediaElement.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 4px;  border: 2px solid #4CAF50;'; // 綠色邊框區分圖片
+            // 【修改】移除硬編碼的 max-width/max-height，改用 CSS 變量
+            mediaElement.style.borderRadius = '4px';
+            mediaElement.style.border = '2px solid #4CAF50'; // 綠色邊框區分圖片
           }
 
           // 添加錯誤處理
@@ -5611,6 +5978,49 @@ function scanAndReplaceIMImages(container = document.body) {
             video.loop = true;
             video.playsInline = true;
             video.className = 'dlsq-im-replaced dlsq-chat-video';
+            
+            // 【新增】添加點擊事件：點擊放大媒體
+            video.addEventListener('click', (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              // 創建放大影片覆蓋層
+              const overlay = document.createElement('div');
+              overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(0,0,0,0.9);
+                z-index: 999999;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+              `;
+
+              const largeVideo = document.createElement('video');
+              largeVideo.src = url;
+              largeVideo.controls = true;
+              largeVideo.autoplay = true;
+              largeVideo.loop = true;
+              largeVideo.muted = true;
+              largeVideo.style.cssText = `
+                max-width: 90vw;
+                max-height: 90vh;
+                object-fit: contain;
+                border-radius: 8px;
+              `;
+
+              overlay.appendChild(largeVideo);
+              document.body.appendChild(overlay);
+
+              // 點擊關閉
+              overlay.addEventListener('click', () => {
+                document.body.removeChild(overlay);
+              });
+            });
+            
             wrapper.appendChild(video);
           } else {
             // 創建 img 元素
@@ -5618,6 +6028,45 @@ function scanAndReplaceIMImages(container = document.body) {
             img.src = url;
             img.alt = hiddenStickerId; // 【修復】設置 alt 與 DL 圖保持一致，防止翻譯清除
             img.className = 'dlsq-im-replaced dlsq-converted-image dlsq-chat-img'; // 【標記】標記為已轉換圖片
+            
+            // 【新增】添加點擊事件：點擊放大媒體
+            img.addEventListener('click', (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              // 創建放大圖片覆蓋層
+              const overlay = document.createElement('div');
+              overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(0,0,0,0.9);
+                z-index: 999999;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+              `;
+
+              const largeImg = document.createElement('img');
+              largeImg.src = url;
+              largeImg.style.cssText = `
+                max-width: 90vw;
+                max-height: 90vh;
+                object-fit: contain;
+                border-radius: 8px;
+              `;
+
+              overlay.appendChild(largeImg);
+              document.body.appendChild(overlay);
+
+              // 點擊關閉
+              overlay.addEventListener('click', () => {
+                document.body.removeChild(overlay);
+              });
+            });
+            
             wrapper.appendChild(img);
           }
         }
@@ -5666,71 +6115,10 @@ function scanAndReplaceIMImages(container = document.body) {
       // 等待圖片加載完成後再滾動（所有貼圖類型都需要）
       // 【修復】為所有貼圖類型（IM/ME/DL/YT）觸發滾動
       const mediaEl = wrapper.querySelector('img, video');
-      if (mediaEl && !mediaEl.dataset.dlsqScrollBound) {
-        mediaEl.dataset.dlsqScrollBound = 'true'; // 標記已綁定，防止重複
-
-        const doScroll = () => {
-          // 多平台聊天容器選擇器
-          const chatSelectors = [
-            '#chatroom-messages',                   // Kick 虛擬滾動容器（正確）- 移到最前面
-            '.overflow-y-auto.height-100',           // DLive
-            '.scrollable-area', // 【修正】Twitch 真正可滾動的容器
-            '[data-a-target="chat-list"]',           // Twitch 備援
-            '.chat-scroll-area',                      // Twitch 備援
-            '.chat-room__content',                    // Twitch 舊版
-            '.chat-list',                             // 通用
-            '[data-chat="true"] [class*="overflow-y"]', // Kick 新版
-            '[class*="ChatContainer"] [class*="overflow"]', // Kick 容器
-            '#chat-input-wrapper ~ div [class*="overflow-y"]', // Kick 舊版
-            '.chat-container [class*="overflow"]',    // Kick 備援
-            '[class*="chat-scroll"]',                // Kick 滾動容器
-            '[class*="ChatMessageList"]',            // Kick 消息列表
-            '[class*="chat-messages"]',              // Kick 聊天消息
-          ];
-
-          let chatContainer = null;
-          for (const selector of chatSelectors) {
-            const el = document.querySelector(selector);
-            if (el) {  // 移除 el.scrollHeight > el.clientHeight 條件
-              chatContainer = el;
-              console.log('[GSS] Found chat container:', selector);
-              break;
-            }
-          }
-
-          if (chatContainer) {
-            const distanceToBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight;
-            console.log('[GSS] Distance to bottom:', distanceToBottom);
-            if (distanceToBottom > 500) {
-              console.log('[GSS] Skip scroll: user not near bottom');
-              return;
-            }
-          }
-
-          // Kick/Twitch 特殊處理
-          if ((isKick() || isTwitch()) && chatContainer) {
-            if (isKick()) {
-              // Kick 使用 #chatroom-messages 容器，直接設置 scrollTop
-              chatContainer.scrollTop = chatContainer.scrollHeight;
-            } else {
-              // Twitch 原有邏輯
-              const targetScroll = chatContainer.scrollHeight;
-              chatContainer.scrollTo({ top: targetScroll, behavior: 'auto' });
-              chatContainer.dispatchEvent(new Event('scroll', { bubbles: true }));
-              window.dispatchEvent(new Event('scroll', { bubbles: true }));
-            }
-          } else {
-            wrapper.parentElement?.scrollIntoView(false);
-          }
-        };
-
-        mediaEl.addEventListener('load', doScroll);
-        mediaEl.addEventListener('error', doScroll);
-        // 如果圖片已經載入完成，延遲執行滾動（確保 DOM 已更新）
-        if (mediaEl.complete) {
-          setTimeout(doScroll, 200);  // 從 50 改為 200
-        }
-      } else if (!mediaEl) {
+      if (mediaEl) {
+        // 使用通用的綁定函數
+        bindMediaScroll(mediaEl, wrapper);
+      } else {
         // 沒有圖片/視頻元素，直接滾動
         console.log('[GSS] No media element, scrolling immediately');
         wrapper.parentElement?.scrollIntoView(false);
@@ -5806,53 +6194,8 @@ function scanAndReplaceIMImages(container = document.body) {
 
       // 【修復】DL 貼圖也需要觸發滾動
       const dlMediaEl = wrapper.querySelector('img');
-      if (dlMediaEl && !dlMediaEl.dataset.dlsqScrollBound) {
-        dlMediaEl.dataset.dlsqScrollBound = 'true';
-        const doDLScroll = () => {
-          // 多平台聊天容器選擇器
-          const chatSelectors = [
-            '.overflow-y-auto.height-100',
-            '.scrollable-area', // 【修正】Twitch 真正可滾動的容器
-            '[data-a-target="chat-list"]',
-            '.chat-scroll-area',
-            '.chat-room__content',
-            '.chat-list',
-            '[data-chat="true"] [class*="overflow-y"]',
-            '[class*="ChatContainer"] [class*="overflow"]',
-            '#chat-input-wrapper ~ div [class*="overflow-y"]',
-            '.chat-container [class*="overflow"]',
-            '.vs_chatv9_messages',
-            '[class*="message-list"]',
-          ];
-          let chatContainer = null;
-          for (const selector of chatSelectors) {
-            const el = document.querySelector(selector);
-            if (el && el.scrollHeight > el.clientHeight) {
-              chatContainer = el;
-              break;
-            }
-          }
-          if ((isKick() || isTwitch()) && chatContainer) {
-            const targetScroll = chatContainer.scrollHeight;
-            chatContainer.scrollTo({ top: targetScroll, behavior: 'auto' });
-            chatContainer.dispatchEvent(new Event('scroll', { bubbles: true }));
-            window.dispatchEvent(new Event('scroll', { bubbles: true }));
-            const resumeBtn = document.querySelector('button[class*="scroll"], button[dir="ltr"]');
-            if (resumeBtn && resumeBtn.textContent.includes('暂停')) {
-              resumeBtn.click();
-            }
-            setTimeout(() => {
-              chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'auto' });
-            }, 100);
-          } else {
-            wrapper.parentElement?.scrollIntoView(false);
-          }
-        };
-        dlMediaEl.addEventListener('load', doDLScroll);
-        dlMediaEl.addEventListener('error', doDLScroll);
-        if (dlMediaEl.complete) {
-          doDLScroll();
-        }
+      if (dlMediaEl) {
+        bindMediaScroll(dlMediaEl, wrapper);
       }
 
       return; // 已處理 DL，跳過 IM- 檢查
@@ -5942,48 +6285,8 @@ function scanAndReplaceIMImages(container = document.body) {
 
       // 【修復】明文 IM 貼圖也需要觸發滾動
       const imMediaEl = wrapper.querySelector('img, video');
-      if (imMediaEl && !imMediaEl.dataset.dlsqScrollBound) {
-        imMediaEl.dataset.dlsqScrollBound = 'true';
-        const doIMScroll = () => {
-          const chatSelectors = [
-            '.overflow-y-auto.height-100', '.scrollable-area',
-            '[data-a-target="chat-list"]', '.chat-scroll-area',
-            '.chat-room__content', '.chat-list',
-            '[data-chat="true"] [class*="overflow-y"]',
-            '[class*="ChatContainer"] [class*="overflow"]',
-            '#chat-input-wrapper ~ div [class*="overflow-y"]',
-            '.chat-container [class*="overflow"]',
-            '.vs_chatv9_messages', '[class*="message-list"]',
-          ];
-          let chatContainer = null;
-          for (const selector of chatSelectors) {
-            const el = document.querySelector(selector);
-            if (el && el.scrollHeight > el.clientHeight) {
-              chatContainer = el;
-              break;
-            }
-          }
-          if ((isKick() || isTwitch()) && chatContainer) {
-            const targetScroll = chatContainer.scrollHeight;
-            chatContainer.scrollTo({ top: targetScroll, behavior: 'auto' });
-            chatContainer.dispatchEvent(new Event('scroll', { bubbles: true }));
-            window.dispatchEvent(new Event('scroll', { bubbles: true }));
-            const resumeBtn = document.querySelector('button[class*="scroll"], button[dir="ltr"]');
-            if (resumeBtn && resumeBtn.textContent.includes('暂停')) {
-              resumeBtn.click();
-            }
-            setTimeout(() => {
-              chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'auto' });
-            }, 100);
-          } else {
-            wrapper.parentElement?.scrollIntoView(false);
-          }
-        };
-        imMediaEl.addEventListener('load', doIMScroll);
-        imMediaEl.addEventListener('error', doIMScroll);
-        if (imMediaEl.complete) {
-          doIMScroll();
-        }
+      if (imMediaEl) {
+        bindMediaScroll(imMediaEl, wrapper);
       }
 
       return; // 已處理 IM，跳過 ME 檢查
@@ -6060,48 +6363,8 @@ function scanAndReplaceIMImages(container = document.body) {
 
       // 【修復】明文 ME 貼圖也需要觸發滾動
       const meMediaEl = wrapper.querySelector('img, video');
-      if (meMediaEl && !meMediaEl.dataset.dlsqScrollBound) {
-        meMediaEl.dataset.dlsqScrollBound = 'true';
-        const doMEScroll = () => {
-          const chatSelectors = [
-            '.overflow-y-auto.height-100', '.scrollable-area',
-            '[data-a-target="chat-list"]', '.chat-scroll-area',
-            '.chat-room__content', '.chat-list',
-            '[data-chat="true"] [class*="overflow-y"]',
-            '[class*="ChatContainer"] [class*="overflow"]',
-            '#chat-input-wrapper ~ div [class*="overflow-y"]',
-            '.chat-container [class*="overflow"]',
-            '.vs_chatv9_messages', '[class*="message-list"]',
-          ];
-          let chatContainer = null;
-          for (const selector of chatSelectors) {
-            const el = document.querySelector(selector);
-            if (el && el.scrollHeight > el.clientHeight) {
-              chatContainer = el;
-              break;
-            }
-          }
-          if ((isKick() || isTwitch()) && chatContainer) {
-            const targetScroll = chatContainer.scrollHeight;
-            chatContainer.scrollTo({ top: targetScroll, behavior: 'auto' });
-            chatContainer.dispatchEvent(new Event('scroll', { bubbles: true }));
-            window.dispatchEvent(new Event('scroll', { bubbles: true }));
-            const resumeBtn = document.querySelector('button[class*="scroll"], button[dir="ltr"]');
-            if (resumeBtn && resumeBtn.textContent.includes('暂停')) {
-              resumeBtn.click();
-            }
-            setTimeout(() => {
-              chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'auto' });
-            }, 100);
-          } else {
-            wrapper.parentElement?.scrollIntoView(false);
-          }
-        };
-        meMediaEl.addEventListener('load', doMEScroll);
-        meMediaEl.addEventListener('error', doMEScroll);
-        if (meMediaEl.complete) {
-          doMEScroll();
-        }
+      if (meMediaEl) {
+        bindMediaScroll(meMediaEl, wrapper);
       }
 
       return; // 已處理 ME，跳過 YT 檢查
@@ -6196,7 +6459,8 @@ function scanAndReplaceIMImages(container = document.body) {
           // 是 Shorts，創建直式自動播放容器替換縮略圖
           const shortsContainer = document.createElement('span');
           shortsContainer.className = 'dlsq-im-replaced dlsq-yt-shorts tsc-exclude';
-          shortsContainer.style.cssText = 'display: block; position: relative; width: 120px; height: 213px; margin: 4px 0; border-radius: 8px; overflow: hidden;';
+          // 【修改】移除硬編碼的 width/height，改用 CSS 變量和 aspect-ratio
+          shortsContainer.style.cssText = 'display: block; position: relative; margin: 4px 0; border-radius: 8px; overflow: hidden;';
           // 創建 iframe 自動播放 Shorts
           const iframe = document.createElement('iframe');
           iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&playsinline=1&rel=0`;
@@ -6211,12 +6475,6 @@ function scanAndReplaceIMImages(container = document.body) {
           overlay.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: pointer; z-index: 1;';
           overlay.setAttribute('data-yt-id', `YT-${videoId}`);
           shortsContainer.appendChild(overlay);
-
-          // 觸發滾動
-          setTimeout(() => {
-            const container = document.querySelector('#chatroom-messages');
-            if (container) container.scrollTop = container.scrollHeight;
-          }, 100);
 
           // 點擊遮罩開啟小播放器
           overlay.addEventListener('click', (e) => {
@@ -6235,6 +6493,25 @@ function scanAndReplaceIMImages(container = document.body) {
 
           // 替換縮略圖為 Shorts 容器
           thumbContainer.parentNode.replaceChild(shortsContainer, thumbContainer);
+
+          // 【修復】Shorts iframe 替換後觸發滾動（等待 iframe 加載完成）
+          setTimeout(() => {
+            // 使用 scrollIntoView 確保滾動到新元素的位置
+            shortsContainer.scrollIntoView({ behavior: 'auto', block: 'end' });
+            
+            // 對於 Twitch/Kick，額外執行一次完整滾動
+            const currentPlatform = getCurrentPlatform();
+            if (currentPlatform === 'twitch' || currentPlatform === 'kick') {
+              const chatContainer = findChatContainer(true);
+              if (chatContainer) {
+                const distanceToBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight;
+                if (distanceToBottom <= 500) {
+                  chatContainer.scrollTop = chatContainer.scrollHeight;
+                  console.log('[GSS] YT- Shorts scrolled to bottom on', currentPlatform);
+                }
+              }
+            }
+          }, 500);
         }
       }).catch(() => {
         // API 失敗時保持縮略圖不變
@@ -6273,38 +6550,11 @@ function scanAndReplaceIMImages(container = document.body) {
       const msgContainer4 = textNode.parentElement?.closest('[class*="message"], [class*="chat-line"], [class*="ChatMessage"]');
       if (msgContainer4) msgContainer4.classList.add('dlsq-message-processed');
 
-      // YT- 也觸發滾動（統一行為，支援 Kick）
-      setTimeout(() => {
-        if (isKick()) {
-          // Kick 特殊處理：使用更精確的選擇器找到聊天容器
-          const kickSelectors = [
-            '[data-chat="true"] [class*="overflow-y"]',
-            '[class*="ChatContainer"] [class*="overflow"]',
-            '#chat-input-wrapper ~ div [class*="overflow-y"]',
-            '.chat-container [class*="overflow"]'
-          ];
-          let kickChatContainer = null;
-          for (const selector of kickSelectors) {
-            const el = document.querySelector(selector);
-            if (el && el.scrollHeight > el.clientHeight) {
-              kickChatContainer = el;
-              console.log('[GSS] YT- Kick chat container found:', selector);
-              break;
-            }
-          }
-          if (kickChatContainer) {
-            const targetScroll = kickChatContainer.scrollHeight;
-            kickChatContainer.scrollTo({ top: targetScroll, behavior: 'auto' });
-            console.log('[GSS] YT- Kick scrolled to:', targetScroll);
-            // 觸發滾動事件讓 React 知道
-            kickChatContainer.dispatchEvent(new Event('scroll', { bubbles: true }));
-          } else {
-            wrapper.parentElement?.scrollIntoView(false);
-          }
-        } else {
-          wrapper.parentElement?.scrollIntoView(false);
-        }
-      }, 500);
+      // YT- 也觸發滾動（統一行為，支援所有平台）
+      const ytThumbnailEl = wrapper.querySelector('img');
+      if (ytThumbnailEl) {
+        bindMediaScroll(ytThumbnailEl, wrapper);
+      }
 
       return; // 已處理 YT-xxx，跳過完整 URL 檢查
     }
@@ -6428,53 +6678,8 @@ function scanAndReplaceIMImages(container = document.body) {
       // 【修復】完整 YouTube URL 也需要觸發滾動
       console.log('[GSS] YouTube URL thumbnail processed, triggering scroll');
       const ytMediaEl = wrapper.querySelector('img');
-      if (ytMediaEl && !ytMediaEl.dataset.dlsqScrollBound) {
-        ytMediaEl.dataset.dlsqScrollBound = 'true';
-        const doYTScroll = () => {
-          // 多平台聊天容器選擇器
-          const chatSelectors = [
-            '.overflow-y-auto.height-100',
-            '.scrollable-area', // 【修正】Twitch 真正可滾動的容器
-            '[data-a-target="chat-list"]',
-            '.chat-scroll-area',
-            '.chat-room__content',
-            '.chat-list',
-            '[data-chat="true"] [class*="overflow-y"]',
-            '[class*="ChatContainer"] [class*="overflow"]',
-            '#chat-input-wrapper ~ div [class*="overflow-y"]',
-            '.chat-container [class*="overflow"]',
-            '.vs_chatv9_messages',
-            '[class*="message-list"]',
-          ];
-          let chatContainer = null;
-          for (const selector of chatSelectors) {
-            const el = document.querySelector(selector);
-            if (el && el.scrollHeight > el.clientHeight) {
-              chatContainer = el;
-              break;
-            }
-          }
-          if ((isKick() || isTwitch()) && chatContainer) {
-            const targetScroll = chatContainer.scrollHeight;
-            chatContainer.scrollTo({ top: targetScroll, behavior: 'auto' });
-            chatContainer.dispatchEvent(new Event('scroll', { bubbles: true }));
-            window.dispatchEvent(new Event('scroll', { bubbles: true }));
-            const resumeBtn = document.querySelector('button[class*="scroll"], button[dir="ltr"]');
-            if (resumeBtn && resumeBtn.textContent.includes('暂停')) {
-              resumeBtn.click();
-            }
-            setTimeout(() => {
-              chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'auto' });
-            }, 100);
-          } else {
-            wrapper.parentElement?.scrollIntoView(false);
-          }
-        };
-        ytMediaEl.addEventListener('load', doYTScroll);
-        ytMediaEl.addEventListener('error', doYTScroll);
-        if (ytMediaEl.complete) {
-          doYTScroll();
-        }
+      if (ytMediaEl) {
+        bindMediaScroll(ytMediaEl, wrapper);
       }
     }
   });
@@ -6567,7 +6772,9 @@ function scanAndReplaceWTVImages() {
             mediaElement.alt = stickerId;
             mediaElement.dataset.stickerId = stickerId;
             mediaElement.className = 'dlsq-wtv-sticker dlsq-wtv-video';
-            mediaElement.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 4px; display: inline-block;';
+            // 【修改】移除硬編碼的 max-width/max-height，改用 CSS 變量
+            mediaElement.style.borderRadius = '4px';
+            mediaElement.style.display = 'inline-block';
             mediaElement.muted = true;
             mediaElement.autoplay = true;
             mediaElement.loop = true;
@@ -6579,7 +6786,9 @@ function scanAndReplaceWTVImages() {
             mediaElement.alt = stickerId;
             mediaElement.dataset.stickerId = stickerId;
             mediaElement.className = 'dlsq-wtv-sticker';
-            mediaElement.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 4px; display: inline-block;';
+            // 【修改】移除硬編碼的 max-width/max-height，改用 CSS 變量
+            mediaElement.style.borderRadius = '4px';
+            mediaElement.style.display = 'inline-block';
           }
 
           // 添加右鍵菜單（使用 capture 模式）
@@ -6594,6 +6803,58 @@ function scanAndReplaceWTVImages() {
             e.stopPropagation();
             showContextMenuAt(e.clientX, e.clientY, stickerId, mediaElement);
           }, true); // 使用 capture 模式
+
+          // 【新增】添加點擊事件：點擊放大媒體
+          mediaElement.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const overlay = document.createElement('div');
+            overlay.style.cssText = `
+              position: fixed;
+              top: 0;
+              left: 0;
+              width: 100vw;
+              height: 100vh;
+              background: rgba(0,0,0,0.9);
+              z-index: 999999;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              cursor: pointer;
+            `;
+
+            let largeMedia;
+            if (isVideo) {
+              largeMedia = document.createElement('video');
+              largeMedia.src = url;
+              largeMedia.controls = true;
+              largeMedia.autoplay = true;
+              largeMedia.loop = true;
+              largeMedia.muted = true;
+              largeMedia.style.cssText = `
+                max-width: 90vw;
+                max-height: 90vh;
+                object-fit: contain;
+                border-radius: 8px;
+              `;
+            } else {
+              largeMedia = document.createElement('img');
+              largeMedia.src = url;
+              largeMedia.style.cssText = `
+                max-width: 90vw;
+                max-height: 90vh;
+                object-fit: contain;
+                border-radius: 8px;
+              `;
+            }
+
+            overlay.appendChild(largeMedia);
+            document.body.appendChild(overlay);
+
+            overlay.addEventListener('click', () => {
+              document.body.removeChild(overlay);
+            });
+          });
 
           imgContainer.appendChild(mediaElement);
         }
@@ -6616,7 +6877,9 @@ function scanAndReplaceWTVImages() {
             mediaElement.alt = stickerId;
             mediaElement.dataset.stickerId = stickerId;
             mediaElement.className = 'dlsq-wtv-sticker dlsq-wtv-video';
-            mediaElement.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 4px; display: inline-block;';
+            // 【修改】移除硬編碼的 max-width/max-height，改用 CSS 變量
+            mediaElement.style.borderRadius = '4px';
+            mediaElement.style.display = 'inline-block';
             mediaElement.muted = true;
             mediaElement.autoplay = true;
             mediaElement.loop = true;
@@ -6628,7 +6891,9 @@ function scanAndReplaceWTVImages() {
             mediaElement.alt = stickerId;
             mediaElement.dataset.stickerId = stickerId;
             mediaElement.className = 'dlsq-wtv-sticker';
-            mediaElement.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 4px; display: inline-block;';
+            // 【修改】移除硬編碼的 max-width/max-height，改用 CSS 變量
+            mediaElement.style.borderRadius = '4px';
+            mediaElement.style.display = 'inline-block';
           }
 
           // 添加右鍵菜單
@@ -6637,6 +6902,58 @@ function scanAndReplaceWTVImages() {
             e.preventDefault();
             e.stopPropagation();
             showContextMenuAt(e.clientX, e.clientY, stickerId, mediaElement);
+          });
+
+          // 【新增】添加點擊事件：點擊放大媒體
+          mediaElement.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const overlay = document.createElement('div');
+            overlay.style.cssText = `
+              position: fixed;
+              top: 0;
+              left: 0;
+              width: 100vw;
+              height: 100vh;
+              background: rgba(0,0,0,0.9);
+              z-index: 999999;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              cursor: pointer;
+            `;
+
+            let largeMedia;
+            if (isVideo) {
+              largeMedia = document.createElement('video');
+              largeMedia.src = url;
+              largeMedia.controls = true;
+              largeMedia.autoplay = true;
+              largeMedia.loop = true;
+              largeMedia.muted = true;
+              largeMedia.style.cssText = `
+                max-width: 90vw;
+                max-height: 90vh;
+                object-fit: contain;
+                border-radius: 8px;
+              `;
+            } else {
+              largeMedia = document.createElement('img');
+              largeMedia.src = url;
+              largeMedia.style.cssText = `
+                max-width: 90vw;
+                max-height: 90vh;
+                object-fit: contain;
+                border-radius: 8px;
+              `;
+            }
+
+            overlay.appendChild(largeMedia);
+            document.body.appendChild(overlay);
+
+            overlay.addEventListener('click', () => {
+              document.body.removeChild(overlay);
+            });
           });
 
           imgContainer.appendChild(mediaElement);
@@ -6654,7 +6971,9 @@ function scanAndReplaceWTVImages() {
           img.alt = stickerId;
           img.dataset.stickerId = stickerId;
           img.className = 'dlsq-wtv-sticker';
-          img.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 4px; display: inline-block;';
+          // 【修改】移除硬編碼的 max-width/max-height，改用 CSS 變量
+          img.style.borderRadius = '4px';
+          img.style.display = 'inline-block';
 
           // 添加右鍵菜單
           img.addEventListener('contextmenu', (e) => {
@@ -6662,6 +6981,42 @@ function scanAndReplaceWTVImages() {
             e.preventDefault();
             e.stopPropagation();
             showContextMenuAt(e.clientX, e.clientY, stickerId, img);
+          });
+
+          // 【新增】添加點擊事件：點擊放大媒體
+          img.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const overlay = document.createElement('div');
+            overlay.style.cssText = `
+              position: fixed;
+              top: 0;
+              left: 0;
+              width: 100vw;
+              height: 100vh;
+              background: rgba(0,0,0,0.9);
+              z-index: 999999;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              cursor: pointer;
+            `;
+
+            const largeImg = document.createElement('img');
+            largeImg.src = url;
+            largeImg.style.cssText = `
+              max-width: 90vw;
+              max-height: 90vh;
+              object-fit: contain;
+              border-radius: 8px;
+            `;
+
+            overlay.appendChild(largeImg);
+            document.body.appendChild(overlay);
+
+            overlay.addEventListener('click', () => {
+              document.body.removeChild(overlay);
+            });
           });
 
           imgContainer.appendChild(img);
@@ -6682,7 +7037,9 @@ function scanAndReplaceWTVImages() {
             img.alt = stickerId;
             img.dataset.stickerId = stickerId;
             img.className = 'dlsq-wtv-sticker';
-            img.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 4px; display: inline-block;';
+            // 【修改】移除硬編碼的 max-width/max-height，改用 CSS 變量
+            img.style.borderRadius = '4px';
+            img.style.display = 'inline-block';
 
             // 添加右鍵菜單
             img.addEventListener('contextmenu', (e) => {
@@ -6690,6 +7047,42 @@ function scanAndReplaceWTVImages() {
               e.preventDefault();
               e.stopPropagation();
               showContextMenuAt(e.clientX, e.clientY, stickerId, img);
+            });
+
+            // 【新增】添加點擊事件：點擊放大媒體
+            img.addEventListener('click', (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              const overlay = document.createElement('div');
+              overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(0,0,0,0.9);
+                z-index: 999999;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+              `;
+
+              const largeImg = document.createElement('img');
+              largeImg.src = `https://images.prd.dlivecdn.com/emote/${emoteId}`;
+              largeImg.style.cssText = `
+                max-width: 90vw;
+                max-height: 90vh;
+                object-fit: contain;
+                border-radius: 8px;
+              `;
+
+              overlay.appendChild(largeImg);
+              document.body.appendChild(overlay);
+
+              overlay.addEventListener('click', () => {
+                document.body.removeChild(overlay);
+              });
             });
 
             imgContainer.appendChild(img);
@@ -6785,7 +7178,8 @@ function scanAndReplaceWTVImages() {
             // 是 Shorts，創建直式自動播放容器替換縮略圖
             const shortsContainer = document.createElement('span');
             shortsContainer.className = 'dlsq-im-replaced dlsq-yt-shorts tsc-exclude';
-            shortsContainer.style.cssText = 'display: block; position: relative; width: 120px; height: 213px; margin: 4px 0; border-radius: 8px; overflow: hidden;'; const iframe = document.createElement('iframe');
+            // 【修改】移除硬編碼的 width/height，改用 CSS 變量和 aspect-ratio
+            shortsContainer.style.cssText = 'display: block; position: relative; margin: 4px 0; border-radius: 8px; overflow: hidden;'; const iframe = document.createElement('iframe');
             iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&playsinline=1&rel=0`;
             iframe.style.cssText = 'width: 100%; height: 100%; border: none; border-radius: 8px; pointer-events: none;';
             iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
@@ -6816,6 +7210,25 @@ function scanAndReplaceWTVImages() {
 
             // 替換縮略圖為 Shorts 容器
             thumbContainer.parentNode.replaceChild(shortsContainer, thumbContainer);
+
+            // 【修復】Shorts iframe 替換後觸發滾動（等待 iframe 加載完成）
+            setTimeout(() => {
+              // 使用 scrollIntoView 確保滾動到新元素的位置
+              shortsContainer.scrollIntoView({ behavior: 'auto', block: 'end' });
+              
+              // 對於 Twitch/Kick，額外執行一次完整滾動
+              const currentPlatform = getCurrentPlatform();
+              if (currentPlatform === 'twitch' || currentPlatform === 'kick') {
+                const chatContainer = findChatContainer(true);
+                if (chatContainer) {
+                  const distanceToBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight;
+                  if (distanceToBottom <= 500) {
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                    console.log('[GSS] YT- Shorts scrolled to bottom on', currentPlatform);
+                  }
+                }
+              }
+            }, 500);
           }
         }).catch(() => {
           // API 失敗時保持縮略圖不變
@@ -6867,7 +7280,9 @@ function scanAndReplaceWTVImages() {
               mediaElement.dataset.gssUrl = imageUrl;
               mediaElement.dataset.stickerId = 'GSS-' + imageUrl;
               mediaElement.className = 'dlsq-wtv-sticker dlsq-gss-image';
-              mediaElement.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 4px;  border: 2px solid #4CAF50;'; // 綠色邊框區分圖片
+              // 【修改】移除硬編碼的 max-width/max-height，改用 CSS 變量
+              mediaElement.style.borderRadius = '4px';
+              mediaElement.style.border = '2px solid #4CAF50'; // 綠色邊框區分圖片
             }
 
             // 添加錯誤處理
@@ -6958,7 +7373,7 @@ function scanAndReplaceWTVImages() {
       });
     }
 
-    // 8. 【重要】只隱藏貼圖 ID 部分，保留其他文字（如用戶名字）
+       // 8. 【重要】只隱藏貼圖 ID 部分，保留其他文字（如用戶名字）
     // 使用包裝器隱藏文本節點，避免影響其他元素
     if (textNode && (imMatch || meMatch || dlMatch || ytMatch || cbMatch || gssMatch)) {
       // 創建一個包裝器來隱藏文本節點
@@ -6969,6 +7384,25 @@ function scanAndReplaceWTVImages() {
       // 將文本節點移到包裝器中
       textNode.parentNode.insertBefore(wrapper, textNode);
       wrapper.appendChild(textNode);
+
+      // 【修復】WTV 平台貼圖插入後觸發滾動
+      setTimeout(() => {
+        const chatContainer = document.querySelector('[data-chat-scroll-container]');
+        if (chatContainer) {
+          // 檢查用戶是否在底部附近
+          const distanceToBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight;
+          if (distanceToBottom <= 500) {
+            // 使用 scrollIntoView 讓新貼圖可見
+            if (imgContainer && imgContainer.lastElementChild) {
+              imgContainer.lastElementChild.scrollIntoView({ behavior: 'auto', block: 'end' });
+            } else {
+              // 或者直接滾動到底部
+              chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+            console.log('[GSS] WTV scrolled to bottom after sticker insertion');
+          }
+        }
+      }, 200);
     }
   });
 
@@ -7030,9 +7464,9 @@ function initIMFeature() {
   }
 
   // 【修復】Twitch、Vaughn、Kick、WTV 分開處理
-  const isTwitchPage = window.location.hostname.includes('twitch.tv');
-  const isVaughnPage = window.location.hostname.includes('vaughn.live');
-  const isKickPage = window.location.hostname.includes('kick.com');
+  const isTwitchPage = isTwitch();
+  const isVaughnPage = isVaughn();
+  const isKickPage = isKick();
   const isWTVPage = window.location.hostname.includes('w.tv');
 
   if (isVaughnPage) {
@@ -7529,7 +7963,9 @@ function processTwitchMergedTextNode(mergedNode, messageEl, originalNodes) {
               mediaElement.alt = match.id;
               mediaElement.dataset.gssUrl = imageUrl;
               mediaElement.className = 'dlsq-im-replaced dlsq-converted-image dlsq-chat-img dlsq-gss-image';
-              mediaElement.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 4px; border: 2px solid #4CAF50;';
+              // 【修改】移除硬編碼的 max-width/max-height，改用 CSS 變量
+              mediaElement.style.borderRadius = '4px';
+              mediaElement.style.border = '2px solid #4CAF50';
             }
           }
         }
@@ -7604,7 +8040,8 @@ function processTwitchMergedTextNode(mergedNode, messageEl, originalNodes) {
         if (videoInfo.isShorts && thumbContainer.parentNode) {
           const shortsContainer = document.createElement('span');
           shortsContainer.className = 'dlsq-im-replaced dlsq-yt-shorts tsc-exclude';
-          shortsContainer.style.cssText = 'display: block; position: relative; width: 120px; height: 213px; margin: 4px 0; border-radius: 8px; overflow: hidden;';
+          // 【修改】移除硬編碼的 width/height，改用 CSS 變量和 aspect-ratio
+          shortsContainer.style.cssText = 'display: block; position: relative; margin: 4px 0; border-radius: 8px; overflow: hidden;';
 
           const iframe = document.createElement('iframe');
           iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&playsinline=1&rel=0`;
@@ -7623,6 +8060,25 @@ function processTwitchMergedTextNode(mergedNode, messageEl, originalNodes) {
           });
 
           thumbContainer.parentNode.replaceChild(shortsContainer, thumbContainer);
+
+          // 【修復】Shorts iframe 替換後觸發滾動（等待 iframe 加載完成）
+          setTimeout(() => {
+            // 使用 scrollIntoView 確保滾動到新元素的位置
+            shortsContainer.scrollIntoView({ behavior: 'auto', block: 'end' });
+            
+            // 對於 Twitch/Kick，額外執行一次完整滾動
+            const currentPlatform = getCurrentPlatform();
+            if (currentPlatform === 'twitch' || currentPlatform === 'kick') {
+              const chatContainer = findChatContainer(true);
+              if (chatContainer) {
+                const distanceToBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight;
+                if (distanceToBottom <= 500) {
+                  chatContainer.scrollTop = chatContainer.scrollHeight;
+                  console.log('[GSS] YT- Shorts scrolled to bottom on', currentPlatform);
+                }
+              }
+            }
+          }, 500);
         }
       }).catch(() => { });
 
@@ -7698,7 +8154,8 @@ function processTwitchMergedTextNode(mergedNode, messageEl, originalNodes) {
         if (videoInfo.isShorts && thumbContainer.parentNode) {
           const shortsContainer = document.createElement('span');
           shortsContainer.className = 'dlsq-im-replaced dlsq-yt-shorts tsc-exclude';
-          shortsContainer.style.cssText = 'display: block; position: relative; width: 120px; height: 213px; margin: 4px 0; border-radius: 8px; overflow: hidden;';
+          // 【修改】移除硬編碼的 width/height，改用 CSS 變量和 aspect-ratio
+          shortsContainer.style.cssText = 'display: block; position: relative; margin: 4px 0; border-radius: 8px; overflow: hidden;';
 
           const iframe = document.createElement('iframe');
           iframe.src = `https://www.youtube.com/embed/${match.videoId}?autoplay=1&mute=1&loop=1&playlist=${match.videoId}&playsinline=1&rel=0`;
@@ -7717,6 +8174,25 @@ function processTwitchMergedTextNode(mergedNode, messageEl, originalNodes) {
           });
 
           thumbContainer.parentNode.replaceChild(shortsContainer, thumbContainer);
+
+          // 【修復】Shorts iframe 替換後觸發滾動（等待 iframe 加載完成）
+          setTimeout(() => {
+            // 使用 scrollIntoView 確保滾動到新元素的位置
+            shortsContainer.scrollIntoView({ behavior: 'auto', block: 'end' });
+            
+            // 對於 Twitch/Kick，額外執行一次完整滾動
+            const currentPlatform = getCurrentPlatform();
+            if (currentPlatform === 'twitch' || currentPlatform === 'kick') {
+              const chatContainer = findChatContainer(true);
+              if (chatContainer) {
+                const distanceToBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight;
+                if (distanceToBottom <= 500) {
+                  chatContainer.scrollTop = chatContainer.scrollHeight;
+                  console.log('[GSS] YT- Shorts scrolled to bottom on', currentPlatform);
+                }
+              }
+            }
+          }, 500);
         }
       }).catch(() => { });
 
@@ -7843,7 +8319,9 @@ function processTwitchIMTextNode(textNode, messageEl) {
             mediaElement.alt = match.id;
             mediaElement.dataset.gssUrl = imageUrl;
             mediaElement.className = 'dlsq-im-replaced dlsq-converted-image dlsq-chat-img dlsq-gss-image';
-            mediaElement.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 4px; border: 2px solid #4CAF50;';
+            // 【修改】移除硬編碼的 max-width/max-height，改用 CSS 變量
+            mediaElement.style.borderRadius = '4px';
+            mediaElement.style.border = '2px solid #4CAF50';
           }
         }
       }
@@ -7940,7 +8418,8 @@ function processTwitchIMTextNode(textNode, messageEl) {
         if (videoInfo.isShorts && thumbContainer.parentNode) {
           const shortsContainer = document.createElement('span');
           shortsContainer.className = 'dlsq-im-replaced dlsq-yt-shorts tsc-exclude';
-          shortsContainer.style.cssText = 'display: block; position: relative; width: 120px; height: 213px; margin: 4px 0; border-radius: 8px; overflow: hidden;';
+          // 【修改】移除硬編碼的 width/height，改用 CSS 變量和 aspect-ratio
+          shortsContainer.style.cssText = 'display: block; position: relative; margin: 4px 0; border-radius: 8px; overflow: hidden;';
 
           const iframe = document.createElement('iframe');
           iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&playsinline=1&rel=0`;
@@ -7961,6 +8440,25 @@ function processTwitchIMTextNode(textNode, messageEl) {
           });
 
           thumbContainer.parentNode.replaceChild(shortsContainer, thumbContainer);
+
+          // 【修復】Shorts iframe 替換後觸發滾動（等待 iframe 加載完成）
+          setTimeout(() => {
+            // 使用 scrollIntoView 確保滾動到新元素的位置
+            shortsContainer.scrollIntoView({ behavior: 'auto', block: 'end' });
+            
+            // 對於 Twitch/Kick，額外執行一次完整滾動
+            const currentPlatform = getCurrentPlatform();
+            if (currentPlatform === 'twitch' || currentPlatform === 'kick') {
+              const chatContainer = findChatContainer(true);
+              if (chatContainer) {
+                const distanceToBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight;
+                if (distanceToBottom <= 500) {
+                  chatContainer.scrollTop = chatContainer.scrollHeight;
+                  console.log('[GSS] YT- Shorts scrolled to bottom on', currentPlatform);
+                }
+              }
+            }
+          }, 500);
         }
       }).catch(() => { });
 
@@ -8050,7 +8548,8 @@ function processTwitchIMTextNode(textNode, messageEl) {
         if (videoInfo.isShorts && thumbContainer.parentNode) {
           const shortsContainer = document.createElement('span');
           shortsContainer.className = 'dlsq-im-replaced dlsq-yt-shorts tsc-exclude';
-          shortsContainer.style.cssText = 'display: block; position: relative; width: 120px; height: 213px; margin: 4px 0; border-radius: 8px; overflow: hidden;';
+          // 【修改】移除硬編碼的 width/height，改用 CSS 變量和 aspect-ratio
+          shortsContainer.style.cssText = 'display: block; position: relative; margin: 4px 0; border-radius: 8px; overflow: hidden;';
 
           const iframe = document.createElement('iframe');
           iframe.src = `https://www.youtube.com/embed/${match.videoId}?autoplay=1&mute=1&loop=1&playlist=${match.videoId}&playsinline=1&rel=0`;
@@ -8071,6 +8570,25 @@ function processTwitchIMTextNode(textNode, messageEl) {
           });
 
           thumbContainer.parentNode.replaceChild(shortsContainer, thumbContainer);
+
+          // 【修復】Shorts iframe 替換後觸發滾動（等待 iframe 加載完成）
+          setTimeout(() => {
+            // 使用 scrollIntoView 確保滾動到新元素的位置
+            shortsContainer.scrollIntoView({ behavior: 'auto', block: 'end' });
+            
+            // 對於 Twitch/Kick，額外執行一次完整滾動
+            const currentPlatform = getCurrentPlatform();
+            if (currentPlatform === 'twitch' || currentPlatform === 'kick') {
+              const chatContainer = findChatContainer(true);
+              if (chatContainer) {
+                const distanceToBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight;
+                if (distanceToBottom <= 500) {
+                  chatContainer.scrollTop = chatContainer.scrollHeight;
+                  console.log('[GSS] YT- Shorts scrolled to bottom on', currentPlatform);
+                }
+              }
+            }
+          }, 500);
         }
       }).catch(() => { });
 
@@ -8955,19 +9473,9 @@ function openYouTubePlayer(videoId) {
       if (e.shiftKey && e.key === 'I') {
         e.preventDefault();
         // 嘗試找到聊天容器並強制掃描
-        const chatSelectors = [
-          '.chat-list', '[data-a-target="chat-list"]',
-          '.chat-scroll-area', '[class*="chat-list"]',
-          '[class*="ChatList"]', '.chat-room__content',
-          '[data-test-selector="chat-room-component"]',
-          '[data-a-target="chat-room"]', '.stream-chat'
-        ];
-        for (const sel of chatSelectors) {
-          const container = document.querySelector(sel);
-          if (container) {
-            scanTwitchChatMessages(container);
-            break;
-          }
+        const container = findChatContainer();
+        if (container) {
+          scanTwitchChatMessages(container);
         }
       }
     });

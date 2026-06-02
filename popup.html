@@ -342,6 +342,25 @@
       gap: 8px;
     }
 
+    /* 貼圖大小調整按鈕樣式 */
+    #btnStickerSizeDecrease:hover,
+    #btnStickerSizeIncrease:hover {
+      background: rgba(255,255,255,0.2) !important;
+      border-color: rgba(255,255,255,0.4) !important;
+      transform: scale(1.05);
+    }
+
+    #btnStickerSizeDecrease:active,
+    #btnStickerSizeIncrease:active {
+      transform: scale(0.95);
+    }
+
+    #inputStickerSize::-webkit-inner-spin-button,
+    #inputStickerSize::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
     .settings-btn {
       padding: 8px 12px;
       border: 1px solid rgba(255, 255, 255, 0.14);
@@ -902,7 +921,7 @@
         <div class="page-tabs">
           <button id="tabSticker" class="page-tab active">🎨 <span data-i18n="tabSticker">貼圖</span></button>
           <button id="tabTexo" class="page-tab">🧶 <span data-i18n="tabTexo">編織</span></button>
-          <button id="tabSettings" class="page-tab">⚙️ 設定</button>
+          <button id="tabSettings" class="page-tab">⚙️ <span id="tabSettingsText">設定</span></button>
         </div>
       </div>
     </div>
@@ -1032,10 +1051,34 @@
     <div class="settings-page">
       <!-- 區塊 1: 通用設定 -->
       <div class="settings-section">
-        <div class="settings-section-title" id="generalSettingsTitle">⚡ 通用設定</div>
+        <div class="settings-section-title" id="generalSettingsTitle">⚡ <span id="generalSettingsText">通用設定</span></div>
         <div class="settings-btn-grid">
           <button class="settings-btn" id="btnDisableNativeContextMenu">🖱️ <span
-              class="btn-text">關閉右鍵面板</span></button>
+              id="disableNativeContextMenuText" class="btn-text">關閉右鍵面板</span></button>
+        </div>
+        
+        <!-- 貼圖大小設定 -->
+        <div style="margin-top: 15px; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+          <div id="stickerSizeTitle" style="font-size: 12px; color: rgba(255,255,255,0.9); margin-bottom: 8px; font-weight: 600;">
+            📏 貼圖大小調整
+          </div>
+          <div id="stickerSizeDesc" style="font-size: 11px; color: rgba(255,255,255,0.6); margin-bottom: 10px; line-height: 1.4;">
+            調整所有貼圖的顯示大小（預設 100%）
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <button id="btnStickerSizeDecrease" style="width: 32px; height: 32px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; color: #fff; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
+              −
+            </button>
+            <input type="number" id="inputStickerSize" value="100" min="5" max="200" step="5"
+              style="flex: 1; height: 32px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; color: #fff; font-size: 14px; text-align: center; outline: none; -moz-appearance: textfield;">
+            <button id="btnStickerSizeIncrease" style="width: 32px; height: 32px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; color: #fff; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
+              +
+            </button>
+            <span style="font-size: 14px; color: rgba(255,255,255,0.8); min-width: 30px;">%</span>
+          </div>
+          <div id="stickerSizeRange" style="font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 6px;">
+            範圍：5% - 200% • 每次 ±5%
+          </div>
         </div>
       </div>
 
@@ -1071,22 +1114,19 @@
         </div>
         <div class="custom-dialog-content" style="padding: 10px 14px;">
           <div style="margin-bottom: 8px;">
-            <label style="display: block; font-size: 11px; color: #ffd43b; margin-bottom: 2px; font-weight: 600;">🌐
-              發動網域 (如: rumble.com)</label>
-            <input type="text" id="customPlatformHostname" placeholder="rumble.com"
-              style="width: 100%; padding: 6px 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #fff; font-size: 13px; outline: none; box-sizing: border-box;">
-          </div>
-          <div style="margin-bottom: 8px;">
-            <label style="display: block; font-size: 11px; color: #28a745; margin-bottom: 2px; font-weight: 600;">🏠
-              聊天室容器 (掃瞄 ID 用)</label>
-            <input type="text" id="customPlatformChatContainer" placeholder=".chat-history"
-              style="width: 100%; padding: 6px 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #fff; font-size: 13px; outline: none; box-sizing: border-box;">
-          </div>
-          <div style="margin-bottom: 4px;">
-            <label style="display: block; font-size: 11px; color: #4a90e2; margin-bottom: 2px; font-weight: 600;">📜
-              自定義腳本邏輯</label>
-            <textarea id="customPlatformLogic" placeholder="mount: .buttons&#10;input: #chat-input&#10;send: .send-btn"
-              style="width: 100%; height: 80px; padding: 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #fff; font-size: 12px; font-family: 'Consolas', monospace; resize: none; line-height: 1.4; outline: none; box-sizing: border-box;"></textarea>
+            <label style="display: block; font-size: 11px; color: #ffd43b; margin-bottom: 4px; font-weight: 600;">
+              📝 平台設定（支援一次性貼上完整配置）
+            </label>
+            <div style="font-size: 10px; color: rgba(255,255,255,0.5); margin-bottom: 6px; line-height: 1.4;">
+              格式：<code style="background: rgba(255,255,255,0.1); padding: 2px 4px; border-radius: 3px;">@hostname</code> 
+              <code style="background: rgba(255,255,255,0.1); padding: 2px 4px; border-radius: 3px;">@chatContainer</code> 
+              <code style="background: rgba(255,255,255,0.1); padding: 2px 4px; border-radius: 3px;">@logic</code>
+            </div>
+            <textarea id="customPlatformConfig" placeholder="@hostname rumble.com&#10;@chatContainer .chat-history&#10;@logic mount: .buttons&#10;       input: #chat-input&#10;       send: .send-btn"
+              style="width: 100%; height: 180px; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; color: #fff; font-size: 12px; font-family: 'Consolas', 'Monaco', monospace; resize: vertical; line-height: 1.6; outline: none; box-sizing: border-box; tab-size: 2;"></textarea>
+            <div style="font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 4px;">
+              💡 提示：可直接從其他平台複製完整設定貼上
+            </div>
           </div>
         </div>
         <div class="custom-dialog-footer">

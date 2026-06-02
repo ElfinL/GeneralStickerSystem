@@ -42,5 +42,21 @@
   "helpAutoCollectSettings": {
     "message": "自动抓取设置",
     "description": "Help page auto collect settings title"
+  },
+  "stickerSizeTitle": {
+    "message": "📏 贴图大小调整",
+    "description": "Sticker size adjustment title"
+  },
+  "stickerSizeDesc": {
+    "message": "调整所有贴图的显示大小（预设 100%）",
+    "description": "Sticker size adjustment description"
+  },
+  "stickerSizeRange": {
+    "message": "范围：5% - 200% • 每次 ±5%",
+    "description": "Sticker size range info"
+  },
+  "stickerSizeAdjusted": {
+    "message": "贴图大小已调整为 ${size}%",
+    "description": "Sticker size adjusted message"
   }
 }
