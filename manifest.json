@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extName__",
-  "version": "7.1",
+  "version": "7.2",
   "default_locale": "zh_TW",
   "icons": {
     "16": "icons/icon16.png",
@@ -78,6 +78,7 @@
         "platforms/wtv.js",
         "platforms/index.js",
         "modules/gsstracker.js",
+        "modules/imageLogger.js",
         "TexoStreamCore/sharedChat.js",
         "TexoStreamCore/panel.js",
         "content.js"

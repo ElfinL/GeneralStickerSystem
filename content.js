@@ -148,15 +148,16 @@ function bindMediaScroll(mediaEl, wrapper) {
   
   mediaEl.dataset.dlsqScrollBound = 'true';
   
-  const doScroll = () => scrollToBottom(wrapper);
-  
-  mediaEl.addEventListener('load', doScroll);
-  mediaEl.addEventListener('error', doScroll);
-  
-  // 如果已經加載完成，延遲執行
-  if (mediaEl.complete) {
-    setTimeout(doScroll, 200);
+  // 【同步】記錄到貼圖牆
+  if (window.GSS_ImageLogger) {
+    const url = mediaEl.src || mediaEl.dataset.gssUrl;
+    const id = mediaEl.alt || mediaEl.dataset.ytId || '';
+    if (url) {
+      window.GSS_ImageLogger.log(url, id);
+    }
   }
+
+  // 【移除】不再自動滾動，使用聊天室原生滾軸
 }
 
 // ========= 語言設定 =========
@@ -639,68 +640,70 @@ function ensureStyles() {
       50% { opacity: 0.7; transform: scale(1.15); }
     }
 
-    /* ===== 统一图片样式 - 全部在下一行 (display: block) ===== */
+    /* ===== 统一图片样式 - 同一行显示 ===== */
     .dlsq-chat-img {
-      max-width: var(--gss-sticker-max-width, 100px);
-      max-height: var(--gss-sticker-max-height, 100px);
+      max-width: 32px;
+      max-height: 32px;
       width: auto;
       height: auto;
-      border-radius: 8px;
+      border-radius: 4px;
       cursor: default;
-      display: block;
-      margin: 4px 0;
+      display: inline-block;
+      vertical-align: middle;
+      margin: 0 2px;
       border: 2px solid transparent;
       object-fit: contain;
-      clear: both;
     }
     /* WTV 平台贴图样式 */
     .dlsq-wtv-sticker {
-      max-width: var(--gss-sticker-max-width, 100px);
-      max-height: var(--gss-sticker-max-height, 100px);
+      max-width: 32px;
+      max-height: 32px;
       width: auto;
       height: auto;
       border-radius: 4px;
       display: inline-block;
+      vertical-align: middle;
+      margin: 0 2px;
     }
-    /* 视频样式 - 也在下一行 */
+    /* 视频样式 - 同一行显示 */
     .dlsq-chat-video {
-      max-width: var(--gss-sticker-max-width, 100px);
-      max-height: var(--gss-sticker-max-height, 100px);
+      max-width: 32px;
+      max-height: 32px;
       width: auto;
       height: auto;
-      border-radius: 8px;
-      cursor: default;
-      display: block;
-      margin: 4px 0;
-      border: 2px solid transparent;
-      clear: both;
+      border-radius: 4px;
+      display: inline-block;
+      vertical-align: middle;
+      margin: 0 2px;
     }
-    /* YouTube 缩略图 - 更大尺寸 */
+    /* YouTube 缩略图 - 同一行显示 */
     .dlsq-chat-yt {
-      max-width: 160px;
-      max-height: 90px;
-      border-radius: 8px;
-      display: block;
+      max-width: 32px;
+      max-height: 32px;
+      border-radius: 4px;
+      display: inline-block;
+      vertical-align: middle;
+      margin: 0 2px;
       cursor: pointer;
       object-fit: cover;
     }
-    /* YouTube 缩略图容器 - 确保播放按钮居中定位 */
+    /* YouTube 缩略图容器 - 同一行显示 */
 .dlsq-yt-thumbnail, .gss-yt-thumbnail {
   position: relative !important;
-  display: block !important;
+  display: inline-block !important;
   width: fit-content !important;
   height: fit-content !important;
   line-height: 0 !important;
-  margin: 4px 0 !important;
-  clear: both !important;
+  margin: 0 2px !important;
+  vertical-align: middle !important;
 }
 .dlsq-yt-shorts {
-  display: block !important;
-  max-width: var(--gss-sticker-max-width, 100px) !important;
-  width: var(--gss-sticker-max-width, 100px) !important;
+  display: inline-block !important;
+  max-width: 32px !important;
+  width: 32px !important;
   aspect-ratio: 9 / 16 !important;
-  margin: 4px 0 !important;
-  clear: both !important;
+  margin: 0 2px !important;
+  vertical-align: middle !important;
 }
     .dlsq-yt-thumbnail img, .gss-yt-thumbnail img {
       display: block !important;
@@ -1780,6 +1783,30 @@ function createPanelIfNeeded() {
   pagination.appendChild(prevBtn);
   pagination.appendChild(pageInfo);
   pagination.appendChild(nextBtn);
+
+  // 【新增】貼圖記錄牆開關按鈕
+  const loggerBtn = document.createElement('button');
+  loggerBtn.id = 'gss_logger_toggle';
+  loggerBtn.textContent = '🖼️';
+  loggerBtn.title = '開啟/關閉 貼圖記錄牆';
+  loggerBtn.style.cssText = `
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(10,12,16,0.88);
+    color: rgba(255,255,255,0.88);
+    font-size: 12px;
+    cursor: pointer;
+    margin-left: 8px;
+  `;
+  loggerBtn.onclick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (window.GSS_ImageLogger) {
+      window.GSS_ImageLogger.toggle();
+    }
+  };
+  pagination.appendChild(loggerBtn);
 
   // 【滑鼠滾輪分頁】為分頁控制區域添加滾輪事件
   pagination.addEventListener('wheel', (e) => {
@@ -6022,6 +6049,11 @@ function scanAndReplaceIMImages(container = document.body) {
             });
             
             wrapper.appendChild(video);
+            
+            // 【同步】記錄到貼圖牆
+            if (window.GSS_ImageLogger) {
+              window.GSS_ImageLogger.log(url, hiddenStickerId);
+            }
           } else {
             // 創建 img 元素
             const img = document.createElement('img');
@@ -6068,6 +6100,11 @@ function scanAndReplaceIMImages(container = document.body) {
             });
             
             wrapper.appendChild(img);
+            
+            // 【同步】記錄到貼圖牆
+            if (window.GSS_ImageLogger) {
+              window.GSS_ImageLogger.log(url, hiddenStickerId);
+            }
           }
         }
       }
@@ -6112,17 +6149,7 @@ function scanAndReplaceIMImages(container = document.body) {
         }
       }
 
-      // 等待圖片加載完成後再滾動（所有貼圖類型都需要）
-      // 【修復】為所有貼圖類型（IM/ME/DL/YT）觸發滾動
-      const mediaEl = wrapper.querySelector('img, video');
-      if (mediaEl) {
-        // 使用通用的綁定函數
-        bindMediaScroll(mediaEl, wrapper);
-      } else {
-        // 沒有圖片/視頻元素，直接滾動
-        console.log('[GSS] No media element, scrolling immediately');
-        wrapper.parentElement?.scrollIntoView(false);
-      }
+      // 【移除】不再自動滾動，使用聊天室原生滾軸
 
       return; // 已處理，跳過常規 IM- 檢查
     }
@@ -6148,6 +6175,11 @@ function scanAndReplaceIMImages(container = document.body) {
         img.alt = `DL-${emoteId}`;
         img.className = 'dlsq-im-replaced dlsq-converted-image dlsq-chat-img'; // 【標記】標記為已轉換圖片
         dlFragments.push(img);
+        
+        // 【同步】記錄到貼圖牆
+        if (window.GSS_ImageLogger) {
+          window.GSS_ImageLogger.log(img.src, img.alt);
+        }
       } else {
         // 純文字 DL-xxx 格式 - 也顯示為實際圖片
         const dlId = fullMatch.slice(3); // 去掉 "DL-" 前綴
@@ -6156,6 +6188,11 @@ function scanAndReplaceIMImages(container = document.body) {
         img.alt = fullMatch;
         img.className = 'dlsq-im-replaced dlsq-converted-image dlsq-chat-img'; // 【標記】標記為已轉換圖片
         dlFragments.push(img);
+        
+        // 【同步】記錄到貼圖牆
+        if (window.GSS_ImageLogger) {
+          window.GSS_ImageLogger.log(img.src, img.alt);
+        }
       }
 
       dlLastIndex = dlRegex.lastIndex;
@@ -6170,6 +6207,7 @@ function scanAndReplaceIMImages(container = document.body) {
     if (hasDLMedia) {
       const wrapper = document.createElement('span');
       wrapper.className = 'dlsq-im-replaced';
+      wrapper.style.cssText = 'display: inline-block; vertical-align: middle;';
       dlFragments.forEach(f => wrapper.appendChild(f));
 
       // 使用 replaceWith 代替 replaceChild
@@ -6191,12 +6229,6 @@ function scanAndReplaceIMImages(container = document.body) {
       // 【標記】給消息容器添加標記，防止 React/KICK 重置 DOM 後重複處理
       const msgContainer = textNode.parentElement?.closest('[class*="message"], [class*="chat-line"], [class*="ChatMessage"]');
       if (msgContainer) msgContainer.classList.add('dlsq-message-processed');
-
-      // 【修復】DL 貼圖也需要觸發滾動
-      const dlMediaEl = wrapper.querySelector('img');
-      if (dlMediaEl) {
-        bindMediaScroll(dlMediaEl, wrapper);
-      }
 
       return; // 已處理 DL，跳過 IM- 檢查
     }
@@ -6239,12 +6271,22 @@ function scanAndReplaceIMImages(container = document.body) {
           video.playsInline = true;
           video.className = 'dlsq-im-replaced dlsq-chat-video';
           imFragments.push(video);
+          
+          // 【同步】記錄到貼圖牆
+          if (window.GSS_ImageLogger) {
+            window.GSS_ImageLogger.log(url, fullMatch);
+          }
         } else {
           const img = document.createElement('img');
           img.src = url;
           img.alt = fullMatch; // 【修復】設置 alt 與 DL 圖保持一致，防止翻譯清除
           img.className = 'dlsq-im-replaced dlsq-converted-image dlsq-chat-img'; // 【標記】標記為已轉換圖片
           imFragments.push(img);
+          
+          // 【同步】記錄到貼圖牆
+          if (window.GSS_ImageLogger) {
+            window.GSS_ImageLogger.log(url, fullMatch);
+          }
         }
       } else {
         imFragments.push(document.createTextNode(fullMatch));
@@ -6262,6 +6304,7 @@ function scanAndReplaceIMImages(container = document.body) {
     if (hasIMMedia) {
       const wrapper = document.createElement('span');
       wrapper.className = 'dlsq-im-replaced';
+      wrapper.style.cssText = 'display: inline-block; vertical-align: middle;';
       imFragments.forEach(f => wrapper.appendChild(f));
 
       try {
@@ -6282,12 +6325,6 @@ function scanAndReplaceIMImages(container = document.body) {
       // 【標記】給消息容器添加標記，防止 React/KICK 重置 DOM 後重複處理
       const msgContainer2 = textNode.parentElement?.closest('[class*="message"], [class*="chat-line"], [class*="ChatMessage"]');
       if (msgContainer2) msgContainer2.classList.add('dlsq-message-processed');
-
-      // 【修復】明文 IM 貼圖也需要觸發滾動
-      const imMediaEl = wrapper.querySelector('img, video');
-      if (imMediaEl) {
-        bindMediaScroll(imMediaEl, wrapper);
-      }
 
       return; // 已處理 IM，跳過 ME 檢查
     }
@@ -6317,12 +6354,22 @@ function scanAndReplaceIMImages(container = document.body) {
           video.playsInline = true;
           video.className = 'dlsq-im-replaced dlsq-chat-video';
           meFragments.push(video);
+          
+          // 【同步】記錄到貼圖牆
+          if (window.GSS_ImageLogger) {
+            window.GSS_ImageLogger.log(url, fullMatch);
+          }
         } else {
           const img = document.createElement('img');
           img.src = url;
           img.alt = fullMatch; // 【修復】設置 alt 與 DL 圖保持一致，防止翻譯清除
           img.className = 'dlsq-im-replaced dlsq-converted-image dlsq-chat-img'; // 【標記】標記為已轉換圖片
           meFragments.push(img);
+          
+          // 【同步】記錄到貼圖牆
+          if (window.GSS_ImageLogger) {
+            window.GSS_ImageLogger.log(url, fullMatch);
+          }
         }
       } else {
         meFragments.push(document.createTextNode(fullMatch));
@@ -6340,6 +6387,7 @@ function scanAndReplaceIMImages(container = document.body) {
     if (hasMEMedia) {
       const wrapper = document.createElement('span');
       wrapper.className = 'dlsq-im-replaced';
+      wrapper.style.cssText = 'display: inline-block; vertical-align: middle;';
       meFragments.forEach(f => wrapper.appendChild(f));
 
       try {
@@ -6360,12 +6408,6 @@ function scanAndReplaceIMImages(container = document.body) {
       // 【標記】給消息容器添加標記，防止 React/KICK 重置 DOM 後重複處理
       const msgContainer3 = textNode.parentElement?.closest('[class*="message"], [class*="chat-line"], [class*="ChatMessage"]');
       if (msgContainer3) msgContainer3.classList.add('dlsq-message-processed');
-
-      // 【修復】明文 ME 貼圖也需要觸發滾動
-      const meMediaEl = wrapper.querySelector('img, video');
-      if (meMediaEl) {
-        bindMediaScroll(meMediaEl, wrapper);
-      }
 
       return; // 已處理 ME，跳過 YT 檢查
     }
@@ -6390,7 +6432,7 @@ function scanAndReplaceIMImages(container = document.body) {
       const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
       const thumbContainer = document.createElement('span');
       thumbContainer.className = 'dlsq-im-replaced dlsq-yt-thumbnail';
-      thumbContainer.style.cssText = 'cursor: pointer; display: block; position: relative;';
+      thumbContainer.style.cssText = 'cursor: pointer; display: inline-block; position: relative; vertical-align: middle; margin: 0 2px;';
       thumbContainer.title = '點擊播放 YouTube 視頻';
 
       // 創建縮略圖圖片
@@ -6431,20 +6473,10 @@ function scanAndReplaceIMImages(container = document.body) {
       thumbContainer.appendChild(img);
       thumbContainer.appendChild(playBtn);
 
-      // 觸發滾動
-      const mediaEl = thumbContainer.querySelector('img');
-      if (mediaEl && !mediaEl.dataset.dlsqScrollBound) {
-        mediaEl.dataset.dlsqScrollBound = 'true';
-        mediaEl.addEventListener('load', () => {
-          const container = document.querySelector('#chatroom-messages');
-          if (container) container.scrollTop = container.scrollHeight;
-        });
-        if (mediaEl.complete) {
-          const container = document.querySelector('#chatroom-messages');
-          if (container) container.scrollTop = container.scrollHeight;
-        }
+      // 【同步】記錄到貼圖牆
+      if (window.GSS_ImageLogger) {
+        window.GSS_ImageLogger.log(thumbnailUrl, fullMatch);
       }
-
 
       // 點擊打開 YouTube 播放器
       thumbContainer.addEventListener('click', (e) => {
@@ -6494,24 +6526,7 @@ function scanAndReplaceIMImages(container = document.body) {
           // 替換縮略圖為 Shorts 容器
           thumbContainer.parentNode.replaceChild(shortsContainer, thumbContainer);
 
-          // 【修復】Shorts iframe 替換後觸發滾動（等待 iframe 加載完成）
-          setTimeout(() => {
-            // 使用 scrollIntoView 確保滾動到新元素的位置
-            shortsContainer.scrollIntoView({ behavior: 'auto', block: 'end' });
-            
-            // 對於 Twitch/Kick，額外執行一次完整滾動
-            const currentPlatform = getCurrentPlatform();
-            if (currentPlatform === 'twitch' || currentPlatform === 'kick') {
-              const chatContainer = findChatContainer(true);
-              if (chatContainer) {
-                const distanceToBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight;
-                if (distanceToBottom <= 500) {
-                  chatContainer.scrollTop = chatContainer.scrollHeight;
-                  console.log('[GSS] YT- Shorts scrolled to bottom on', currentPlatform);
-                }
-              }
-            }
-          }, 500);
+          // 【移除】不再自動滾動，使用聊天室原生滾軸
         }
       }).catch(() => {
         // API 失敗時保持縮略圖不變
@@ -6529,6 +6544,7 @@ function scanAndReplaceIMImages(container = document.body) {
     if (ytFragments.length > 1 || (ytFragments.length === 1 && ytFragments[0].className?.includes('dlsq-yt-thumbnail'))) {
       const wrapper = document.createElement('span');
       wrapper.className = 'dlsq-im-replaced';
+      wrapper.style.cssText = 'display: inline-block; vertical-align: middle;';
       ytFragments.forEach(f => wrapper.appendChild(f));
 
       try {
@@ -6549,12 +6565,6 @@ function scanAndReplaceIMImages(container = document.body) {
       // 【標記】給消息容器添加標記，防止 React/KICK 重置 DOM 後重複處理
       const msgContainer4 = textNode.parentElement?.closest('[class*="message"], [class*="chat-line"], [class*="ChatMessage"]');
       if (msgContainer4) msgContainer4.classList.add('dlsq-message-processed');
-
-      // YT- 也觸發滾動（統一行為，支援所有平台）
-      const ytThumbnailEl = wrapper.querySelector('img');
-      if (ytThumbnailEl) {
-        bindMediaScroll(ytThumbnailEl, wrapper);
-      }
 
       return; // 已處理 YT-xxx，跳過完整 URL 檢查
     }
@@ -6583,7 +6593,7 @@ function scanAndReplaceIMImages(container = document.body) {
       // 創建縮略圖容器
       const thumbContainer = document.createElement('span');
       thumbContainer.className = 'dlsq-im-replaced dlsq-yt-thumbnail';
-      thumbContainer.style.cssText = 'cursor: pointer; display: block; position: relative;';
+      thumbContainer.style.cssText = 'cursor: pointer; display: inline-block; position: relative; vertical-align: middle; margin: 0 2px;';
       thumbContainer.title = '點擊播放 YouTube 視頻';
 
       // 創建縮略圖圖片
@@ -6624,18 +6634,9 @@ function scanAndReplaceIMImages(container = document.body) {
       thumbContainer.appendChild(img);
       thumbContainer.appendChild(playBtn);
 
-      // 觸發滾動
-      const mediaEl = thumbContainer.querySelector('img');
-      if (mediaEl && !mediaEl.dataset.dlsqScrollBound) {
-        mediaEl.dataset.dlsqScrollBound = 'true';
-        mediaEl.addEventListener('load', () => {
-          const container = document.querySelector('#chatroom-messages');
-          if (container) container.scrollTop = container.scrollHeight;
-        });
-        if (mediaEl.complete) {
-          const container = document.querySelector('#chatroom-messages');
-          if (container) container.scrollTop = container.scrollHeight;
-        }
+      // 【同步】記錄到貼圖牆
+      if (window.GSS_ImageLogger) {
+        window.GSS_ImageLogger.log(thumbnailUrl, fullMatch);
       }
 
       // 點擊打開 YouTube 播放器
@@ -6657,6 +6658,7 @@ function scanAndReplaceIMImages(container = document.body) {
     if (ytUrlFragments.length > 1 || (ytUrlFragments.length === 1 && ytUrlFragments[0].className?.includes('dlsq-yt-thumbnail'))) {
       const wrapper = document.createElement('span');
       wrapper.className = 'dlsq-im-replaced';
+      wrapper.style.cssText = 'display: inline-block; vertical-align: middle;';
       ytUrlFragments.forEach(f => wrapper.appendChild(f));
 
       try {
@@ -6673,13 +6675,6 @@ function scanAndReplaceIMImages(container = document.body) {
         } catch (e2) {
           // 忽略錯誤
         }
-      }
-
-      // 【修復】完整 YouTube URL 也需要觸發滾動
-      console.log('[GSS] YouTube URL thumbnail processed, triggering scroll');
-      const ytMediaEl = wrapper.querySelector('img');
-      if (ytMediaEl) {
-        bindMediaScroll(ytMediaEl, wrapper);
       }
     }
   });
@@ -6751,10 +6746,21 @@ function scanAndReplaceWTVImages() {
     if (!imgContainer) {
       imgContainer = document.createElement('span');
       imgContainer.className = 'dlsq-wtv-img-container dlsq-wtv-converted';
-      imgContainer.style.cssText = 'display: inline-flex; flex-wrap: wrap; gap: 4px; vertical-align: middle;';
+      imgContainer.style.cssText = 'display: inline-flex; gap: 2px; vertical-align: middle;';
 
-      // 2. 將圖片容器插入到訊息容器的末尾
-      container.appendChild(imgContainer);
+      // 2. 將圖片容器插入到文本節點的位置（替換文本節點）
+      if (textNode && textNode.parentNode) {
+        textNode.parentNode.replaceChild(imgContainer, textNode);
+        textNode = null; // 標記文本節點已被替換
+      } else {
+        container.appendChild(imgContainer);
+      }
+    } else {
+      // 如果圖片容器已存在，確保它在正確的位置
+      if (textNode && textNode.parentNode && !imgContainer.parentNode) {
+        textNode.parentNode.replaceChild(imgContainer, textNode);
+        textNode = null;
+      }
     }
 
     // 3. 處理 IM- 貼圖/影片
@@ -6773,12 +6779,16 @@ function scanAndReplaceWTVImages() {
             mediaElement.dataset.stickerId = stickerId;
             mediaElement.className = 'dlsq-wtv-sticker dlsq-wtv-video';
             // 【修改】移除硬編碼的 max-width/max-height，改用 CSS 變量
-            mediaElement.style.borderRadius = '4px';
-            mediaElement.style.display = 'inline-block';
+            mediaElement.style.cssText = 'border-radius: 4px; display: inline-block; vertical-align: middle;';
             mediaElement.muted = true;
             mediaElement.autoplay = true;
             mediaElement.loop = true;
             mediaElement.playsInline = true;
+            
+            // 【同步】記錄到貼圖牆
+            if (window.GSS_ImageLogger) {
+              window.GSS_ImageLogger.log(url, stickerId);
+            }
           } else {
             // 創建 img 元素
             mediaElement = document.createElement('img');
@@ -6787,8 +6797,12 @@ function scanAndReplaceWTVImages() {
             mediaElement.dataset.stickerId = stickerId;
             mediaElement.className = 'dlsq-wtv-sticker';
             // 【修改】移除硬編碼的 max-width/max-height，改用 CSS 變量
-            mediaElement.style.borderRadius = '4px';
-            mediaElement.style.display = 'inline-block';
+            mediaElement.style.cssText = 'border-radius: 4px; display: inline-block; vertical-align: middle;';
+            
+            // 【同步】記錄到貼圖牆
+            if (window.GSS_ImageLogger) {
+              window.GSS_ImageLogger.log(url, stickerId);
+            }
           }
 
           // 添加右鍵菜單（使用 capture 模式）
@@ -6878,12 +6892,16 @@ function scanAndReplaceWTVImages() {
             mediaElement.dataset.stickerId = stickerId;
             mediaElement.className = 'dlsq-wtv-sticker dlsq-wtv-video';
             // 【修改】移除硬編碼的 max-width/max-height，改用 CSS 變量
-            mediaElement.style.borderRadius = '4px';
-            mediaElement.style.display = 'inline-block';
+            mediaElement.style.cssText = 'border-radius: 4px; display: inline-block; vertical-align: middle;';
             mediaElement.muted = true;
             mediaElement.autoplay = true;
             mediaElement.loop = true;
             mediaElement.playsInline = true;
+            
+            // 【同步】記錄到貼圖牆
+            if (window.GSS_ImageLogger) {
+              window.GSS_ImageLogger.log(url, stickerId);
+            }
           } else {
             // 創建 img 元素
             mediaElement = document.createElement('img');
@@ -6892,8 +6910,12 @@ function scanAndReplaceWTVImages() {
             mediaElement.dataset.stickerId = stickerId;
             mediaElement.className = 'dlsq-wtv-sticker';
             // 【修改】移除硬編碼的 max-width/max-height，改用 CSS 變量
-            mediaElement.style.borderRadius = '4px';
-            mediaElement.style.display = 'inline-block';
+            mediaElement.style.cssText = 'border-radius: 4px; display: inline-block; vertical-align: middle;';
+            
+            // 【同步】記錄到貼圖牆
+            if (window.GSS_ImageLogger) {
+              window.GSS_ImageLogger.log(url, stickerId);
+            }
           }
 
           // 添加右鍵菜單
@@ -6974,6 +6996,11 @@ function scanAndReplaceWTVImages() {
           // 【修改】移除硬編碼的 max-width/max-height，改用 CSS 變量
           img.style.borderRadius = '4px';
           img.style.display = 'inline-block';
+          
+          // 【同步】記錄到貼圖牆
+          if (window.GSS_ImageLogger) {
+            window.GSS_ImageLogger.log(url, stickerId);
+          }
 
           // 添加右鍵菜單
           img.addEventListener('contextmenu', (e) => {
@@ -7040,6 +7067,11 @@ function scanAndReplaceWTVImages() {
             // 【修改】移除硬編碼的 max-width/max-height，改用 CSS 變量
             img.style.borderRadius = '4px';
             img.style.display = 'inline-block';
+            
+            // 【同步】記錄到貼圖牆
+            if (window.GSS_ImageLogger) {
+              window.GSS_ImageLogger.log(img.src, stickerId);
+            }
 
             // 添加右鍵菜單
             img.addEventListener('contextmenu', (e) => {
@@ -7100,7 +7132,7 @@ function scanAndReplaceWTVImages() {
         const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
         const thumbContainer = document.createElement('span');
         thumbContainer.className = 'dlsq-im-replaced dlsq-yt-thumbnail';
-        thumbContainer.style.cssText = 'cursor: pointer; display: block; position: relative;';
+        thumbContainer.style.cssText = 'cursor: pointer; display: inline-block; position: relative; vertical-align: middle; margin: 0 2px;';
 
         thumbContainer.title = '點擊播放 YouTube 視頻';
         thumbContainer.setAttribute('data-sticker-id', ytId);
@@ -7143,18 +7175,9 @@ function scanAndReplaceWTVImages() {
         thumbContainer.appendChild(img);
         thumbContainer.appendChild(playBtn);
 
-        // 觸發滾動
-        const mediaEl = thumbContainer.querySelector('img');
-        if (mediaEl && !mediaEl.dataset.dlsqScrollBound) {
-          mediaEl.dataset.dlsqScrollBound = 'true';
-          mediaEl.addEventListener('load', () => {
-            const container = document.querySelector('#chatroom-messages');
-            if (container) container.scrollTop = container.scrollHeight;
-          });
-          if (mediaEl.complete) {
-            const container = document.querySelector('#chatroom-messages');
-            if (container) container.scrollTop = container.scrollHeight;
-          }
+        // 【同步】記錄到貼圖牆
+        if (window.GSS_ImageLogger) {
+          window.GSS_ImageLogger.log(thumbnailUrl, ytId);
         }
 
         // 點擊打開 YouTube 播放器
@@ -7211,24 +7234,7 @@ function scanAndReplaceWTVImages() {
             // 替換縮略圖為 Shorts 容器
             thumbContainer.parentNode.replaceChild(shortsContainer, thumbContainer);
 
-            // 【修復】Shorts iframe 替換後觸發滾動（等待 iframe 加載完成）
-            setTimeout(() => {
-              // 使用 scrollIntoView 確保滾動到新元素的位置
-              shortsContainer.scrollIntoView({ behavior: 'auto', block: 'end' });
-              
-              // 對於 Twitch/Kick，額外執行一次完整滾動
-              const currentPlatform = getCurrentPlatform();
-              if (currentPlatform === 'twitch' || currentPlatform === 'kick') {
-                const chatContainer = findChatContainer(true);
-                if (chatContainer) {
-                  const distanceToBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight;
-                  if (distanceToBottom <= 500) {
-                    chatContainer.scrollTop = chatContainer.scrollHeight;
-                    console.log('[GSS] YT- Shorts scrolled to bottom on', currentPlatform);
-                  }
-                }
-              }
-            }, 500);
+            // 【移除】不再自動滾動，使用聊天室原生滾軸
           }
         }).catch(() => {
           // API 失敗時保持縮略圖不變
@@ -7267,11 +7273,16 @@ function scanAndReplaceWTVImages() {
               mediaElement.dataset.gssUrl = imageUrl;
               mediaElement.dataset.stickerId = 'GSS-' + imageUrl;
               mediaElement.className = 'dlsq-wtv-sticker dlsq-gss-video';
-              mediaElement.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 4px;  border: 2px solid #FF9800;'; // 橙色邊框區分影片
+              mediaElement.style.cssText = 'border-radius: 4px; border: 2px solid #FF9800; display: inline-block;'; // 橙色邊框區分影片
               mediaElement.muted = true;
               mediaElement.autoplay = true;
               mediaElement.loop = true;
               mediaElement.playsInline = true;
+              
+              // 【同步】記錄到貼圖牆
+              if (window.GSS_ImageLogger) {
+                window.GSS_ImageLogger.log(imageUrl, 'GSS-' + imageUrl);
+              }
             } else {
               // 創建 img 元素
               mediaElement = document.createElement('img');
@@ -7279,10 +7290,13 @@ function scanAndReplaceWTVImages() {
               mediaElement.alt = 'GSS-' + imageUrl;
               mediaElement.dataset.gssUrl = imageUrl;
               mediaElement.dataset.stickerId = 'GSS-' + imageUrl;
-              mediaElement.className = 'dlsq-wtv-sticker dlsq-gss-image';
-              // 【修改】移除硬編碼的 max-width/max-height，改用 CSS 變量
-              mediaElement.style.borderRadius = '4px';
-              mediaElement.style.border = '2px solid #4CAF50'; // 綠色邊框區分圖片
+              mediaElement.className = 'dlsq-wtv-sticker';
+              mediaElement.style.cssText = 'border-radius: 4px; display: inline-block;';
+              
+              // 【同步】記錄到貼圖牆
+              if (window.GSS_ImageLogger) {
+                window.GSS_ImageLogger.log(imageUrl, 'GSS-' + imageUrl);
+              }
             }
 
             // 添加錯誤處理
@@ -7375,34 +7389,19 @@ function scanAndReplaceWTVImages() {
 
        // 8. 【重要】只隱藏貼圖 ID 部分，保留其他文字（如用戶名字）
     // 使用包裝器隱藏文本節點，避免影響其他元素
+    // 注意：如果文本節點已被替換為圖片容器，則不需要隱藏
     if (textNode && (imMatch || meMatch || dlMatch || ytMatch || cbMatch || gssMatch)) {
-      // 創建一個包裝器來隱藏文本節點
-      const wrapper = document.createElement('span');
-      wrapper.style.cssText = 'font-size: 0; line-height: 0; opacity: 0; display: inline-block; width: 0; height: 0; overflow: hidden; visibility: hidden;';
-      wrapper.className = 'dlsq-wtv-text-wrapper';
+      // 檢查文本節點是否還在 DOM 中
+      if (textNode.parentNode) {
+        // 創建一個包裝器來隱藏文本節點
+        const wrapper = document.createElement('span');
+        wrapper.style.cssText = 'font-size: 0; line-height: 0; opacity: 0; display: inline-block; width: 0; height: 0; overflow: hidden; visibility: hidden;';
+        wrapper.className = 'dlsq-wtv-text-wrapper';
 
-      // 將文本節點移到包裝器中
-      textNode.parentNode.insertBefore(wrapper, textNode);
-      wrapper.appendChild(textNode);
-
-      // 【修復】WTV 平台貼圖插入後觸發滾動
-      setTimeout(() => {
-        const chatContainer = document.querySelector('[data-chat-scroll-container]');
-        if (chatContainer) {
-          // 檢查用戶是否在底部附近
-          const distanceToBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight;
-          if (distanceToBottom <= 500) {
-            // 使用 scrollIntoView 讓新貼圖可見
-            if (imgContainer && imgContainer.lastElementChild) {
-              imgContainer.lastElementChild.scrollIntoView({ behavior: 'auto', block: 'end' });
-            } else {
-              // 或者直接滾動到底部
-              chatContainer.scrollTop = chatContainer.scrollHeight;
-            }
-            console.log('[GSS] WTV scrolled to bottom after sticker insertion');
-          }
-        }
-      }, 200);
+        // 將文本節點移到包裝器中
+        textNode.parentNode.insertBefore(wrapper, textNode);
+        wrapper.appendChild(textNode);
+      }
     }
   });
 
@@ -7931,13 +7930,13 @@ function processTwitchMergedTextNode(mergedNode, messageEl, originalNodes) {
               mediaElement.loop = true;
               mediaElement.playsInline = true;
               mediaElement.className = 'dlsq-im-replaced dlsq-chat-video';
-              mediaElement.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 4px;';
+              mediaElement.style.cssText = 'border-radius: 4px; display: inline-block; vertical-align: middle;';
             } else {
               mediaElement = document.createElement('img');
               mediaElement.src = url;
               mediaElement.alt = match.id;
               mediaElement.className = 'dlsq-im-replaced dlsq-converted-image dlsq-chat-img';
-              mediaElement.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 4px;';
+              mediaElement.style.cssText = 'border-radius: 4px; display: inline-block; vertical-align: middle;';
             }
           }
         } else if (match.type === 'GSS') {
@@ -7953,7 +7952,8 @@ function processTwitchMergedTextNode(mergedNode, messageEl, originalNodes) {
               mediaElement.alt = match.id;
               mediaElement.dataset.gssUrl = imageUrl;
               mediaElement.className = 'dlsq-im-replaced dlsq-chat-video dlsq-gss-video';
-              mediaElement.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 4px; border: 2px solid #FF9800;'; mediaElement.muted = true;
+              mediaElement.style.cssText = 'border-radius: 4px; border: 2px solid #FF9800; display: inline-block; vertical-align: middle;';
+              mediaElement.muted = true;
               mediaElement.autoplay = true;
               mediaElement.loop = true;
               mediaElement.playsInline = true;
@@ -7963,9 +7963,7 @@ function processTwitchMergedTextNode(mergedNode, messageEl, originalNodes) {
               mediaElement.alt = match.id;
               mediaElement.dataset.gssUrl = imageUrl;
               mediaElement.className = 'dlsq-im-replaced dlsq-converted-image dlsq-chat-img dlsq-gss-image';
-              // 【修改】移除硬編碼的 max-width/max-height，改用 CSS 變量
-              mediaElement.style.borderRadius = '4px';
-              mediaElement.style.border = '2px solid #4CAF50';
+              mediaElement.style.cssText = 'border-radius: 4px; border: 2px solid #4CAF50; display: inline-block; vertical-align: middle;';
             }
           }
         }
@@ -7982,6 +7980,12 @@ function processTwitchMergedTextNode(mergedNode, messageEl, originalNodes) {
           originalNodes.forEach(n => { if (n.parentNode) n.parentNode.removeChild(n); });
           parent.appendChild(fragment);
           parent.classList.add('gss-im-converted');
+          
+          // 【同步】記錄到貼圖牆
+          if (window.GSS_ImageLogger && mediaElement && mediaElement.src) {
+            window.GSS_ImageLogger.log(mediaElement.src, match.id);
+          }
+          
           processed = true;
         }
       });
@@ -8004,7 +8008,7 @@ function processTwitchMergedTextNode(mergedNode, messageEl, originalNodes) {
 
       const thumbContainer = document.createElement('span');
       thumbContainer.className = 'gss-im-replaced gss-yt-thumbnail';
-      thumbContainer.style.cssText = 'cursor: pointer; display: block; position: relative;';
+      thumbContainer.style.cssText = 'cursor: pointer; display: inline-block; position: relative; vertical-align: middle; margin: 0 2px;';
       thumbContainer.title = '點擊播放 YouTube 視頻';
 
       const img = document.createElement('img');
@@ -8061,24 +8065,7 @@ function processTwitchMergedTextNode(mergedNode, messageEl, originalNodes) {
 
           thumbContainer.parentNode.replaceChild(shortsContainer, thumbContainer);
 
-          // 【修復】Shorts iframe 替換後觸發滾動（等待 iframe 加載完成）
-          setTimeout(() => {
-            // 使用 scrollIntoView 確保滾動到新元素的位置
-            shortsContainer.scrollIntoView({ behavior: 'auto', block: 'end' });
-            
-            // 對於 Twitch/Kick，額外執行一次完整滾動
-            const currentPlatform = getCurrentPlatform();
-            if (currentPlatform === 'twitch' || currentPlatform === 'kick') {
-              const chatContainer = findChatContainer(true);
-              if (chatContainer) {
-                const distanceToBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight;
-                if (distanceToBottom <= 500) {
-                  chatContainer.scrollTop = chatContainer.scrollHeight;
-                  console.log('[GSS] YT- Shorts scrolled to bottom on', currentPlatform);
-                }
-              }
-            }
-          }, 500);
+          // 【移除】不再自動滾動，使用聊天室原生滾軸
         }
       }).catch(() => { });
 
@@ -8098,6 +8085,12 @@ function processTwitchMergedTextNode(mergedNode, messageEl, originalNodes) {
         originalNodes.forEach(n => { if (n.parentNode) n.parentNode.removeChild(n); });
         parent.appendChild(fragment);
         parent.classList.add('gss-im-converted');
+
+        // 【同步】記錄到貼圖牆
+        if (window.GSS_ImageLogger) {
+          window.GSS_ImageLogger.log(thumbnailUrl, match.id);
+        }
+
         processed = true;
       }
     });
@@ -8118,7 +8111,7 @@ function processTwitchMergedTextNode(mergedNode, messageEl, originalNodes) {
 
       const thumbContainer = document.createElement('span');
       thumbContainer.className = 'gss-im-replaced gss-yt-thumbnail';
-      thumbContainer.style.cssText = 'cursor: pointer; display: block; position: relative;';
+      thumbContainer.style.cssText = 'cursor: pointer; display: inline-block; position: relative; vertical-align: middle; margin: 0 2px;';
       thumbContainer.title = '點擊播放 YouTube 視頻';
 
       const img = document.createElement('img');
@@ -8175,24 +8168,7 @@ function processTwitchMergedTextNode(mergedNode, messageEl, originalNodes) {
 
           thumbContainer.parentNode.replaceChild(shortsContainer, thumbContainer);
 
-          // 【修復】Shorts iframe 替換後觸發滾動（等待 iframe 加載完成）
-          setTimeout(() => {
-            // 使用 scrollIntoView 確保滾動到新元素的位置
-            shortsContainer.scrollIntoView({ behavior: 'auto', block: 'end' });
-            
-            // 對於 Twitch/Kick，額外執行一次完整滾動
-            const currentPlatform = getCurrentPlatform();
-            if (currentPlatform === 'twitch' || currentPlatform === 'kick') {
-              const chatContainer = findChatContainer(true);
-              if (chatContainer) {
-                const distanceToBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight;
-                if (distanceToBottom <= 500) {
-                  chatContainer.scrollTop = chatContainer.scrollHeight;
-                  console.log('[GSS] YT- Shorts scrolled to bottom on', currentPlatform);
-                }
-              }
-            }
-          }, 500);
+          // 【移除】不再自動滾動，使用聊天室原生滾軸
         }
       }).catch(() => { });
 
@@ -8210,6 +8186,12 @@ function processTwitchMergedTextNode(mergedNode, messageEl, originalNodes) {
         originalNodes.forEach(n => { if (n.parentNode) n.parentNode.removeChild(n); });
         parent.appendChild(fragment);
         parent.classList.add('gss-im-converted');
+
+        // 【同步】記錄到貼圖牆
+        if (window.GSS_ImageLogger) {
+          window.GSS_ImageLogger.log(thumbnailUrl, match.fullUrl);
+        }
+
         processed = true;
       }
     });
@@ -8243,6 +8225,12 @@ function processTwitchIMTextNode(textNode, messageEl) {
               parent.insertBefore(span, textNode);
               parent.removeChild(textNode);
               parent.classList.add('gss-im-converted');
+
+              // 【同步】記錄到貼圖牆
+              if (window.GSS_ImageLogger && img && img.src) {
+                window.GSS_ImageLogger.log(img.src, decoded);
+              }
+
               return true;
             }
           } catch (e) {
@@ -8288,12 +8276,22 @@ function processTwitchIMTextNode(textNode, messageEl) {
             mediaElement.playsInline = true;
             mediaElement.className = 'dlsq-im-replaced dlsq-chat-video';
             mediaElement.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 4px;';
+            
+            // 【同步】記錄到貼圖牆
+            if (window.GSS_ImageLogger) {
+              window.GSS_ImageLogger.log(url, match.id);
+            }
           } else {
             mediaElement = document.createElement('img');
             mediaElement.src = url;
             mediaElement.alt = match.id;
             mediaElement.className = 'dlsq-im-replaced dlsq-converted-image dlsq-chat-img';
             mediaElement.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 4px;';
+            
+            // 【同步】記錄到貼圖牆
+            if (window.GSS_ImageLogger) {
+              window.GSS_ImageLogger.log(url, match.id);
+            }
           }
         }
       } else if (match.type === 'GSS') {
@@ -8313,6 +8311,11 @@ function processTwitchIMTextNode(textNode, messageEl) {
             mediaElement.autoplay = true;
             mediaElement.loop = true;
             mediaElement.playsInline = true;
+            
+            // 【同步】記錄到貼圖牆
+            if (window.GSS_ImageLogger) {
+              window.GSS_ImageLogger.log(imageUrl, match.id);
+            }
           } else {
             mediaElement = document.createElement('img');
             mediaElement.src = imageUrl;
@@ -8322,6 +8325,11 @@ function processTwitchIMTextNode(textNode, messageEl) {
             // 【修改】移除硬編碼的 max-width/max-height，改用 CSS 變量
             mediaElement.style.borderRadius = '4px';
             mediaElement.style.border = '2px solid #4CAF50';
+            
+            // 【同步】記錄到貼圖牆
+            if (window.GSS_ImageLogger) {
+              window.GSS_ImageLogger.log(imageUrl, match.id);
+            }
           }
         }
       }
@@ -8365,7 +8373,7 @@ function processTwitchIMTextNode(textNode, messageEl) {
       // 創建縮略圖容器
       const thumbContainer = document.createElement('span');
       thumbContainer.className = 'gss-im-replaced gss-yt-thumbnail';
-      thumbContainer.style.cssText = 'cursor: pointer; display: block; position: relative;';
+      thumbContainer.style.cssText = 'cursor: pointer; display: inline-block; position: relative; vertical-align: middle; margin: 0 2px;';
       thumbContainer.title = '點擊播放 YouTube 視頻';
 
       // 創建縮略圖圖片
@@ -8441,24 +8449,7 @@ function processTwitchIMTextNode(textNode, messageEl) {
 
           thumbContainer.parentNode.replaceChild(shortsContainer, thumbContainer);
 
-          // 【修復】Shorts iframe 替換後觸發滾動（等待 iframe 加載完成）
-          setTimeout(() => {
-            // 使用 scrollIntoView 確保滾動到新元素的位置
-            shortsContainer.scrollIntoView({ behavior: 'auto', block: 'end' });
-            
-            // 對於 Twitch/Kick，額外執行一次完整滾動
-            const currentPlatform = getCurrentPlatform();
-            if (currentPlatform === 'twitch' || currentPlatform === 'kick') {
-              const chatContainer = findChatContainer(true);
-              if (chatContainer) {
-                const distanceToBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight;
-                if (distanceToBottom <= 500) {
-                  chatContainer.scrollTop = chatContainer.scrollHeight;
-                  console.log('[GSS] YT- Shorts scrolled to bottom on', currentPlatform);
-                }
-              }
-            }
-          }, 500);
+          // 【移除】不再自動滾動，使用聊天室原生滾軸
         }
       }).catch(() => { });
 
@@ -8476,6 +8467,11 @@ function processTwitchIMTextNode(textNode, messageEl) {
 
           parent.replaceChild(fragment, textNode);
           parent.classList.add('gss-im-converted');
+          
+          // 【同步】記錄到貼圖牆
+          if (window.GSS_ImageLogger) {
+            window.GSS_ImageLogger.log(thumbnailUrl, match.id);
+          }
         } catch (e) {
           // 忽略錯誤
         }
@@ -8498,7 +8494,7 @@ function processTwitchIMTextNode(textNode, messageEl) {
 
       const thumbContainer = document.createElement('span');
       thumbContainer.className = 'gss-im-replaced gss-yt-thumbnail';
-      thumbContainer.style.cssText = 'cursor: pointer; display: block; position: relative;';
+      thumbContainer.style.cssText = 'cursor: pointer; display: inline-block; position: relative; vertical-align: middle; margin: 0 2px;';
       thumbContainer.title = '點擊播放 YouTube 視頻';
 
       const img = document.createElement('img');
@@ -8571,24 +8567,7 @@ function processTwitchIMTextNode(textNode, messageEl) {
 
           thumbContainer.parentNode.replaceChild(shortsContainer, thumbContainer);
 
-          // 【修復】Shorts iframe 替換後觸發滾動（等待 iframe 加載完成）
-          setTimeout(() => {
-            // 使用 scrollIntoView 確保滾動到新元素的位置
-            shortsContainer.scrollIntoView({ behavior: 'auto', block: 'end' });
-            
-            // 對於 Twitch/Kick，額外執行一次完整滾動
-            const currentPlatform = getCurrentPlatform();
-            if (currentPlatform === 'twitch' || currentPlatform === 'kick') {
-              const chatContainer = findChatContainer(true);
-              if (chatContainer) {
-                const distanceToBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight;
-                if (distanceToBottom <= 500) {
-                  chatContainer.scrollTop = chatContainer.scrollHeight;
-                  console.log('[GSS] YT- Shorts scrolled to bottom on', currentPlatform);
-                }
-              }
-            }
-          }, 500);
+          // 【移除】不再自動滾動，使用聊天室原生滾軸
         }
       }).catch(() => { });
 
@@ -8605,6 +8584,11 @@ function processTwitchIMTextNode(textNode, messageEl) {
 
           parent.replaceChild(fragment, textNode);
           parent.classList.add('gss-im-converted');
+          
+          // 【同步】記錄到貼圖牆
+          if (window.GSS_ImageLogger) {
+            window.GSS_ImageLogger.log(thumbnailUrl, match.fullUrl);
+          }
         } catch (e) {
           // 忽略錯誤
         }
@@ -8676,6 +8660,12 @@ function createIMImage(imId) {
     img.src = `https://images.prd.dlivecdn.com/emote/${dlId}`;
     img.alt = imId;
     img.className = 'gss-im-replaced dlsq-chat-img';
+    
+    // 【同步】記錄到貼圖牆
+    if (window.GSS_ImageLogger) {
+      window.GSS_ImageLogger.log(img.src, imId);
+    }
+    
     return img;
   }
 
@@ -8701,6 +8691,12 @@ function createIMImage(imId) {
     video.loop = true;
     video.playsInline = true;
     video.className = 'gss-im-replaced dlsq-chat-video';
+    
+    // 【同步】記錄到貼圖牆
+    if (window.GSS_ImageLogger) {
+      window.GSS_ImageLogger.log(url, imId);
+    }
+    
     return video;
   } else {
     // 創建 img 元素
@@ -8708,6 +8704,12 @@ function createIMImage(imId) {
     img.src = url;
     img.alt = imId;
     img.className = 'gss-im-replaced dlsq-chat-img';
+
+    // 【同步】記錄到貼圖牆
+    if (window.GSS_ImageLogger) {
+      window.GSS_ImageLogger.log(url, imId);
+    }
+
     return img;
   }
 }
@@ -9442,6 +9444,19 @@ function openYouTubePlayer(videoId) {
 
 // 啟動 UI（先遷移 sync → local，避免舊資料留在已爆量的 sync）
 (async function dlsqBootContent() {
+  // ===== GSS Image Logger - 貼圖記錄牆 =====
+  setTimeout(() => {
+    if (window.GSS_ImageLogger) {
+      window.GSS_ImageLogger.init();
+      // 確保相關函數可被記錄牆呼叫
+      if (typeof openYouTubePlayer === 'function') window.openYouTubePlayer = openYouTubePlayer;
+      if (typeof showZoomOverlay === 'function') window.showZoomOverlay = showZoomOverlay;
+      if (typeof showContextMenuAt === 'function') window.showContextMenuAt = showContextMenuAt;
+      
+      console.log('[GSS] Image Logger initialized with delay');
+    }
+  }, 1000); // 延遲 1 秒載入，避開頁面初始重繪高峰
+
   try {
     if (typeof DLSQStickerStore !== 'undefined') {
       await DLSQStickerStore.migrateFromSyncIfNeeded();
