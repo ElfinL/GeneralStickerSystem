@@ -1060,24 +1060,14 @@
         <!-- 貼圖大小設定 -->
         <div style="margin-top: 15px; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
           <div id="stickerSizeTitle" style="font-size: 12px; color: rgba(255,255,255,0.9); margin-bottom: 8px; font-weight: 600;">
-            📏 貼圖大小調整
+            📏 貼圖大小設定
           </div>
-          <div id="stickerSizeDesc" style="font-size: 11px; color: rgba(255,255,255,0.6); margin-bottom: 10px; line-height: 1.4;">
-            調整所有貼圖的顯示大小（預設 100%）
-          </div>
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <button id="btnStickerSizeDecrease" style="width: 32px; height: 32px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; color: #fff; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
-              −
-            </button>
-            <input type="number" id="inputStickerSize" value="100" min="5" max="200" step="5"
-              style="flex: 1; height: 32px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; color: #fff; font-size: 14px; text-align: center; outline: none; -moz-appearance: textfield;">
-            <button id="btnStickerSizeIncrease" style="width: 32px; height: 32px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; color: #fff; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
-              +
-            </button>
-            <span style="font-size: 14px; color: rgba(255,255,255,0.8); min-width: 30px;">%</span>
-          </div>
-          <div id="stickerSizeRange" style="font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 6px;">
-            範圍：5% - 200% • 每次 ±5%
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <label class="tsc-switch" style="position: relative; display: inline-block; width: 44px; height: 24px; cursor: pointer;">
+              <input type="checkbox" id="stickerSizeToggle" style="opacity: 0; width: 0; height: 0; position: absolute;">
+              <span class="tsc-slider" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; border-radius: 24px; transition: .3s;"></span>
+            </label>
+            <span id="stickerSizeLabel" style="font-size: 12px; color: rgba(255,255,255,0.8);">大圖模式</span>
           </div>
         </div>
       </div>

@@ -123,8 +123,11 @@ const I18N = {
     customPlatformDeleteConfirm: (host) => `確定要刪除 ${host} 嗎？`,
     customPlatformSaveSuccess: '✅ 自定義平台已儲存',
     customPlatformFillRequired: '❌ 請填寫網域與腳本邏輯',
-    stickerSizeTitle: '📏 貼圖大小調整',
-    stickerSizeDesc: '調整所有貼圖的顯示大小（預設 100%）',
+    stickerSizeTitle: '📏 貼圖大小設定',
+    stickerSizeDesc: '選擇聊天室貼圖的顯示大小',
+    stickerSizeModeLarge: '大圖模式',
+    stickerSizeModeSmall: '小圖模式',
+    stickerLoggerTitle: '貼圖記錄牆',
     stickerSizeRange: '範圍：5% - 200% • 每次 ±5%',
     stickerSizeAdjusted: (size) => `貼圖大小已調整為 ${size}%`,
     helpContent: `<p><b>貼圖格式：</b></p>
@@ -271,8 +274,11 @@ const I18N = {
     customPlatformDeleteConfirm: (host) => `確定要刪除 ${host} 嗎？`,
     customPlatformSaveSuccess: '✅ 自定義平台已儲存',
     customPlatformFillRequired: '❌ 請填寫網域與腳本邏輯',
-    stickerSizeTitle: '📏 贴图大小调整',
-    stickerSizeDesc: '调整所有贴图的显示大小（预设 100%）',
+    stickerSizeTitle: '📏 贴图大小设定',
+    stickerSizeDesc: '选择聊天室贴图的显示大小',
+    stickerSizeModeLarge: '大图模式',
+    stickerSizeModeSmall: '小图模式',
+    stickerLoggerTitle: '贴图记录墙',
     stickerSizeRange: '范围：5% - 200% • 每次 ±5%',
     stickerSizeAdjusted: (size) => `贴图大小已调整为 ${size}%`,
     helpContent: `<p><b>贴纸格式：</b></p>
@@ -419,8 +425,11 @@ const I18N = {
     customPlatformDeleteConfirm: (host) => `Are you sure you want to delete ${host}?`,
     customPlatformSaveSuccess: '✅ Custom platform saved',
     customPlatformFillRequired: '❌ Please fill in domain and logic',
-    stickerSizeTitle: '📏 Sticker Size Adjustment',
-    stickerSizeDesc: 'Adjust the display size of all stickers (default 100%)',
+    stickerSizeTitle: '📏 Sticker Size Settings',
+    stickerSizeDesc: 'Select the display size of chat stickers',
+    stickerSizeModeLarge: 'Large Mode',
+    stickerSizeModeSmall: 'Small Mode',
+    stickerLoggerTitle: 'Sticker Log Wall',
     stickerSizeRange: 'Range: 5% - 200% • ±5% each time',
     stickerSizeAdjusted: (size) => `Sticker size adjusted to ${size}%`,
     helpContent: `<p><b>Sticker formats:</b></p>
@@ -570,8 +579,11 @@ const I18N = {
     customPlatformDeleteConfirm: (host) => `${host} を削除してもよろしいですか？`,
     customPlatformSaveSuccess: '✅ カスタムプラットフォームを保存しました',
     customPlatformFillRequired: '❌ ドメインとスクリプトを入力してください',
-    stickerSizeTitle: '📏 ステッカーサイズ調整',
-    stickerSizeDesc: 'すべてのステッカーの表示サイズを調整（デフォルト 100%）',
+    stickerSizeTitle: '📏 ステッカーサイズ設定',
+    stickerSizeDesc: 'チャットステッカーの表示サイズを選択',
+    stickerSizeModeLarge: '大サイズモード',
+    stickerSizeModeSmall: '小サイズモード',
+    stickerLoggerTitle: 'ステッカーログ壁',
     stickerSizeRange: '範囲：5% - 200% • 毎回 ±5%',
     stickerSizeAdjusted: (size) => `ステッカーサイズが ${size}% に調整されました`,
     helpContent: `<p><b>ステッカー形式：</b></p>
@@ -718,8 +730,11 @@ const I18N = {
     customPlatformDeleteConfirm: (host) => `${host}을(를) 삭제하시겠습니까?`,
     customPlatformSaveSuccess: '✅ 사용자 정의 플랫폼이 저장되었습니다',
     customPlatformFillRequired: '❌ 도메인과 스크립트를 입력하세요',
-    stickerSizeTitle: '📏 스티커 크기 조정',
-    stickerSizeDesc: '모든 스티커의 표시 크기 조정 (기본값 100%)',
+    stickerSizeTitle: '📏 스티커 크기 설정',
+    stickerSizeDesc: '채팅 스티커의 표시 크기를 선택',
+    stickerSizeModeLarge: '큰 사이즈 모드',
+    stickerSizeModeSmall: '작은 사이즈 모드',
+    stickerLoggerTitle: '스티커 로그 벽',
     stickerSizeRange: '범위: 5% - 200% •每次 ±5%',
     stickerSizeAdjusted: (size) => `스티커 크기가 ${size}%로 조정되었습니다`,
     helpContent: `<p><b>스티커 형식：</b></p>
@@ -978,6 +993,16 @@ function applyLanguage(lang) {
     }
   });
 
+  // 更新貼圖大小模式標籤
+  const stickerSizeToggle = document.getElementById('stickerSizeToggle');
+  if (stickerSizeToggle) {
+    const isSmallMode = stickerSizeToggle.checked;
+    const label = document.getElementById('stickerSizeLabel');
+    if (label) {
+      label.textContent = isSmallMode ? t('stickerSizeModeSmall') : t('stickerSizeModeLarge');
+    }
+  }
+
   const idListInput = document.getElementById('idListInput');
   if (idListInput) idListInput.placeholder = t('idPlaceholder');
 
@@ -1092,6 +1117,8 @@ function initLanguage(callback) {
 function setLanguage(lang) {
   if (SUPPORTED_LANGS.includes(lang)) {
     applyLanguage(lang);
+    // 保存語言設定到 storage
+    chrome.storage.sync.set({ uiLang: lang });
     return true;
   }
   return false;

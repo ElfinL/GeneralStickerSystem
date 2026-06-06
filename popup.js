@@ -830,52 +830,55 @@ function updateDisableNativeContextMenuButtonState(btn, isDisabled) {
 // ==================== 貼圖大小設定功能 ====================
 
 function initStickerSizeControl() {
-  const decreaseBtn = document.getElementById('btnStickerSizeDecrease');
-  const increaseBtn = document.getElementById('btnStickerSizeIncrease');
-  const input = document.getElementById('inputStickerSize');
+  const toggle = document.getElementById('stickerSizeToggle');
+  const label = document.getElementById('stickerSizeLabel');
   
-  if (!decreaseBtn || !increaseBtn || !input) return;
+  if (!toggle || !label) return;
   
-  // 載入當前設定
-  chrome.storage.local.get(['stickerSizePercent'], (result) => {
-    const size = result.stickerSizePercent || 100;
-    input.value = size;
+  // 載入當前設定（預設為大圖模式，即 checked = false）
+  chrome.storage.local.get(['stickerSizeMode'], (result) => {
+    // 如果 stickerSizeMode 不存在，設為 false（大圖模式）
+    const isSmallMode = result.stickerSizeMode === true;
+    toggle.checked = isSmallMode;
+    updateStickerSizeLabel(isSmallMode);
+    
+    // 如果 stickerSizeMode 不存在，設置默認值
+    if (result.stickerSizeMode === undefined) {
+      chrome.storage.local.set({ stickerSizeMode: false });
+    }
+    
+    // 初始化時立即應用設定到所有頁面
+    chrome.tabs.query({}, (tabs) => {
+      tabs.forEach(tab => {
+        chrome.tabs.sendMessage(tab.id, {
+          type: 'GSS_CONTROL',
+          command: 'updateStickerSizeMode',
+          data: { isSmallMode: isSmallMode }
+        }).catch(() => {
+          // 忽略無法連接的頁面錯誤
+        });
+      });
+    });
   });
   
-  // 減少按鈕
-  decreaseBtn.addEventListener('click', () => {
-    let current = parseInt(input.value) || 100;
-    current = Math.max(5, current - 5); // 最小 5%
-    input.value = current;
-    saveStickerSize(current);
-  });
-  
-  // 增加按鈕
-  increaseBtn.addEventListener('click', () => {
-    let current = parseInt(input.value) || 100;
-    current = Math.min(200, current + 5); // 最大 200%
-    input.value = current;
-    saveStickerSize(current);
-  });
-  
-  // 手動輸入
-  input.addEventListener('change', () => {
-    let value = parseInt(input.value) || 100;
-    value = Math.max(5, Math.min(200, value)); // 限制範圍 5% - 200%
-    input.value = value;
-    saveStickerSize(value);
-  });
-  
-  // 防止輸入無效字符
-  input.addEventListener('input', () => {
-    input.value = input.value.replace(/[^0-9]/g, '');
+  // 開關變更事件
+  toggle.addEventListener('change', () => {
+    const isSmallMode = toggle.checked;
+    saveStickerSizeMode(isSmallMode);
   });
 }
 
-function saveStickerSize(size) {
-  chrome.storage.local.set({ stickerSizePercent: size }, () => {
-    // 使用翻譯
-    const message = chrome.i18n.getMessage('stickerSizeAdjusted', [size]) || `貼圖大小已調整為 ${size}%`;
+function updateStickerSizeLabel(isSmallMode) {
+  const label = document.getElementById('stickerSizeLabel');
+  if (label) {
+    label.textContent = isSmallMode ? t('stickerSizeModeSmall') : t('stickerSizeModeLarge');
+  }
+}
+
+function saveStickerSizeMode(isSmallMode) {
+  chrome.storage.local.set({ stickerSizeMode: isSmallMode }, () => {
+    updateStickerSizeLabel(isSmallMode);
+    const message = isSmallMode ? '已切換為小圖模式' : '已切換為大圖模式';
     showSettingsStatus(message, '#4CAF50');
     
     // 通知所有頁面更新設定
@@ -883,8 +886,8 @@ function saveStickerSize(size) {
       tabs.forEach(tab => {
         chrome.tabs.sendMessage(tab.id, {
           type: 'GSS_CONTROL',
-          command: 'updateStickerSize',
-          data: { size: size }
+          command: 'updateStickerSizeMode',
+          data: { isSmallMode: isSmallMode }
         }).catch(() => {
           // 忽略無法連接的頁面錯誤
         });
@@ -993,6 +996,17 @@ function updateSettingsButtonTexts() {
 
   const openEditorBtn = document.getElementById('openEditorBtn');
   if (openEditorBtn) openEditorBtn.textContent = t('openEditor');
+
+  // 貼圖大小設定翻譯
+  const stickerSizeTitle = document.getElementById('stickerSizeTitle');
+  if (stickerSizeTitle) stickerSizeTitle.textContent = t('stickerSizeTitle') || '📏 貼圖大小設定';
+
+  // 更新貼圖大小模式標籤
+  const stickerSizeToggle = document.getElementById('stickerSizeToggle');
+  if (stickerSizeToggle) {
+    const isSmallMode = stickerSizeToggle.checked;
+    updateStickerSizeLabel(isSmallMode);
+  }
 
   // 自定義平台翻譯
   const customPlatformSectionTitle = document.getElementById('customPlatformSectionTitle');
@@ -1116,10 +1130,7 @@ function updateTexoTexts() {
   
   // 【新增】貼圖大小調整翻譯
   const stickerSizeTitle = document.getElementById('stickerSizeTitle');
-  if (stickerSizeTitle) stickerSizeTitle.textContent = t('stickerSizeTitle') || '📏 貼圖大小調整';
-  
-  const stickerSizeDesc = document.getElementById('stickerSizeDesc');
-  if (stickerSizeDesc) stickerSizeDesc.textContent = t('stickerSizeDesc') || '調整所有貼圖的顯示大小（預設 100%）';
+  if (stickerSizeTitle) stickerSizeTitle.textContent = t('stickerSizeTitle') || '📏 貼圖大小設定';
   
   const stickerSizeRange = document.getElementById('stickerSizeRange');
   if (stickerSizeRange) stickerSizeRange.textContent = t('stickerSizeRange') || '範圍：5% - 200% • 每次 ±5%';

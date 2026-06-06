@@ -9,6 +9,19 @@ const ImageLogger = {
   isVisible: false,
   maxImages: 10, // 最多保留 10 張圖片，避免視窗過長或效能問題
 
+  // 獲取翻譯函數
+  t(key) {
+    if (typeof window.t === 'function') {
+      return window.t(key);
+    }
+    // 默認繁體中文
+    const defaults = {
+      stickerLoggerPanelTitle: '🖼️ 貼圖記錄牆',
+      stickerLoggerClearBtn: '清空記錄'
+    };
+    return defaults[key] || key;
+  },
+
   init() {
     if (document.getElementById(this.containerId)) return;
 
@@ -49,7 +62,7 @@ const ImageLogger = {
       `;
 
       this.buildUI(container);
-      
+
       // 雙重檢查：確保 500ms 後狀態依然正確 (防止被其他腳本覆蓋)
       if (state.visible) {
         setTimeout(() => {
@@ -75,18 +88,18 @@ const ImageLogger = {
       justify-content: space-between;
       user-select: none;
     `;
-    
+
     const title = document.createElement('span');
-    title.textContent = '🖼️ 貼圖記錄牆';
+    title.textContent = this.t('stickerLoggerPanelTitle');
     title.style.cssText = 'color: #eee; font-size: 13px; font-weight: bold;';
-    
+
     const controls = document.createElement('div');
     controls.style.display = 'flex';
     controls.style.gap = '8px';
 
     const clearBtn = document.createElement('span');
     clearBtn.textContent = '🗑️';
-    clearBtn.title = '清空記錄';
+    clearBtn.title = this.t('stickerLoggerClearBtn');
     clearBtn.style.cursor = 'pointer';
     clearBtn.onclick = () => this.clear();
 
