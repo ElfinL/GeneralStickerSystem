@@ -190,6 +190,7 @@ document.querySelectorAll('.lang-btn').forEach(btn => {
       loadStickers();
       updateSettingsButtonTexts();
       updateTexoTexts();
+      initStickerSizeButtons();
     }
   });
 });
@@ -830,21 +831,25 @@ function updateDisableNativeContextMenuButtonState(btn, isDisabled) {
 // ==================== 貼圖大小設定功能 ====================
 
 function initStickerSizeControl() {
-  const toggle = document.getElementById('stickerSizeToggle');
-  const label = document.getElementById('stickerSizeLabel');
+  const buttons = document.querySelectorAll('.sticker-size-btn');
   
-  if (!toggle || !label) return;
+  if (buttons.length === 0) return;
   
-  // 載入當前設定（預設為大圖模式，即 checked = false）
+  // 載入當前設定（預設為大圖模式）
   chrome.storage.local.get(['stickerSizeMode'], (result) => {
-    // 如果 stickerSizeMode 不存在，設為 false（大圖模式）
-    const isSmallMode = result.stickerSizeMode === true;
-    toggle.checked = isSmallMode;
-    updateStickerSizeLabel(isSmallMode);
+    // 如果 stickerSizeMode 不存在或為舊的 boolean 值，轉換為新的 string 值
+    let currentMode = result.stickerSizeMode;
+    if (currentMode === undefined || currentMode === false) {
+      currentMode = 'large'; // 預設大圖模式
+    } else if (currentMode === true) {
+      currentMode = 'small'; // 舊的 true 轉為小圖模式
+    }
+    
+    updateStickerSizeButtons(currentMode);
     
     // 如果 stickerSizeMode 不存在，設置默認值
     if (result.stickerSizeMode === undefined) {
-      chrome.storage.local.set({ stickerSizeMode: false });
+      chrome.storage.local.set({ stickerSizeMode: 'large' });
     }
     
     // 初始化時立即應用設定到所有頁面
@@ -853,7 +858,7 @@ function initStickerSizeControl() {
         chrome.tabs.sendMessage(tab.id, {
           type: 'GSS_CONTROL',
           command: 'updateStickerSizeMode',
-          data: { isSmallMode: isSmallMode }
+          data: { mode: currentMode }
         }).catch(() => {
           // 忽略無法連接的頁面錯誤
         });
@@ -861,24 +866,37 @@ function initStickerSizeControl() {
     });
   });
   
-  // 開關變更事件
-  toggle.addEventListener('change', () => {
-    const isSmallMode = toggle.checked;
-    saveStickerSizeMode(isSmallMode);
+  // 按鈕點擊事件
+  buttons.forEach(button => {
+    button.addEventListener('click', () => {
+      const mode = button.getAttribute('data-size');
+      saveStickerSizeMode(mode);
+    });
   });
 }
 
-function updateStickerSizeLabel(isSmallMode) {
-  const label = document.getElementById('stickerSizeLabel');
-  if (label) {
-    label.textContent = isSmallMode ? t('stickerSizeModeSmall') : t('stickerSizeModeLarge');
-  }
+function updateStickerSizeButtons(currentMode) {
+  const buttons = document.querySelectorAll('.sticker-size-btn');
+  buttons.forEach(button => {
+    const mode = button.getAttribute('data-size');
+    if (mode === currentMode) {
+      button.classList.add('active');
+    } else {
+      button.classList.remove('active');
+    }
+  });
 }
 
-function saveStickerSizeMode(isSmallMode) {
-  chrome.storage.local.set({ stickerSizeMode: isSmallMode }, () => {
-    updateStickerSizeLabel(isSmallMode);
-    const message = isSmallMode ? '已切換為小圖模式' : '已切換為大圖模式';
+function saveStickerSizeMode(mode) {
+  chrome.storage.local.set({ stickerSizeMode: mode }, () => {
+    updateStickerSizeButtons(mode);
+    
+    const modeNames = {
+      'large': t('stickerSizeModeLarge') || '大',
+      'medium': t('stickerSizeModeMedium') || '中',
+      'small': t('stickerSizeModeSmall') || '小'
+    };
+    const message = `已切換為${modeNames[mode]}`;
     showSettingsStatus(message, '#4CAF50');
     
     // 通知所有頁面更新設定
@@ -887,7 +905,7 @@ function saveStickerSizeMode(isSmallMode) {
         chrome.tabs.sendMessage(tab.id, {
           type: 'GSS_CONTROL',
           command: 'updateStickerSizeMode',
-          data: { isSmallMode: isSmallMode }
+          data: { mode: mode }
         }).catch(() => {
           // 忽略無法連接的頁面錯誤
         });
@@ -1154,8 +1172,26 @@ document.addEventListener('DOMContentLoaded', () => {
     initTscToggles();
     initSaveIdsButton();
     initCustomPlatformManager();
+    initStickerSizeButtons();
   });
 });
+
+// ==================== Sticker Size Buttons 功能 ====================
+function initStickerSizeButtons() {
+  const largeBtn = document.getElementById('stickerSizeLargeBtn');
+  const mediumBtn = document.getElementById('stickerSizeMediumBtn');
+  const smallBtn = document.getElementById('stickerSizeSmallBtn');
+
+  if (largeBtn && typeof t === 'function') {
+    largeBtn.textContent = t('stickerSizeModeLarge') || '大';
+  }
+  if (mediumBtn && typeof t === 'function') {
+    mediumBtn.textContent = t('stickerSizeModeMedium') || '中';
+  }
+  if (smallBtn && typeof t === 'function') {
+    smallBtn.textContent = t('stickerSizeModeSmall') || '小';
+  }
+}
 
 // ==================== Help Button 功能 ====================
 function initHelpPopover() {

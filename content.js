@@ -231,7 +231,10 @@ const UI_I18N = {
     updateChangelog: '查看更新日誌',
     updateNewVersion: '📢 有新更新！點擊查看',
     helpPage: '查看使用說明',
-    sharedChatKickTwitchWarning: '⚠️ Twitch 聊天室無法在 KICK 頁面嵌入\n\n這是 Twitch 的安全策略限制，\n請在支援的直播平台頁面使用 Twitch 共用聊天。'
+    sharedChatKickTwitchWarning: '⚠️ Twitch 聊天室無法在 KICK 頁面嵌入\n\n這是 Twitch 的安全策略限制，\n請在支援的直播平台頁面使用 Twitch 共用聊天。',
+    autoSend: '自動發送',
+    autoSendOn: '自動發送：開',
+    autoSendOff: '自動發送：關'
   },
   'zh-CN': {
     addToQuick: '添加到 GSS',
@@ -276,7 +279,10 @@ const UI_I18N = {
     updateChangelog: '查看更新日志',
     updateNewVersion: '📢 有新更新！点击查看',
     helpPage: '查看使用说明',
-    sharedChatKickTwitchWarning: '⚠️ Twitch 聊天室無法在 KICK 頁面嵌入\n\n這是 Twitch 的安全策略限制，\n請在支援的直播平台頁面使用 Twitch 共用聊天。'
+    sharedChatKickTwitchWarning: '⚠️ Twitch 聊天室無法在 KICK 頁面嵌入\n\n這是 Twitch 的安全策略限制，\n請在支援的直播平台頁面使用 Twitch 共用聊天。',
+    autoSend: '自动发送',
+    autoSendOn: '自动发送：开',
+    autoSendOff: '自动发送：关'
   },
   en: {
     addToQuick: 'Add to GSS',
@@ -321,7 +327,10 @@ const UI_I18N = {
     updateChangelog: 'View Changelog',
     updateNewVersion: '📢 New update available! Click to view',
     helpPage: 'View Help',
-    sharedChatKickTwitchWarning: '⚠️ Twitch chat cannot be embedded on KICK pages\n\nThis is a Twitch security policy restriction.\nPlease use Twitch shared chat on supported streaming platform pages.'
+    sharedChatKickTwitchWarning: '⚠️ Twitch chat cannot be embedded on KICK pages\n\nThis is a Twitch security policy restriction.\nPlease use Twitch shared chat on supported streaming platform pages.',
+    autoSend: 'Auto Send',
+    autoSendOn: 'Auto Send: On',
+    autoSendOff: 'Auto Send: Off'
   },
   ja: {
     addToQuick: 'GSSに追加',
@@ -366,7 +375,10 @@ const UI_I18N = {
     updateChangelog: '更新履歴を見る',
     updateNewVersion: '📢 新しい更新があります！クリックして見る',
     helpPage: '使い方を見る',
-    sharedChatKickTwitchWarning: '⚠️ TwitchチャットはKICKページに埋め込めません\n\nこれはTwitchのセキュリティポリシーによる制限です。\nサポートされている配信プラットフォームページでTwitch共用チャットをご利用ください。'
+    sharedChatKickTwitchWarning: '⚠️ TwitchチャットはKICKページに埋め込めません\n\nこれはTwitchのセキュリティポリシーによる制限です。\nサポートされている配信プラットフォームページでTwitch共用チャットをご利用ください。',
+    autoSend: '自動送信',
+    autoSendOn: '自動送信：オン',
+    autoSendOff: '自動送信：オフ'
   },
   ko: {
     addToQuick: 'GSS에 추가',
@@ -411,7 +423,10 @@ const UI_I18N = {
     updateChangelog: '업데이트 내역 보기',
     updateNewVersion: '📢 새로운 업데이트가 있습니다! 클릭해서 보기',
     helpPage: '사용 방법 보기',
-    sharedChatKickTwitchWarning: '⚠️ 트위치 채팅은 KICK 페이지에 임베드할 수 없습니다\n\n이것은 트위치 보안 정책의 제한입니다.\n지원되는 스트리밍 플랫폼 페이지에서 트위치 공용 채팅을 사용해 주세요.'
+    sharedChatKickTwitchWarning: '⚠️ 트위치 채팅은 KICK 페이지에 임베드할 수 없습니다\n\n이것은 트위치 보안 정책의 제한입니다.\n지원되는 스트리밍 플랫폼 페이지에서 트위치 공용 채팅을 사용해 주세요.',
+    autoSend: '자동 전송',
+    autoSendOn: '자동 전송: 켜기',
+    autoSendOff: '자동 전송: 끄기'
   }
 };
 
@@ -1809,6 +1824,35 @@ function createPanelIfNeeded() {
   pagination.style.fontSize = '12px';
   pagination.style.color = 'rgba(255,255,255,0.88)';
 
+  // 【新增】自動發送開關按鈕
+  const autoSendBtn = document.createElement('button');
+  autoSendBtn.id = 'dlsq_auto_send_toggle';
+  autoSendBtn.title = t('autoSend');
+  autoSendBtn.style.padding = '4px 8px';
+  autoSendBtn.style.borderRadius = '6px';
+  autoSendBtn.style.border = '1px solid rgba(255,255,255,0.14)';
+  autoSendBtn.style.background = 'rgba(10,12,16,0.88)';
+  autoSendBtn.style.color = 'rgba(255,255,255,0.88)';
+  autoSendBtn.style.fontSize = '10px';
+  autoSendBtn.style.cursor = 'pointer';
+  autoSendBtn.style.marginRight = '8px';
+  
+  // 從 storage 讀取自動發送狀態
+  chrome.storage.local.get(['autoSendEnabled'], (result) => {
+    const autoSendEnabled = result.autoSendEnabled !== false; // 默認為 true
+    updateAutoSendButton(autoSendBtn, autoSendEnabled);
+  });
+  
+  autoSendBtn.addEventListener('click', () => {
+    chrome.storage.local.get(['autoSendEnabled'], (result) => {
+      const currentState = result.autoSendEnabled !== false;
+      const newState = !currentState;
+      chrome.storage.local.set({ autoSendEnabled: newState }, () => {
+        updateAutoSendButton(autoSendBtn, newState);
+      });
+    });
+  });
+
   const prevBtn = document.createElement('button');
   prevBtn.id = 'dlsq_prev_page';
   prevBtn.textContent = t('prevPage');
@@ -1839,6 +1883,7 @@ function createPanelIfNeeded() {
   nextBtn.style.cursor = 'pointer';
   nextBtn.addEventListener('click', () => goToPage(panelCurrentPage + 1));
 
+  pagination.appendChild(autoSendBtn);
   pagination.appendChild(prevBtn);
   pagination.appendChild(pageInfo);
   pagination.appendChild(nextBtn);
@@ -1911,6 +1956,14 @@ function createPanelIfNeeded() {
   panel.appendChild(hdr);
   panel.appendChild(body);
   document.body.appendChild(panel);
+}
+
+// 更新自動發送按鈕狀態
+function updateAutoSendButton(btn, enabled) {
+  if (!btn) return;
+  btn.textContent = enabled ? '📤' : '📋';
+  btn.title = enabled ? t('autoSendOn') : t('autoSendOff');
+  btn.style.background = enabled ? 'rgba(76, 175, 80, 0.88)' : 'rgba(10,12,16,0.88)';
 }
 
 // 分頁切換函數
@@ -3408,41 +3461,91 @@ async function refreshPanelStickers() {
       tile._isSending = true;
       const code = s.code;
       console.log('[GSS] 點擊貼圖 code:', code);
-      togglePanel(false);
 
-      // 使用 StickerRegistry 获取平台特定发送代码
-      const platform = getCurrentPlatform();
-      const sendCode = StickerRegistry.getSendCode(code, platform);
-      console.log('[GSS] 平台:', platform, 'sendCode:', sendCode);
-      if (!sendCode) {
-        console.error('[GSS] 無法獲取 sendCode');
-        tile._isSending = false;
-        return;
-      }
+      // 檢查自動發送開關狀態
+      chrome.storage.local.get(['autoSendEnabled'], (result) => {
+        const autoSendEnabled = result.autoSendEnabled !== false; // 默認為 true
+        
+        togglePanel(false);
 
-      // 判断是否使用零宽编码（移除 DLive 平台支援，其他平台不使用零寬編碼）
-      const info = StickerRegistry.getStickerInfo(code);
-      console.log('[GSS] 貼圖 info:', info);
-      const useHiddenMessage = false; // 移除 DLive 後，其他平台不使用零寬編碼
-      console.log('[GSS] useHiddenMessage:', useHiddenMessage);
+        // 使用 StickerRegistry 获取平台特定发送代码
+        const platform = getCurrentPlatform();
+        const sendCode = StickerRegistry.getSendCode(code, platform);
+        console.log('[GSS] 平台:', platform, 'sendCode:', sendCode);
+        if (!sendCode) {
+          console.error('[GSS] 無法獲取 sendCode');
+          tile._isSending = false;
+          return;
+        }
 
-      if (useHiddenMessage) {
-        sendHiddenMessage(sendCode)
-          .catch((e) => {
-            showSendFailureToast(e?.message || e);
-          })
-          .finally(() => {
-            tile._isSending = false;
-          });
-      } else {
-        sendChatMessage(sendCode)
-          .catch((e) => {
-            showSendFailureToast(e?.message || e);
-          })
-          .finally(() => {
-            tile._isSending = false;
-          });
-      }
+        // 判断是否使用零宽编码（移除 DLive 平台支援，其他平台不使用零寬編碼）
+        const info = StickerRegistry.getStickerInfo(code);
+        console.log('[GSS] 貼圖 info:', info);
+        const useHiddenMessage = false; // 移除 DLive 後，其他平台不使用零寬編碼
+        console.log('[GSS] useHiddenMessage:', useHiddenMessage);
+
+        if (autoSendEnabled) {
+          // 自動發送模式（包括自動按 ENTER）
+          if (useHiddenMessage) {
+            sendHiddenMessage(sendCode)
+              .catch((e) => {
+                showSendFailureToast(e?.message || e);
+              })
+              .finally(() => {
+                tile._isSending = false;
+              });
+          } else {
+            sendChatMessage(sendCode)
+              .catch((e) => {
+                showSendFailureToast(e?.message || e);
+              })
+              .finally(() => {
+                tile._isSending = false;
+              });
+          }
+
+          // 額外模擬 ENTER 鍵（針對 Twitch 等不自動發送的平台）
+          setTimeout(() => {
+            const adapter = getPlatformAdapter();
+            if (adapter) {
+              const chatInput = adapter.findChatInput();
+              if (chatInput) {
+                const enterEvent = new KeyboardEvent('keydown', {
+                  bubbles: true,
+                  cancelable: true,
+                  key: 'Enter',
+                  code: 'Enter',
+                  keyCode: 13,
+                  which: 13
+                });
+                chatInput.dispatchEvent(enterEvent);
+              }
+            }
+          }, 100);
+        } else {
+          // 貼到輸入框模式（自動發送但不按 ENTER）
+          const adapter = getPlatformAdapter();
+          if (adapter && typeof adapter.sendMessage === 'function') {
+            // 使用平台適配器的 sendMessage 方法（但不按 ENTER）
+            adapter.sendMessage(sendCode)
+              .catch((e) => {
+                showSendFailureToast(e?.message || e);
+              })
+              .finally(() => {
+                tile._isSending = false;
+              });
+          } else {
+            // 備援：直接發送
+            sendChatMessage(sendCode)
+              .catch((e) => {
+                showSendFailureToast(e?.message || e);
+              })
+              .finally(() => {
+                tile._isSending = false;
+              });
+          }
+        }
+      });
     });
 
     grid.appendChild(tile);
@@ -5364,12 +5467,24 @@ function handleGssControlCommand(command, sendResponse) {
         break;
       }
 
-      // 貼圖大小模式更新（大圖/小圖）
+      // 貼圖大小模式更新（大圖/中圖/小圖）
       case 'updateStickerSizeMode': {
-        const isSmallMode = request.data?.isSmallMode !== false;
-        window.gssStickerSizeMode = isSmallMode;
-        applyStickerSizeMode(isSmallMode);
-        sendResponse({ success: true, message: isSmallMode ? '✅ 已切換為小圖模式' : '✅ 已切換為大圖模式', isSmallMode: isSmallMode });
+        // 支持新的 mode 參數（large/medium/small），同時向後兼容舊的 isSmallMode 參數
+        let mode = request.data?.mode;
+        if (!mode) {
+          // 向後兼容舊的 isSmallMode 參數
+          const isSmallMode = request.data?.isSmallMode !== false;
+          mode = isSmallMode ? 'small' : 'large';
+        }
+        window.gssStickerSizeMode = mode;
+        applyStickerSizeMode(mode);
+        
+        const modeNames = {
+          'large': '大圖模式',
+          'medium': '中圖模式',
+          'small': '小圖模式'
+        };
+        sendResponse({ success: true, message: `✅ 已切換為${modeNames[mode]}`, mode: mode });
         break;
       }
 
@@ -5414,40 +5529,51 @@ function loadStickerSizeSetting() {
 }
 
 /**
- * 載入貼圖大小模式設定（大圖/小圖）
+ * 載入貼圖大小模式設定（大圖/中圖/小圖）
  */
 function loadStickerSizeModeSetting() {
   try {
     chrome.storage.local.get(['stickerSizeMode'], (result) => {
-      const isSmallMode = result.stickerSizeMode === true; // 預設為大圖模式
-      window.gssStickerSizeMode = isSmallMode;
-      console.log('[GSS] Sticker size mode loaded:', isSmallMode ? 'small' : 'large');
+      // 支持新的 string 值（large/medium/small），同時向後兼容舊的 boolean 值
+      let mode = result.stickerSizeMode;
+      if (mode === undefined || mode === false) {
+        mode = 'large'; // 預設大圖模式
+      } else if (mode === true) {
+        mode = 'small'; // 舊的 true 轉為小圖模式
+      }
+      window.gssStickerSizeMode = mode;
+      console.log('[GSS] Sticker size mode loaded:', mode);
       // 應用貼圖大小模式
-      applyStickerSizeMode(isSmallMode);
+      applyStickerSizeMode(mode);
     });
   } catch (e) {
-    window.gssStickerSizeMode = false; // 預設大圖模式
+    window.gssStickerSizeMode = 'large'; // 預設大圖模式
   }
 }
 
 /**
- * 應用貼圖大小模式（大圖/小圖）
+ * 應用貼圖大小模式（大圖/中圖/小圖）
  */
-function applyStickerSizeMode(isSmallMode) {
-  // 小圖模式：32px，大圖模式：原本的 100px
-  const maxSize = isSmallMode ? '32px' : '100px';
+function applyStickerSizeMode(mode) {
+  // 大圖模式：100px，中圖模式：60px，小圖模式：32px
+  const sizeMap = {
+    'large': '100px',
+    'medium': '60px',
+    'small': '32px'
+  };
+  const maxSize = sizeMap[mode] || '100px';
   
   // 使用 CSS 變量控制大小和顯示方式
   document.documentElement.style.setProperty('--gss-sticker-max-width', maxSize);
   document.documentElement.style.setProperty('--gss-sticker-max-height', maxSize);
   
-  if (isSmallMode) {
+  if (mode === 'small') {
     // 小圖模式：inline-block（不換行）
     document.documentElement.style.setProperty('--gss-sticker-display', 'inline-block');
     document.documentElement.style.setProperty('--gss-sticker-margin', '0 2px');
     document.documentElement.style.setProperty('--gss-sticker-clear', 'none');
   } else {
-    // 大圖模式：block（換行）
+    // 大圖和中圖模式：block（換行）
     document.documentElement.style.setProperty('--gss-sticker-display', 'block');
     document.documentElement.style.setProperty('--gss-sticker-margin', '4px 0');
     document.documentElement.style.setProperty('--gss-sticker-clear', 'both');
@@ -5471,17 +5597,16 @@ function applyStickerSizeMode(isSmallMode) {
   stickerSelectors.forEach(selector => {
     const elements = document.querySelectorAll(selector);
     elements.forEach(el => {
-      if (isSmallMode) {
-        el.style.setProperty('max-width', maxSize, 'important');
-        el.style.setProperty('max-height', maxSize, 'important');
+      el.style.setProperty('max-width', maxSize, 'important');
+      el.style.setProperty('max-height', maxSize, 'important');
+      
+      if (mode === 'small') {
         // 小圖模式：改為 inline-block（不換行）
         el.style.setProperty('display', 'inline-block', 'important');
         el.style.setProperty('margin', '0 2px', 'important');
         el.style.setProperty('clear', 'none', 'important');
       } else {
-        el.style.setProperty('max-width', maxSize, 'important');
-        el.style.setProperty('max-height', maxSize, 'important');
-        // 大圖模式：改為 block（換行）
+        // 大圖和中圖模式：改為 block（換行）
         el.style.setProperty('display', 'block', 'important');
         el.style.setProperty('margin', '4px 0', 'important');
         el.style.setProperty('clear', 'both', 'important');
@@ -5492,7 +5617,7 @@ function applyStickerSizeMode(isSmallMode) {
   // 小圖模式：隱藏 YouTube 播放按鈕
   const playButtons = document.querySelectorAll('.dlsq-yt-play-btn');
   playButtons.forEach(btn => {
-    if (isSmallMode) {
+    if (mode === 'small') {
       btn.classList.add('hidden');
     } else {
       btn.classList.remove('hidden');
@@ -5504,7 +5629,7 @@ function applyStickerSizeMode(isSmallMode) {
   const grid = document.querySelector('#' + UI.panelId + ' .grid');
   
   if (pagination && grid) {
-    if (isSmallMode) {
+    if (mode === 'small') {
       // 移除滾輪事件監聽器
       pagination.removeEventListener('wheel', pagination._wheelHandler);
       grid.removeEventListener('wheel', grid._wheelHandler);
@@ -5535,7 +5660,7 @@ function applyStickerSizeMode(isSmallMode) {
     }
   }
   
-  console.log('[GSS] Applied sticker size mode:', isSmallMode ? 'small (32px)' : 'large (100px)');
+  console.log('[GSS] Applied sticker size mode:', mode, `(${maxSize})`);
 }
 
 /**
@@ -6181,6 +6306,9 @@ function scanAndReplaceIMImages(container = document.body) {
           });
 
           wrapper.appendChild(mediaElement);
+          
+          // 【修復】GSS 格式的 MP4 視頻也需要觸發滾動
+          bindMediaScroll(mediaElement, wrapper);
         } else {
           console.warn('[GSS] 不安全的圖片連結被阻止:', imageUrl);
           // 顯示錯誤提示
@@ -6204,6 +6332,8 @@ function scanAndReplaceIMImages(container = document.body) {
             video.playsInline = true;
             video.className = 'dlsq-im-replaced dlsq-chat-video';
             wrapper.appendChild(video);
+            // 【修復】CB 格式的 MP4 視頻也需要觸發滾動
+            bindMediaScroll(video, wrapper);
           } else {
             const img = document.createElement('img');
             img.src = url;
@@ -6271,6 +6401,8 @@ function scanAndReplaceIMImages(container = document.body) {
             });
             
             wrapper.appendChild(video);
+            // 【修復】IM/ME 格式的 MP4 視頻也需要觸發滾動
+            bindMediaScroll(video, wrapper);
           } else {
             // 創建 img 元素
             const img = document.createElement('img');
@@ -7360,13 +7492,20 @@ function scanAndReplaceWTVImages() {
         const mediaEl = thumbContainer.querySelector('img');
         if (mediaEl && !mediaEl.dataset.dlsqScrollBound) {
           mediaEl.dataset.dlsqScrollBound = 'true';
-          mediaEl.addEventListener('load', () => {
+          const scrollIfNeeded = () => {
             const container = document.querySelector('#chatroom-messages');
-            if (container) container.scrollTop = container.scrollHeight;
-          });
+            if (container) {
+              // 檢查用戶是否在底部附近
+              const distanceToBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+              if (distanceToBottom <= 500) {
+                container.scrollTop = container.scrollHeight;
+                console.log('[GSS] Vaughn scrolled to bottom');
+              }
+            }
+          };
+          mediaEl.addEventListener('load', scrollIfNeeded);
           if (mediaEl.complete) {
-            const container = document.querySelector('#chatroom-messages');
-            if (container) container.scrollTop = container.scrollHeight;
+            scrollIfNeeded();
           }
         }
 

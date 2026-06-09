@@ -145,6 +145,47 @@ class TwitchAdapter extends PlatformAdapter {
   isSending() {
     return this.isSendingMessage;
   }
+
+  /**
+   * 將文本插入到輸入框（不發送）
+   */
+  async insertToInput(text) {
+    const chatInput = this.findChatInput();
+    if (!chatInput) {
+      throw new Error('找不到 Twitch 聊天輸入框');
+    }
+
+    // 聚焦輸入框
+    chatInput.focus();
+    chatInput.click();
+
+    // 檢查是否為 contenteditable
+    const isContentEditable = chatInput.contentEditable === 'true' || chatInput.isContentEditable;
+
+    if (isContentEditable) {
+      // contenteditable div（Twitch 主要輸入框）
+      const currentValue = chatInput.textContent;
+      const newValue = currentValue + (currentValue ? ' ' : '') + text;
+      chatInput.textContent = newValue;
+
+      // 觸發 input 事件
+      const inputEvent = new InputEvent('input', {
+        bubbles: true,
+        inputType: 'insertText',
+        data: text
+      });
+      chatInput.dispatchEvent(inputEvent);
+    } else {
+      // 普通 textarea 或 input
+      const currentValue = chatInput.value;
+      const newValue = currentValue + (currentValue ? ' ' : '') + text;
+      chatInput.value = newValue;
+
+      // 觸發 input 事件
+      const inputEvent = new Event('input', { bubbles: true });
+      chatInput.dispatchEvent(inputEvent);
+    }
+  }
 }
 
 // 支援 CommonJS 和 ES Module

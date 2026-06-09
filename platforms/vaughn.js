@@ -148,6 +148,44 @@ class VaughnAdapter extends PlatformAdapter {
   isSending() {
     return this.isSendingMessage;
   }
+
+  /**
+   * 將文本插入到輸入框（不發送）
+   */
+  async insertToInput(text) {
+    const chatInput = this.findChatInput();
+    if (!chatInput) {
+      throw new Error('找不到 Vaughn 聊天輸入框');
+    }
+
+    // 聚焦輸入框
+    chatInput.focus();
+    chatInput.click();
+
+    // 清除現有內容
+    if (chatInput.tagName === 'INPUT' || chatInput.tagName === 'TEXTAREA') {
+      const currentValue = chatInput.value;
+      const newValue = currentValue + (currentValue ? ' ' : '') + text;
+      chatInput.value = newValue;
+
+      // 觸發 input 事件
+      const inputEvent = new Event('input', { bubbles: true });
+      chatInput.dispatchEvent(inputEvent);
+    } else {
+      // contenteditable 元素
+      const currentValue = chatInput.textContent;
+      const newValue = currentValue + (currentValue ? ' ' : '') + text;
+      chatInput.textContent = newValue;
+
+      // 觸發 input 事件
+      const inputEvent = new InputEvent('input', {
+        bubbles: true,
+        inputType: 'insertText',
+        data: text
+      });
+      chatInput.dispatchEvent(inputEvent);
+    }
+  }
 }
 
 // 支援 CommonJS 和 ES Module

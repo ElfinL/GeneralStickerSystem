@@ -162,4 +162,44 @@ class KickAdapter extends PlatformAdapter {
   delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
+
+  /**
+   * 將文本插入到輸入框（不發送）
+   */
+  async insertToInput(text) {
+    const chatInput = this.findChatInput();
+    if (!chatInput) {
+      throw new Error('找不到 Kick 聊天輸入框');
+    }
+
+    // 聚焦輸入框
+    chatInput.focus();
+    chatInput.click();
+
+    // 等待聚焦完成
+    await this.delay(50);
+
+    // 判斷是 contenteditable 還是 textarea/input
+    const isContentEditable = chatInput.contentEditable === 'true' || chatInput.isContentEditable;
+
+    if (isContentEditable) {
+      // contenteditable div（KICK 主要輸入框）
+      // 使用 insertText 命令
+      document.execCommand('insertText', false, text);
+    } else {
+      // textarea/input（備援）
+      const currentValue = chatInput.value;
+      const newValue = currentValue + (currentValue ? ' ' : '') + text;
+      chatInput.value = newValue;
+
+      // 觸發 input 事件
+      const inputEvent = new InputEvent('input', {
+        bubbles: true,
+        cancelable: true,
+        inputType: 'insertText',
+        data: text
+      });
+      chatInput.dispatchEvent(inputEvent);
+    }
+  }
 }

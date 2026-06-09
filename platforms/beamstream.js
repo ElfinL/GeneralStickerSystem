@@ -161,4 +161,37 @@ class BeamstreamAdapter extends PlatformAdapter {
   delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
+
+  /**
+   * 將文本插入到輸入框（不發送）
+   */
+  async insertToInput(text) {
+    const chatInput = this.findChatInput();
+    if (!chatInput) {
+      throw new Error('找不到 Beamstream 聊天輸入框');
+    }
+
+    // 聚焦輸入框
+    chatInput.focus();
+    chatInput.click();
+
+    await this.delay(50);
+
+    // 設定值
+    const currentValue = chatInput.value;
+    const newValue = currentValue + (currentValue ? ' ' : '') + text;
+    chatInput.value = newValue;
+
+    // 觸發 input 事件
+    const inputEvent = new InputEvent('input', {
+      bubbles: true,
+      cancelable: true,
+      inputType: 'insertText',
+      data: text
+    });
+    chatInput.dispatchEvent(inputEvent);
+
+    // 觸發 change 事件
+    chatInput.dispatchEvent(new Event('change', { bubbles: true }));
+  }
 }

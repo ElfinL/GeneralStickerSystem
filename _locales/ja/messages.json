@@ -58,5 +58,29 @@
   "stickerSizeAdjusted": {
     "message": "ステッカーサイズが ${size}% に調整されました",
     "description": "Sticker size adjusted message"
+  },
+  "stickerSizeModeLarge": {
+    "message": "大",
+    "description": "Large sticker mode"
+  },
+  "stickerSizeModeMedium": {
+    "message": "中",
+    "description": "Medium sticker mode"
+  },
+  "stickerSizeModeSmall": {
+    "message": "小",
+    "description": "Small sticker mode"
+  },
+  "autoSend": {
+    "message": "自動送信",
+    "description": "Auto send toggle"
+  },
+  "autoSendOn": {
+    "message": "自動送信：オン",
+    "description": "Auto send on"
+  },
+  "autoSendOff": {
+    "message": "自動送信：オフ",
+    "description": "Auto send off"
   }
 }

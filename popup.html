@@ -465,6 +465,19 @@
       transform: translateX(16px);
     }
 
+    /* 貼圖大小開關專用樣式（44px x 24px） */
+    #stickerSizeToggle+.tsc-slider::before {
+      height: 16px;
+      width: 16px;
+      left: 4px;
+      bottom: 4px;
+    }
+
+    /* 貼圖大小開關 ON 狀態 - 圓點右移 */
+    #stickerSizeToggle:checked+.tsc-slider::before {
+      transform: translateX(20px);
+    }
+
     /* OFF 狀態 - 灰色 */
     .tsc-switch input:not(:checked)+.tsc-slider {
       background-color: #ccc !important;
@@ -1062,14 +1075,26 @@
           <div id="stickerSizeTitle" style="font-size: 12px; color: rgba(255,255,255,0.9); margin-bottom: 8px; font-weight: 600;">
             📏 貼圖大小設定
           </div>
-          <div style="display: flex; align-items: center; gap: 12px;">
-            <label class="tsc-switch" style="position: relative; display: inline-block; width: 44px; height: 24px; cursor: pointer;">
-              <input type="checkbox" id="stickerSizeToggle" style="opacity: 0; width: 0; height: 0; position: absolute;">
-              <span class="tsc-slider" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; border-radius: 24px; transition: .3s;"></span>
-            </label>
-            <span id="stickerSizeLabel" style="font-size: 12px; color: rgba(255,255,255,0.8);">大圖模式</span>
+          <div style="display: flex; gap: 8px;">
+            <button type="button" class="sticker-size-btn" data-size="large" id="stickerSizeLargeBtn" style="flex: 1; padding: 6px 8px; font-size: 11px; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); cursor: pointer; transition: all 0.2s;">大</button>
+            <button type="button" class="sticker-size-btn" data-size="medium" id="stickerSizeMediumBtn" style="flex: 1; padding: 6px 8px; font-size: 11px; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); cursor: pointer; transition: all 0.2s;">中</button>
+            <button type="button" class="sticker-size-btn" data-size="small" id="stickerSizeSmallBtn" style="flex: 1; padding: 6px 8px; font-size: 11px; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); cursor: pointer; transition: all 0.2s;">小</button>
           </div>
         </div>
+
+        <style>
+          .sticker-size-btn.active {
+            background: #28a745 !important;
+            border-color: #28a745 !important;
+            color: white !important;
+          }
+          .sticker-size-btn:hover {
+            background: rgba(255,255,255,0.2);
+          }
+          .sticker-size-btn.active:hover {
+            background: #218838 !important;
+          }
+        </style>
       </div>
 
       <!-- 區塊 2: 自定義平台 -->

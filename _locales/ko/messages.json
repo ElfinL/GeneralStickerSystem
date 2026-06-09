@@ -58,5 +58,29 @@
   "stickerSizeAdjusted": {
     "message": "스티커 크기가 ${size}%로 조정되었습니다",
     "description": "Sticker size adjusted message"
+  },
+  "stickerSizeModeLarge": {
+    "message": "대",
+    "description": "Large sticker mode"
+  },
+  "stickerSizeModeMedium": {
+    "message": "중",
+    "description": "Medium sticker mode"
+  },
+  "stickerSizeModeSmall": {
+    "message": "소",
+    "description": "Small sticker mode"
+  },
+  "autoSend": {
+    "message": "자동 전송",
+    "description": "Auto send toggle"
+  },
+  "autoSendOn": {
+    "message": "자동 전송: 켜기",
+    "description": "Auto send on"
+  },
+  "autoSendOff": {
+    "message": "자동 전송: 끄기",
+    "description": "Auto send off"
   }
 }

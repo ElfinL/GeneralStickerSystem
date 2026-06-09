@@ -58,5 +58,29 @@
   "stickerSizeAdjusted": {
     "message": "Sticker size adjusted to ${size}%",
     "description": "Sticker size adjusted message"
+  },
+  "stickerSizeModeLarge": {
+    "message": "Large",
+    "description": "Large sticker mode"
+  },
+  "stickerSizeModeMedium": {
+    "message": "Medium",
+    "description": "Medium sticker mode"
+  },
+  "stickerSizeModeSmall": {
+    "message": "Small",
+    "description": "Small sticker mode"
+  },
+  "autoSend": {
+    "message": "Auto Send",
+    "description": "Auto send toggle"
+  },
+  "autoSendOn": {
+    "message": "Auto Send: On",
+    "description": "Auto send on"
+  },
+  "autoSendOff": {
+    "message": "Auto Send: Off",
+    "description": "Auto send off"
   }
 }
