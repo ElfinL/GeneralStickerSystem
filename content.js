@@ -1916,8 +1916,9 @@ function createPanelIfNeeded() {
   updatePanelButtonTexts();
 
   // 【滑鼠滾輪分頁】為分頁控制區域添加滾輪事件
-  pagination.addEventListener('wheel', (e) => {
+  pagination._wheelHandler = (e) => {
     e.preventDefault();
+    e.stopPropagation();
     if (e.deltaY < 0) {
       // 向上滾輪 → 上一頁
       goToPage(panelCurrentPage - 1);
@@ -1925,14 +1926,16 @@ function createPanelIfNeeded() {
       // 向下滾輪 → 下一頁
       goToPage(panelCurrentPage + 1);
     }
-  }, { passive: false });
+  };
+  pagination.addEventListener('wheel', pagination._wheelHandler, { passive: false });
 
   const grid = document.createElement('div');
   grid.className = 'grid';
 
   // 【滑鼠滾輪分頁】為圖片區域也添加滾輪事件
-  grid.addEventListener('wheel', (e) => {
+  grid._wheelHandler = (e) => {
     e.preventDefault();
+    e.stopPropagation();
     if (e.deltaY < 0) {
       // 向上滾輪 → 上一頁
       goToPage(panelCurrentPage - 1);
@@ -1940,7 +1943,8 @@ function createPanelIfNeeded() {
       // 向下滾輪 → 下一頁
       goToPage(panelCurrentPage + 1);
     }
-  }, { passive: false });
+  };
+  grid.addEventListener('wheel', grid._wheelHandler, { passive: false });
 
   // 【已刪除視頻控制區域按鈕】
 
