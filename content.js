@@ -7919,42 +7919,6 @@ function watchTwitchUrlChange() {
       }
     }, 100);
   };
-
-  // 方法4：監聽整個 body 的變化（參考 7TV 的做法）
-  const bodyObserver = new MutationObserver((mutations) => {
-    // 檢查 URL 是否變化
-    if (window.location.href !== currentTwitchUrl) {
-      currentTwitchUrl = window.location.href;
-      resetTwitchIMFeature();
-      return;
-    }
-
-    // 檢查是否有新的聊天容器出現
-    const selectors = [
-      '.chat-scrollable-area__message-container',
-      '[data-test-selector="chat-scrollable-area__message-container"]',
-      '.chat-list',
-      '[data-a-target="chat-list"]',
-      '.chat-scroll-area',
-      '[class*="chat-list"]',
-      '[class*="ChatList"]',
-      '.chat-room__content',
-      '[data-test-selector="chat-room-component"]',
-      '[data-a-target="chat-room"]',
-      '.stream-chat',
-      '[class*="stream-chat"]'
-    ];
-
-    for (const selector of selectors) {
-      const newContainer = document.querySelector(selector);
-      if (newContainer && newContainer !== twitchChatContainer) {
-        resetTwitchIMFeature();
-        break;
-      }
-    }
-  });
-
-  bodyObserver.observe(document.body, { childList: true, subtree: true });
 }
 
 // 重置 Twitch IM 功能並重新初始化
@@ -8313,18 +8277,7 @@ function processTwitchMergedTextNode(mergedNode, messageEl, originalNodes) {
         thumbContainer.appendChild(fallback);
       };
 
-      const playBtn = document.createElement('span');
-      playBtn.innerHTML = '▶';
-      playBtn.style.cssText = `
-        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-        width: 40px; height: 40px; background: rgba(255,0,0,0.85); border-radius: 50%;
-        display: flex; align-items: center; justify-content: center;
-        color: #fff; font-size: 16px; padding-left: 3px; pointer-events: none;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-      `;
-
       thumbContainer.appendChild(img);
-      thumbContainer.appendChild(playBtn);
       thumbContainer.addEventListener('click', (e) => {
         e.preventDefault(); e.stopPropagation(); openYouTubePlayer(videoId);
       });
