@@ -696,7 +696,7 @@ function ensureStyles() {
       height: auto;
       border-radius: 8px;
       cursor: default;
-      display: inline-block;
+      display: var(--gss-sticker-img-display, inline-block);
       margin: 0;
       border: 2px solid transparent;
       object-fit: contain;
@@ -749,28 +749,6 @@ function ensureStyles() {
   max-width: var(--gss-sticker-max-width, 100px) !important;
   max-height: var(--gss-sticker-max-height, 100px) !important;
   display: block !important;
-}
-/* YouTube 播放按鈕 - 小圖模式下隱藏 */
-.dlsq-yt-play-btn {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 40px;
-  height: 40px;
-  background: rgba(255,0,0,0.85);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-size: 16px;
-  padding-left: 3px;
-  pointer-events: none;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-}
-.dlsq-yt-play-btn.hidden {
-  display: none !important;
 }
 .dlsq-yt-shorts {
   display: var(--gss-sticker-display, block) !important;
@@ -5576,11 +5554,13 @@ function applyStickerSizeMode(mode) {
     document.documentElement.style.setProperty('--gss-sticker-display', 'inline-block');
     document.documentElement.style.setProperty('--gss-sticker-margin', '0 2px');
     document.documentElement.style.setProperty('--gss-sticker-clear', 'none');
+    document.documentElement.style.setProperty('--gss-sticker-img-display', 'inline-block');
   } else {
     // 大圖和中圖模式：block（換行）
     document.documentElement.style.setProperty('--gss-sticker-display', 'block');
     document.documentElement.style.setProperty('--gss-sticker-margin', '4px 0');
     document.documentElement.style.setProperty('--gss-sticker-clear', 'both');
+    document.documentElement.style.setProperty('--gss-sticker-img-display', 'block');
   }
   
   // 應用到所有現有貼圖元素（使用 !important 強制覆蓋內聯樣式）
@@ -5616,16 +5596,6 @@ function applyStickerSizeMode(mode) {
         el.style.setProperty('clear', 'both', 'important');
       }
     });
-  });
-  
-  // 小圖模式：隱藏 YouTube 播放按鈕
-  const playButtons = document.querySelectorAll('.dlsq-yt-play-btn');
-  playButtons.forEach(btn => {
-    if (mode === 'small') {
-      btn.classList.add('hidden');
-    } else {
-      btn.classList.remove('hidden');
-    }
   });
   
   // 小圖模式：禁用聊天面板的滾輪分頁功能
@@ -6791,13 +6761,7 @@ function scanAndReplaceIMImages(container = document.body) {
         thumbContainer.appendChild(fallback);
       };
 
-      // 創建播放按鈕圖標
-      const playBtn = document.createElement('span');
-      playBtn.className = 'dlsq-yt-play-btn';
-      playBtn.innerHTML = '▶';
-
       thumbContainer.appendChild(img);
-      thumbContainer.appendChild(playBtn);
 
       // 【同步】記錄到貼圖牆並處理滾動
       if (img) {
@@ -6918,119 +6882,8 @@ function scanAndReplaceIMImages(container = document.body) {
     }
 
     // 處理完整的 YouTube URL (youtube.com/watch?v=... 或 youtube.com/shorts/... 或 youtu.be/...)
-    // 【Vaughn 平台】不轉換完整 YouTube URL 為縮略圖，只處理 YT-xxx 格式
-    if (isVaughn()) {
-      return; // Vaughn 上跳過完整 URL 處理，只保留 YT-xxx 的縮略圖
-    }
-
-    const ytUrlRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtube\.com\/shorts\/|youtu\.be\/)([a-zA-Z0-9_-]+)(?:[&?][^\s]*)?/gi;
-    let ytUrlMatch;
-    let ytUrlLastIndex = 0;
-    const ytUrlFragments = [];
-
-    while ((ytUrlMatch = ytUrlRegex.exec(text)) !== null) {
-      const fullMatch = ytUrlMatch[0];
-      const videoId = ytUrlMatch[1];
-
-      if (ytUrlMatch.index > ytUrlLastIndex) {
-        ytUrlFragments.push(document.createTextNode(text.slice(ytUrlLastIndex, ytUrlMatch.index)));
-      }
-
-      const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
-
-      // 創建縮略圖容器
-      const thumbContainer = document.createElement('span');
-      thumbContainer.className = 'dlsq-im-replaced dlsq-yt-thumbnail';
-      thumbContainer.style.cssText = 'cursor: pointer; display: block; position: relative;';
-      thumbContainer.title = '點擊播放 YouTube 視頻';
-
-      // 創建縮略圖圖片
-      const img = document.createElement('img');
-      img.src = thumbnailUrl;
-      img.alt = fullMatch;
-      img.className = 'dlsq-converted-image dlsq-chat-yt'; // 【標記】標記為已轉換圖片
-      img.onerror = () => {
-        img.style.display = 'none';
-        const fallback = document.createElement('span');
-        fallback.textContent = '🎬 ' + fullMatch;
-        fallback.style.cssText = 'color: #666; font-size: 12px;';
-        thumbContainer.appendChild(fallback);
-      };
-
-      // 創建播放按鈕圖標
-      const playBtn = document.createElement('span');
-      playBtn.innerHTML = '▶';
-      playBtn.style.cssText = `
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 40px;
-        height: 40px;
-        background: rgba(255,0,0,0.85);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #fff;
-        font-size: 14px;
-        padding-left: 3px;
-        pointer-events: none;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-      `;
-
-      thumbContainer.appendChild(img);
-      thumbContainer.appendChild(playBtn);
-
-      // 【同步】記錄到貼圖牆並處理滾動
-      if (img) {
-        bindMediaScroll(img, thumbContainer);
-      }
-
-      // 點擊打開 YouTube 播放器
-      thumbContainer.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        openYouTubePlayer(videoId);
-      });
-
-      ytUrlFragments.push(thumbContainer);
-
-      ytUrlLastIndex = ytUrlRegex.lastIndex;
-    }
-
-    if (ytUrlLastIndex < text.length) {
-      ytUrlFragments.push(document.createTextNode(text.slice(ytUrlLastIndex)));
-    }
-
-    if (ytUrlFragments.length > 1 || (ytUrlFragments.length === 1 && ytUrlFragments[0].className?.includes('dlsq-yt-thumbnail'))) {
-      const wrapper = document.createElement('span');
-      wrapper.className = 'dlsq-im-replaced';
-      ytUrlFragments.forEach(f => wrapper.appendChild(f));
-
-      try {
-        if (textNode.parentNode) {
-          textNode.replaceWith(wrapper);
-        }
-      } catch (e) {
-        try {
-          const parent = textNode.parentNode;
-          if (parent) {
-            parent.insertBefore(wrapper, textNode);
-            parent.removeChild(textNode);
-          }
-        } catch (e2) {
-          // 忽略錯誤
-        }
-      }
-
-      // 【修復】完整 YouTube URL 也需要觸發滾動
-      console.log('[GSS] YouTube URL thumbnail processed, triggering scroll');
-      const ytMediaEl = wrapper.querySelector('img');
-      if (ytMediaEl) {
-        bindMediaScroll(ytMediaEl, wrapper);
-      }
-    }
+    // 【所有平台】不轉換完整 YouTube URL 為縮略圖，只處理 YT-xxx 格式
+    return; // 所有平台都跳過完整 URL 處理，只保留 YT-xxx 的縮略圖
   });
 }
 
@@ -7467,30 +7320,7 @@ function scanAndReplaceWTVImages() {
           thumbContainer.appendChild(fallback);
         };
 
-        // 創建播放按鈕圖標
-        const playBtn = document.createElement('span');
-        playBtn.innerHTML = '▶';
-        playBtn.style.cssText = `
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          width: 40px;
-          height: 40px;
-          background: rgba(255,0,0,0.85);
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #fff;
-          font-size: 16px;
-          padding-left: 3px;
-          pointer-events: none;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        `;
-
         thumbContainer.appendChild(img);
-        thumbContainer.appendChild(playBtn);
 
         // 觸發滾動
         const mediaEl = thumbContainer.querySelector('img');
@@ -8001,6 +7831,8 @@ function initIMFeature() {
     }
   } else {
     // ===== Twitch 頁面：只處理聊天消息列表，完全避開輸入框區域 =====
+    // 啟動 URL 變化監聽（用於處理換頻道）
+    watchTwitchUrlChange();
     // 延遲啟動，等待頁面完全渲染
     setTimeout(() => {
       initTwitchIMFeature();
@@ -8042,6 +7874,105 @@ function initIMFeature() {
 let twitchIMFeatureInitialized = false;
 let twitchIMRetryCount = 0;
 const MAX_TWITCH_RETRY = 10;
+let currentTwitchUrl = window.location.href;
+let twitchChatContainer = null;
+let twitchObserver = null;
+
+// 監聽 URL 變化（用於處理 Twitch 換頻道）- 使用更可靠的方法
+function watchTwitchUrlChange() {
+  // 方法1：定期檢查 URL 變化（最可靠）
+  setInterval(() => {
+    if (window.location.href !== currentTwitchUrl) {
+      currentTwitchUrl = window.location.href;
+      resetTwitchIMFeature();
+    }
+  }, 2000); // 每 2 秒檢查一次
+
+  // 方法2：監聽 popstate 事件（瀏覽器前進/後退）
+  window.addEventListener('popstate', () => {
+    if (window.location.href !== currentTwitchUrl) {
+      currentTwitchUrl = window.location.href;
+      resetTwitchIMFeature();
+    }
+  });
+
+  // 方法3：攔截 pushState 和 replaceState（用於檢測 SPA 導航）
+  const originalPushState = history.pushState;
+  const originalReplaceState = history.replaceState;
+
+  history.pushState = function(...args) {
+    originalPushState.apply(this, args);
+    setTimeout(() => {
+      if (window.location.href !== currentTwitchUrl) {
+        currentTwitchUrl = window.location.href;
+        resetTwitchIMFeature();
+      }
+    }, 100);
+  };
+
+  history.replaceState = function(...args) {
+    originalReplaceState.apply(this, args);
+    setTimeout(() => {
+      if (window.location.href !== currentTwitchUrl) {
+        currentTwitchUrl = window.location.href;
+        resetTwitchIMFeature();
+      }
+    }, 100);
+  };
+
+  // 方法4：監聽整個 body 的變化（參考 7TV 的做法）
+  const bodyObserver = new MutationObserver((mutations) => {
+    // 檢查 URL 是否變化
+    if (window.location.href !== currentTwitchUrl) {
+      currentTwitchUrl = window.location.href;
+      resetTwitchIMFeature();
+      return;
+    }
+
+    // 檢查是否有新的聊天容器出現
+    const selectors = [
+      '.chat-scrollable-area__message-container',
+      '[data-test-selector="chat-scrollable-area__message-container"]',
+      '.chat-list',
+      '[data-a-target="chat-list"]',
+      '.chat-scroll-area',
+      '[class*="chat-list"]',
+      '[class*="ChatList"]',
+      '.chat-room__content',
+      '[data-test-selector="chat-room-component"]',
+      '[data-a-target="chat-room"]',
+      '.stream-chat',
+      '[class*="stream-chat"]'
+    ];
+
+    for (const selector of selectors) {
+      const newContainer = document.querySelector(selector);
+      if (newContainer && newContainer !== twitchChatContainer) {
+        resetTwitchIMFeature();
+        break;
+      }
+    }
+  });
+
+  bodyObserver.observe(document.body, { childList: true, subtree: true });
+}
+
+// 重置 Twitch IM 功能並重新初始化
+function resetTwitchIMFeature() {
+  twitchIMFeatureInitialized = false;
+  twitchIMRetryCount = 0;
+  twitchChatContainer = null;
+
+  // 清理舊的 observer
+  if (twitchObserver) {
+    twitchObserver.disconnect();
+    twitchObserver = null;
+  }
+
+  setTimeout(() => {
+    initTwitchIMFeature();
+  }, 1500); // 增加延遲，等待新頁面完全載入
+}
 
 function initTwitchIMFeature() {
   if (twitchIMFeatureInitialized) return;
@@ -8079,6 +8010,8 @@ function initTwitchIMFeature() {
     return;
   }
 
+  // 保存聊天容器引用
+  twitchChatContainer = chatList;
   twitchIMFeatureInitialized = true;
 
   // 只在聊天列表內掃描，不掃描整個 body
@@ -8090,7 +8023,7 @@ function initTwitchIMFeature() {
 
   // 只在聊天列表上監聽變化
   let mutationTimeout = null;
-  const observer = new MutationObserver((mutations) => {
+  twitchObserver = new MutationObserver((mutations) => {
     // 發送消息期間暫停
     if (isSendingMessage) return;
 
@@ -8113,7 +8046,7 @@ function initTwitchIMFeature() {
     }
   });
 
-  observer.observe(chatList, { childList: true, subtree: true });
+  twitchObserver.observe(chatList, { childList: true, subtree: true });
 }
 
 // Twitch 專用的聊天消息掃描
@@ -8174,10 +8107,8 @@ function scanTwitchChatMessages(chatContainer) {
       }
 
       const text = node.textContent;
-      // 檢查可能包含貼圖或 YouTube 鏈接的文本
+      // 檢查可能包含貼圖的文本（不處理普通 YouTube URL）
       if (text.includes('IM-') || text.includes('ME-') || text.includes('DL-') || text.includes('YT-') || text.includes('CB-') || text.includes('GSS-') ||
-        text.includes('youtube.com/watch') || text.includes('youtube.com/shorts') || text.includes('youtu.be/') ||
-        text.includes('http') ||
         /[\u200B\u200C\u200D\uFEFF]/.test(text)) {
 
         const parent = node.parentNode;
@@ -8473,123 +8404,123 @@ function processTwitchMergedTextNode(mergedNode, messageEl, originalNodes) {
     if (processed) return true;
   }
 
-  // 處理完整 YouTube URL
-  const ytUrlRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtube\.com\/shorts\/|youtu\.be\/)([a-zA-Z0-9_-]+)(?:[&?][^\s]*)?/gi;
-  let ytUrlMatch;
-  const ytUrlMatches = [];
-  while ((ytUrlMatch = ytUrlRegex.exec(text)) !== null) {
-    ytUrlMatches.push({ fullUrl: ytUrlMatch[0], videoId: ytUrlMatch[1], index: ytUrlMatch.index, length: ytUrlMatch[0].length });
-  }
+  // 處理完整 YouTube URL - 已禁用，只處理 YT- 格式
+  // const ytUrlRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtube\.com\/shorts\/|youtu\.be\/)([a-zA-Z0-9_-]+)(?:[&?][^\s]*)?/gi;
+  // let ytUrlMatch;
+  // const ytUrlMatches = [];
+  // while ((ytUrlMatch = ytUrlRegex.exec(text)) !== null) {
+  //   ytUrlMatches.push({ fullUrl: ytUrlMatch[0], videoId: ytUrlMatch[1], index: ytUrlMatch.index, length: ytUrlMatch[0].length });
+  // }
 
-  if (ytUrlMatches.length > 0) {
-    ytUrlMatches.reverse().forEach(match => {
-      const thumbnailUrl = `https://img.youtube.com/vi/${match.videoId}/mqdefault.jpg`;
+  // if (ytUrlMatches.length > 0) {
+  //   ytUrlMatches.reverse().forEach(match => {
+  //     const thumbnailUrl = `https://img.youtube.com/vi/${match.videoId}/mqdefault.jpg`;
 
-      const thumbContainer = document.createElement('span');
-      thumbContainer.className = 'gss-im-replaced gss-yt-thumbnail';
-      thumbContainer.style.cssText = 'cursor: pointer; display: block; position: relative;';
-      thumbContainer.title = '點擊播放 YouTube 視頻';
+  //     const thumbContainer = document.createElement('span');
+  //     thumbContainer.className = 'gss-im-replaced gss-yt-thumbnail';
+  //     thumbContainer.style.cssText = 'cursor: pointer; display: block; position: relative;';
+  //     thumbContainer.title = '點擊播放 YouTube 視頻';
 
-      const img = document.createElement('img');
-      img.src = thumbnailUrl;
-      img.alt = match.fullUrl;
-      img.className = 'dlsq-converted-image dlsq-chat-yt';
-      img.onerror = () => {
-        img.style.display = 'none';
-        const fallback = document.createElement('span');
-        fallback.textContent = '🎬 ' + match.fullUrl;
-        fallback.style.cssText = 'color: #666; font-size: 12px;';
-        thumbContainer.appendChild(fallback);
-      };
+  //     const img = document.createElement('img');
+  //     img.src = thumbnailUrl;
+  //     img.alt = match.fullUrl;
+  //     img.className = 'dlsq-converted-image dlsq-chat-yt';
+  //     img.onerror = () => {
+  //       img.style.display = 'none';
+  //       const fallback = document.createElement('span');
+  //       fallback.textContent = '🎬 ' + match.fullUrl;
+  //       fallback.style.cssText = 'color: #666; font-size: 12px;';
+  //       thumbContainer.appendChild(fallback);
+  //     };
 
-      const playBtn = document.createElement('span');
-      playBtn.innerHTML = '▶';
-      playBtn.style.cssText = `
-        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-        width: 40px; height: 40px; background: rgba(255,0,0,0.85); border-radius: 50%;
-        display: flex; align-items: center; justify-content: center;
-        color: #fff; font-size: 14px; padding-left: 3px; pointer-events: none;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-      `;
+  //     const playBtn = document.createElement('span');
+  //     playBtn.innerHTML = '▶';
+  //     playBtn.style.cssText = `
+  //       position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  //       width: 40px; height: 40px; background: rgba(255,0,0,0.85); border-radius: 50%;
+  //       display: flex; align-items: center; justify-content: center;
+  //       color: #fff; font-size: 14px; padding-left: 3px; pointer-events: none;
+  //       box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  //     `;
 
-      thumbContainer.appendChild(img);
-      thumbContainer.appendChild(playBtn);
-      thumbContainer.addEventListener('click', (e) => {
-        e.preventDefault(); e.stopPropagation(); openYouTubePlayer(match.videoId);
-      });
+  //     thumbContainer.appendChild(img);
+  //     thumbContainer.appendChild(playBtn);
+  //     thumbContainer.addEventListener('click', (e) => {
+  //       e.preventDefault(); e.stopPropagation(); openYouTubePlayer(match.videoId);
+  //     });
 
-      // 檢測並轉換為 Shorts 自動播放
-      checkYouTubeVideoType(match.videoId).then(videoInfo => {
-        if (videoInfo.isShorts && thumbContainer.parentNode) {
-          const shortsContainer = document.createElement('span');
-          shortsContainer.className = 'dlsq-im-replaced dlsq-yt-shorts tsc-exclude';
-          // 【修改】移除硬編碼的 width/height，改用 CSS 變量和 aspect-ratio
-          shortsContainer.style.cssText = 'display: block; position: relative; margin: 4px 0; border-radius: 8px; overflow: hidden;';
+  //     // 檢測並轉換為 Shorts 自動播放
+  //     checkYouTubeVideoType(match.videoId).then(videoInfo => {
+  //       if (videoInfo.isShorts && thumbContainer.parentNode) {
+  //         const shortsContainer = document.createElement('span');
+  //         shortsContainer.className = 'dlsq-im-replaced dlsq-yt-shorts tsc-exclude';
+  //         // 【修改】移除硬編碼的 width/height，改用 CSS 變量和 aspect-ratio
+  //         shortsContainer.style.cssText = 'display: block; position: relative; margin: 4px 0; border-radius: 8px; overflow: hidden;';
 
-          const iframe = document.createElement('iframe');
-          iframe.src = `https://www.youtube.com/embed/${match.videoId}?autoplay=1&mute=1&loop=1&playlist=${match.videoId}&playsinline=1&rel=0`;
-          iframe.style.cssText = 'width: 100%; height: 100%; border: none; border-radius: 8px; pointer-events: none;';
-          iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-          iframe.setAttribute('allowfullscreen', '');
-          shortsContainer.appendChild(iframe);
+  //         const iframe = document.createElement('iframe');
+  //         iframe.src = `https://www.youtube.com/embed/${match.videoId}?autoplay=1&mute=1&loop=1&playlist=${match.videoId}&playsinline=1&rel=0`;
+  //         iframe.style.cssText = 'width: 100%; height: 100%; border: none; border-radius: 8px; pointer-events: none;';
+  //         iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+  //         iframe.setAttribute('allowfullscreen', '');
+  //         shortsContainer.appendChild(iframe);
 
-          const overlay = document.createElement('span');
-          overlay.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: pointer; z-index: 1;';
-          overlay.setAttribute('data-yt-id', `YT-${match.videoId}`);
-          shortsContainer.appendChild(overlay);
+  //         const overlay = document.createElement('span');
+  //         overlay.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: pointer; z-index: 1;';
+  //         overlay.setAttribute('data-yt-id', `YT-${match.videoId}`);
+  //         shortsContainer.appendChild(overlay);
 
-          overlay.addEventListener('click', (e) => {
-            e.preventDefault(); e.stopPropagation(); openYouTubePlayer(match.videoId);
-          });
+  //         overlay.addEventListener('click', (e) => {
+  //           e.preventDefault(); e.stopPropagation(); openYouTubePlayer(match.videoId);
+  //         });
 
-          thumbContainer.parentNode.replaceChild(shortsContainer, thumbContainer);
+  //         thumbContainer.parentNode.replaceChild(shortsContainer, thumbContainer);
 
-          // 【修復】Shorts iframe 替換後觸發滾動（等待 iframe 加載完成）
-          setTimeout(() => {
-            // 使用 scrollIntoView 確保滾動到新元素的位置
-            shortsContainer.scrollIntoView({ behavior: 'auto', block: 'end' });
+  //         // 【修復】Shorts iframe 替換後觸發滾動（等待 iframe 加載完成）
+  //         setTimeout(() => {
+  //           // 使用 scrollIntoView 確保滾動到新元素的位置
+  //           shortsContainer.scrollIntoView({ behavior: 'auto', block: 'end' });
             
-            // 對於 Twitch/Kick，額外執行一次完整滾動
-            const currentPlatform = getCurrentPlatform();
-            if (currentPlatform === 'twitch' || currentPlatform === 'kick') {
-              const chatContainer = findChatContainer(true);
-              if (chatContainer) {
-                const distanceToBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight;
-                if (distanceToBottom <= 500) {
-                  chatContainer.scrollTop = chatContainer.scrollHeight;
-                  console.log('[GSS] YT- Shorts scrolled to bottom on', currentPlatform);
-                }
-              }
-            }
-          }, 500);
-        }
-      }).catch(() => { });
+  //           // 對於 Twitch/Kick，額外執行一次完整滾動
+  //           const currentPlatform = getCurrentPlatform();
+  //           if (currentPlatform === 'twitch' || currentPlatform === 'kick') {
+  //             const chatContainer = findChatContainer(true);
+  //             if (chatContainer) {
+  //               const distanceToBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight;
+  //               if (distanceToBottom <= 500) {
+  //                 chatContainer.scrollTop = chatContainer.scrollHeight;
+  //                 console.log('[GSS] YT- Shorts scrolled to bottom on', currentPlatform);
+  //               }
+  //             }
+  //           }
+  //         }, 500);
+  //       }
+  //     }).catch(() => { });
 
-      const firstNode = originalNodes[0];
-      const parent = firstNode.parentNode;
-      if (parent) {
-        const before = text.slice(0, match.index);
-        const after = text.slice(match.index + match.length);
+  //     const firstNode = originalNodes[0];
+  //     const parent = firstNode.parentNode;
+  //     if (parent) {
+  //       const before = text.slice(0, match.index);
+  //       const after = text.slice(match.index + match.length);
 
-        const fragment = document.createDocumentFragment();
-        if (before) fragment.appendChild(document.createTextNode(before));
-        fragment.appendChild(thumbContainer);
-        if (after) fragment.appendChild(document.createTextNode(after));
+  //       const fragment = document.createDocumentFragment();
+  //       if (before) fragment.appendChild(document.createTextNode(before));
+  //       fragment.appendChild(thumbContainer);
+  //       if (after) fragment.appendChild(document.createTextNode(after));
 
-        originalNodes.forEach(n => { if (n.parentNode) n.parentNode.removeChild(n); });
-        parent.appendChild(fragment);
-        parent.classList.add('gss-im-converted');
+  //       originalNodes.forEach(n => { if (n.parentNode) n.parentNode.removeChild(n); });
+  //       parent.appendChild(fragment);
+  //       parent.classList.add('gss-im-converted');
 
-        // 【同步】記錄到貼圖牆
-        if (window.GSS_ImageLogger) {
-          window.GSS_ImageLogger.log(thumbnailUrl, match.fullUrl);
-        }
+  //       // 【同步】記錄到貼圖牆
+  //       if (window.GSS_ImageLogger) {
+  //         window.GSS_ImageLogger.log(thumbnailUrl, match.fullUrl);
+  //       }
 
-        processed = true;
-      }
-    });
-    if (processed) return true;
-  }
+  //       processed = true;
+  //     }
+  //   });
+  //   if (processed) return true;
+  // }
 
   return false;
 }
@@ -8783,30 +8714,7 @@ function processTwitchIMTextNode(textNode, messageEl) {
         thumbContainer.appendChild(fallback);
       };
 
-      // 創建播放按鈕圖標
-      const playBtn = document.createElement('span');
-      playBtn.innerHTML = '▶';
-      playBtn.style.cssText = `
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 40px;
-        height: 40px;
-        background: rgba(255,0,0,0.85);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #fff;
-        font-size: 16px;
-        padding-left: 3px;
-        pointer-events: none;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-      `;
-
       thumbContainer.appendChild(img);
-      thumbContainer.appendChild(playBtn);
 
       // 點擊打開 YouTube 播放器
       thumbContainer.addEventListener('click', (e) => {
@@ -8891,142 +8799,142 @@ function processTwitchIMTextNode(textNode, messageEl) {
     return true; // 已處理 YT-，不再處理其他格式
   }
 
-  // 【Twitch 專用】處理完整 YouTube URL
-  const ytUrlRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtube\.com\/shorts\/|youtu\.be\/)([a-zA-Z0-9_-]+)(?:[&?][^\s]*)?/gi;
-  const ytUrlMatches = [];
-  let ytUrlMatch;
-  while ((ytUrlMatch = ytUrlRegex.exec(text)) !== null) {
-    ytUrlMatches.push({ fullUrl: ytUrlMatch[0], videoId: ytUrlMatch[1], index: ytUrlMatch.index, length: ytUrlMatch[0].length });
-  }
+  // 【Twitch 專用】處理完整 YouTube URL - 已禁用，只處理 YT- 格式
+  // const ytUrlRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtube\.com\/shorts\/|youtu\.be\/)([a-zA-Z0-9_-]+)(?:[&?][^\s]*)?/gi;
+  // const ytUrlMatches = [];
+  // let ytUrlMatch;
+  // while ((ytUrlMatch = ytUrlRegex.exec(text)) !== null) {
+  //   ytUrlMatches.push({ fullUrl: ytUrlMatch[0], videoId: ytUrlMatch[1], index: ytUrlMatch.index, length: ytUrlMatch[0].length });
+  // }
 
-  if (ytUrlMatches.length > 0) {
-    ytUrlMatches.reverse().forEach(match => {
-      const thumbnailUrl = `https://img.youtube.com/vi/${match.videoId}/mqdefault.jpg`;
+  // if (ytUrlMatches.length > 0) {
+  //   ytUrlMatches.reverse().forEach(match => {
+  //     const thumbnailUrl = `https://img.youtube.com/vi/${match.videoId}/mqdefault.jpg`;
 
-      const thumbContainer = document.createElement('span');
-      thumbContainer.className = 'gss-im-replaced gss-yt-thumbnail';
-      thumbContainer.style.cssText = 'cursor: pointer; display: block; position: relative;';
-      thumbContainer.title = '點擊播放 YouTube 視頻';
+  //     const thumbContainer = document.createElement('span');
+  //     thumbContainer.className = 'gss-im-replaced gss-yt-thumbnail';
+  //     thumbContainer.style.cssText = 'cursor: pointer; display: block; position: relative;';
+  //     thumbContainer.title = '點擊播放 YouTube 視頻';
 
-      const img = document.createElement('img');
-      img.src = thumbnailUrl;
-      img.alt = match.fullUrl;
-      img.className = 'dlsq-converted-image dlsq-chat-yt';
-      img.onerror = () => {
-        img.style.display = 'none';
-        const fallback = document.createElement('span');
-        fallback.textContent = '🎬 ' + match.fullUrl;
-        fallback.style.cssText = 'color: #666; font-size: 12px;';
-        thumbContainer.appendChild(fallback);
-      };
+  //     const img = document.createElement('img');
+  //     img.src = thumbnailUrl;
+  //     img.alt = match.fullUrl;
+  //     img.className = 'dlsq-converted-image dlsq-chat-yt';
+  //     img.onerror = () => {
+  //       img.style.display = 'none';
+  //       const fallback = document.createElement('span');
+  //       fallback.textContent = '🎬 ' + match.fullUrl;
+  //       fallback.style.cssText = 'color: #666; font-size: 12px;';
+  //       thumbContainer.appendChild(fallback);
+  //     };
 
-      const playBtn = document.createElement('span');
-      playBtn.innerHTML = '▶';
-      playBtn.style.cssText = `
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 40px;
-        height: 40px;
-        background: rgba(255,0,0,0.85);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #fff;
-        font-size: 14px;
-        padding-left: 3px;
-        pointer-events: none;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-      `;
+  //     const playBtn = document.createElement('span');
+  //     playBtn.innerHTML = '▶';
+  //     playBtn.style.cssText = `
+  //       position: absolute;
+  //       top: 50%;
+  //       left: 50%;
+  //       transform: translate(-50%, -50%);
+  //       width: 40px;
+  //       height: 40px;
+  //       background: rgba(255,0,0,0.85);
+  //       border-radius: 50%;
+  //       display: flex;
+  //       align-items: center;
+  //       justify-content: center;
+  //       color: #fff;
+  //       font-size: 14px;
+  //       padding-left: 3px;
+  //       pointer-events: none;
+  //       box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  //     `;
 
-      thumbContainer.appendChild(img);
-      thumbContainer.appendChild(playBtn);
+  //     thumbContainer.appendChild(img);
+  //     thumbContainer.appendChild(playBtn);
 
-      thumbContainer.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        openYouTubePlayer(match.videoId);
-      });
+  //     thumbContainer.addEventListener('click', (e) => {
+  //       e.preventDefault();
+  //       e.stopPropagation();
+  //       openYouTubePlayer(match.videoId);
+  //     });
 
-      // 檢測並轉換為 Shorts 自動播放
-      checkYouTubeVideoType(match.videoId).then(videoInfo => {
-        if (videoInfo.isShorts && thumbContainer.parentNode) {
-          const shortsContainer = document.createElement('span');
-          shortsContainer.className = 'dlsq-im-replaced dlsq-yt-shorts tsc-exclude';
-          // 【修改】移除硬編碼的 width/height，改用 CSS 變量和 aspect-ratio
-          shortsContainer.style.cssText = 'display: block; position: relative; margin: 4px 0; border-radius: 8px; overflow: hidden;';
+  //     // 檢測並轉換為 Shorts 自動播放
+  //     checkYouTubeVideoType(match.videoId).then(videoInfo => {
+  //       if (videoInfo.isShorts && thumbContainer.parentNode) {
+  //         const shortsContainer = document.createElement('span');
+  //         shortsContainer.className = 'dlsq-im-replaced dlsq-yt-shorts tsc-exclude';
+  //         // 【修改】移除硬編碼的 width/height，改用 CSS 變量和 aspect-ratio
+  //         shortsContainer.style.cssText = 'display: block; position: relative; margin: 4px 0; border-radius: 8px; overflow: hidden;';
 
-          const iframe = document.createElement('iframe');
-          iframe.src = `https://www.youtube.com/embed/${match.videoId}?autoplay=1&mute=1&loop=1&playlist=${match.videoId}&playsinline=1&rel=0`;
-          iframe.style.cssText = 'width: 100%; height: 100%; border: none; border-radius: 8px; pointer-events: none;';
-          iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-          iframe.setAttribute('allowfullscreen', '');
-          shortsContainer.appendChild(iframe);
+  //         const iframe = document.createElement('iframe');
+  //         iframe.src = `https://www.youtube.com/embed/${match.videoId}?autoplay=1&mute=1&loop=1&playlist=${match.videoId}&playsinline=1&rel=0`;
+  //         iframe.style.cssText = 'width: 100%; height: 100%; border: none; border-radius: 8px; pointer-events: none;';
+  //         iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+  //         iframe.setAttribute('allowfullscreen', '');
+  //         shortsContainer.appendChild(iframe);
 
-          const overlay = document.createElement('span');
-          overlay.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: pointer; z-index: 1;';
-          overlay.setAttribute('data-yt-id', `YT-${match.videoId}`);
-          shortsContainer.appendChild(overlay);
+  //         const overlay = document.createElement('span');
+  //         overlay.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: pointer; z-index: 1;';
+  //         overlay.setAttribute('data-yt-id', `YT-${match.videoId}`);
+  //         shortsContainer.appendChild(overlay);
 
-          overlay.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            openYouTubePlayer(match.videoId);
-          });
+  //         overlay.addEventListener('click', (e) => {
+  //           e.preventDefault();
+  //           e.stopPropagation();
+  //           openYouTubePlayer(match.videoId);
+  //         });
 
-          thumbContainer.parentNode.replaceChild(shortsContainer, thumbContainer);
+  //         thumbContainer.parentNode.replaceChild(shortsContainer, thumbContainer);
 
-          // 【修復】Shorts iframe 替換後觸發滾動（等待 iframe 加載完成）
-          setTimeout(() => {
-            // 使用 scrollIntoView 確保滾動到新元素的位置
-            shortsContainer.scrollIntoView({ behavior: 'auto', block: 'end' });
+  //         // 【修復】Shorts iframe 替換後觸發滾動（等待 iframe 加載完成）
+  //         setTimeout(() => {
+  //           // 使用 scrollIntoView 確保滾動到新元素的位置
+  //           shortsContainer.scrollIntoView({ behavior: 'auto', block: 'end' });
             
-            // 對於 Twitch/Kick，額外執行一次完整滾動
-            const currentPlatform = getCurrentPlatform();
-            if (currentPlatform === 'twitch' || currentPlatform === 'kick') {
-              const chatContainer = findChatContainer(true);
-              if (chatContainer) {
-                const distanceToBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight;
-                if (distanceToBottom <= 500) {
-                  chatContainer.scrollTop = chatContainer.scrollHeight;
-                  console.log('[GSS] YT- Shorts scrolled to bottom on', currentPlatform);
-                }
-              }
-            }
-          }, 500);
-        }
-      }).catch(() => { });
+  //           // 對於 Twitch/Kick，額外執行一次完整滾動
+  //           const currentPlatform = getCurrentPlatform();
+  //           if (currentPlatform === 'twitch' || currentPlatform === 'kick') {
+  //             const chatContainer = findChatContainer(true);
+  //             if (chatContainer) {
+  //               const distanceToBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight;
+  //               if (distanceToBottom <= 500) {
+  //                 chatContainer.scrollTop = chatContainer.scrollHeight;
+  //                 console.log('[GSS] YT- Shorts scrolled to bottom on', currentPlatform);
+  //               }
+  //             }
+  //           }
+  //         }, 500);
+  //       }
+  //     }).catch(() => { });
 
-      if (textNode.parentNode) {
-        try {
-          const parent = textNode.parentNode;
-          const before = text.slice(0, match.index);
-          const after = text.slice(match.index + match.length);
+  //     if (textNode.parentNode) {
+  //       try {
+  //         const parent = textNode.parentNode;
+  //         const before = text.slice(0, match.index);
+  //         const after = text.slice(match.index + match.length);
 
-          const fragment = document.createDocumentFragment();
-          if (before) fragment.appendChild(document.createTextNode(before));
-          fragment.appendChild(thumbContainer);
-          if (after) fragment.appendChild(document.createTextNode(after));
+  //         const fragment = document.createDocumentFragment();
+  //         if (before) fragment.appendChild(document.createTextNode(before));
+  //         fragment.appendChild(thumbContainer);
+  //         if (after) fragment.appendChild(document.createTextNode(after));
 
-          parent.replaceChild(fragment, textNode);
-          parent.classList.add('gss-im-converted');
+  //         parent.replaceChild(fragment, textNode);
+  //         parent.classList.add('gss-im-converted');
           
-          // 【同步】記錄到貼圖牆
-          if (window.GSS_ImageLogger) {
-            window.GSS_ImageLogger.log(thumbnailUrl, match.fullUrl);
-          }
-        } catch (e) {
-          // 忽略錯誤
-        }
-      }
-    });
-    // 【標記】給消息容器添加標記，防止 React/KICK 重置 DOM 後重複處理
-    const msgContainer5 = textNode.parentElement?.closest('[class*="message"], [class*="chat-line"], [class*="ChatMessage"]');
-    if (msgContainer5) msgContainer5.classList.add('dlsq-message-processed');
-    return true; // 已處理 YouTube URL
-  }
+  //         // 【同步】記錄到貼圖牆
+  //         if (window.GSS_ImageLogger) {
+  //           window.GSS_ImageLogger.log(thumbnailUrl, match.fullUrl);
+  //         }
+  //       } catch (e) {
+  //         // 忽略錯誤
+  //       }
+  //     }
+  //   });
+  //   // 【標記】給消息容器添加標記，防止 React/KICK 重置 DOM 後重複處理
+  //   const msgContainer5 = textNode.parentElement?.closest('[class*="message"], [class*="chat-line"], [class*="ChatMessage"]');
+  //   if (msgContainer5) msgContainer5.classList.add('dlsq-message-processed');
+  //   return true; // 已處理 YouTube URL
+  // }
 
   return false;
 }
@@ -9559,18 +9467,12 @@ function convertToYTThumbnail(container, videoId, title) {
   img.style.cssText = 'width: 100%; height: 100%; object-fit: cover; border-radius: 8px;';
   img.alt = title || 'YouTube Video';
 
-  // 創建播放按鈕覆蓋層
-  const playOverlay = document.createElement('span');
-  playOverlay.style.cssText = 'position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; background: rgba(255,0,0,0.8); border-radius: 50%; display: flex; align-items: center; justify-content: center; pointer-events: none;';
-  playOverlay.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="white"><path d="M8 5v14l11-7z"/></svg>';
-
   // 創建警告標籤（提示用戶這是長片）
   const warningBadge = document.createElement('span');
   warningBadge.textContent = '長片';
   warningBadge.style.cssText = 'position: absolute; top: 4px; right: 4px; background: rgba(255,193,7,0.9); color: #000; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold;';
 
   ytWrapper.appendChild(img);
-  ytWrapper.appendChild(playOverlay);
   ytWrapper.appendChild(warningBadge);
 
   // 點擊事件
@@ -9699,43 +9601,7 @@ function openYouTubePlayer(videoId) {
     thumbnail.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180"><rect fill="%23333" width="100%" height="100%"/><text fill="%23999" x="50%" y="50%" text-anchor="middle" font-size="14">無法載入縮略圖</text></svg>';
   };
 
-  // 播放按鈕圖標
-  const playBtn = document.createElement('div');
-  playBtn.innerHTML = '▶';
-  playBtn.style.cssText = `
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 60px;
-    height: 60px;
-    background: rgba(255,0,0,0.9);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    font-size: 24px;
-    padding-left: 4px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-    transition: transform 0.2s, background 0.2s;
-  `;
-  playBtn.style.cssText += `
-    pointer-events: none;
-  `;
-
   thumbContainer.appendChild(thumbnail);
-  thumbContainer.appendChild(playBtn);
-
-  // 懸停效果
-  thumbContainer.onmouseenter = () => {
-    playBtn.style.transform = 'translate(-50%, -50%) scale(1.1)';
-    playBtn.style.background = 'rgba(255,0,0,1)';
-  };
-  thumbContainer.onmouseleave = () => {
-    playBtn.style.transform = 'translate(-50%, -50%) scale(1)';
-    playBtn.style.background = 'rgba(255,0,0,0.9)';
-  };
 
   // 點擊縮略圖開始播放
   thumbContainer.onclick = () => {

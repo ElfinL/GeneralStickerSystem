@@ -299,7 +299,6 @@ const ImageLogger = {
       `;
       img.title = id || '貼圖預覽';
       img.onerror = () => {
-        console.warn('[GSS Logger] Image load failed:', url);
         wrapper.style.border = '1px solid #f44336';
       };
       img.onload = () => {
