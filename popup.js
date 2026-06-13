@@ -1167,6 +1167,7 @@ function showSettingsStatus(message, color) {
 document.addEventListener('DOMContentLoaded', () => {
   initLanguage(() => {
     initPageToggle();
+    initHomeButton();
     initHelpPopover();
     initUpdateButton();
     initTscToggles();
@@ -1191,6 +1192,18 @@ function initStickerSizeButtons() {
   if (smallBtn && typeof t === 'function') {
     smallBtn.textContent = t('stickerSizeModeSmall') || '小';
   }
+}
+
+// ==================== Home Button 功能 ====================
+function initHomeButton() {
+  const homeBtn = document.getElementById('homeBtn');
+  if (!homeBtn) return;
+
+  // 主頁按鈕點擊 - 在新分頁打開主頁
+  homeBtn.addEventListener('click', () => {
+    const homeUrl = 'https://elfinl.github.io/General-Sticker-System/';
+    window.open(homeUrl, '_blank');
+  });
 }
 
 // ==================== Help Button 功能 ====================

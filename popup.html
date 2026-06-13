@@ -195,6 +195,24 @@
       opacity: 0.8;
     }
 
+    /* Home button styles */
+    .home-btn {
+      padding: 0;
+      border: none;
+      background: transparent;
+      font-size: 14px;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.7);
+      line-height: 1;
+      flex-shrink: 0;
+      margin-left: 4px;
+    }
+
+    .home-btn:hover {
+      opacity: 0.8;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
     /* Update notification button styles */
     .update-btn {
       padding: 0;
@@ -913,6 +931,7 @@
       <div class="header-title-row">
         <div class="header-title" id="titleText"><img src="icons/icon16.png"
             style="width:16px;height:16px;vertical-align:middle;margin-right:4px;"> General Sticker System (GSS)</div>
+        <button id="homeBtn" class="home-btn" title="前往主頁">🏠</button>
         <button id="updateBtn" class="update-btn" title="查看更新日誌">📢</button>
         <button id="helpBtn" class="help-btn">❓</button>
       </div>

@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>General Sticker System (GSS)</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(180deg, #0b0f14 0%, #14161c 100%);
+      color: rgba(255, 255, 255, 0.9);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      padding: 30px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 20px;
+    }
+
+    .header h1 {
+      font-size: 32px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .header .subtitle {
+      font-size: 16px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-bottom: 8px;
+    }
+
+    .lang-switch {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .lang-btn {
+      padding: 8px 20px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(10, 12, 16, 0.8);
+      color: rgba(255, 255, 255, 0.7);
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .lang-btn:hover {
+      background: rgba(120, 190, 255, 0.14);
+      border-color: rgba(120, 190, 255, 0.45);
+    }
+
+    .lang-btn.active {
+      background: rgba(120, 190, 255, 0.35);
+      border-color: rgba(120, 190, 255, 0.7);
+      color: rgba(255, 255, 255, 0.95);
+    }
+
+    .links-section {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .link-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 24px;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .link-card:hover {
+      background: rgba(120, 190, 255, 0.1);
+      border-color: rgba(120, 190, 255, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .link-card .icon {
+      font-size: 32px;
+    }
+
+    .link-card .text {
+      flex: 1;
+    }
+
+    .link-card .title {
+      font-size: 18px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.95);
+      margin-bottom: 4px;
+    }
+
+    .link-card .description {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .link-card .arrow {
+      font-size: 20px;
+      color: rgba(255, 255, 255, 0.3);
+    }
+
+    .platforms-list {
+      text-align: center;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-bottom: 16px;
+    }
+
+    .platforms-list span {
+      margin: 0 4px;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 40px 0;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.4);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .footer .author {
+      margin-bottom: 8px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .footer a {
+      color: #4a90e2;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer a:hover {
+      color: #6ba3e8;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <h1><img src="https://elfinl.github.io/General-Sticker-System/icons/icon48.png" alt="GSS Logo"> General Sticker System (GSS)</h1>
+      <div class="subtitle" data-i18n="subtitle">通用貼圖系統</div>
+      <div class="platforms-list">
+        <span data-i18n="platforms_prefix">支援平台：</span>
+        <span data-i18n="platform_twitch">Twitch</span> •
+        <span data-i18n="platform_youtube">YouTube</span> •
+        <span data-i18n="platform_kick">Kick</span> •
+        <span data-i18n="platform_vaughn">Vaughn Live</span> •
+        <span data-i18n="platform_beamstream">Beamstream</span> •
+        <span data-i18n="platform_wtv">W.TV</span>
+        <span data-i18n="platforms_suffix">（可自定義）</span>
+      </div>
+    </div>
+
+    <div class="lang-switch">
+      <button class="lang-btn active" data-lang="zh-TW">繁中</button>
+      <button class="lang-btn" data-lang="zh-CN">简中</button>
+      <button class="lang-btn" data-lang="en">English</button>
+      <button class="lang-btn" data-lang="ja">日本語</button>
+      <button class="lang-btn" data-lang="ko">한국어</button>
+    </div>
+
+    <div class="links-section">
+      <a href="updatelog.html" class="link-card">
+        <div class="icon">📢</div>
+        <div class="text">
+          <div class="title" data-i18n="updatelog_title">更新日誌</div>
+          <div class="description" data-i18n="updatelog_desc">查看最新版本更新內容</div>
+        </div>
+        <div class="arrow">→</div>
+      </a>
+
+      <a href="help.html" class="link-card">
+        <div class="icon">❓</div>
+        <div class="text">
+          <div class="title" data-i18n="help_title">使用說明</div>
+          <div class="description" data-i18n="help_desc">了解如何使用 GSS 貼圖系統</div>
+        </div>
+        <div class="arrow">→</div>
+      </a>
+
+      <a href="https://chromewebstore.google.com/detail/general-sticker-system-gs/agngppbecmofipmmmjgafkojgggcembi" target="_blank" rel="noopener" class="link-card">
+        <div class="icon">🌐</div>
+        <div class="text">
+          <div class="title" data-i18n="chrome_title">Chrome 網上應用程式店</div>
+          <div class="description" data-i18n="chrome_desc">在 Chrome 瀏覽器中安裝 GSS</div>
+        </div>
+        <div class="arrow">→</div>
+      </a>
+
+      <a href="https://addons.mozilla.org/zh-CN/firefox/addon/general-sticker-system-gss/" target="_blank" rel="noopener" class="link-card">
+        <div class="icon">🦊</div>
+        <div class="text">
+          <div class="title" data-i18n="firefox_title">Firefox 附加元件</div>
+          <div class="description" data-i18n="firefox_desc">在 Firefox 瀏覽器中安裝 GSS</div>
+        </div>
+        <div class="arrow">→</div>
+      </a>
+
+      <a href="https://microsoftedge.microsoft.com/addons/detail/general-sticker-system-g/cooepcjakomllpddoiofpcfednangjgb" target="_blank" rel="noopener" class="link-card">
+        <div class="icon">🔷</div>
+        <div class="text">
+          <div class="title" data-i18n="edge_title">Microsoft Edge 附加元件</div>
+          <div class="description" data-i18n="edge_desc">在 Edge 瀏覽器中安裝 GSS</div>
+        </div>
+        <div class="arrow">→</div>
+      </a>
+    </div>
+
+    <div class="footer">
+      <div class="author" data-i18n="author">Made by Elfin</div>
+      <div>
+        <a href="https://github.com/ElfinL" target="_blank" rel="noopener">GitHub</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 語言數據
+    const I18N_DATA = {
+      'zh-TW': {
+        subtitle: '通用貼圖系統 (GSS)',
+        updatelog_title: '更新日誌',
+        updatelog_desc: '查看最新版本更新內容',
+        help_title: '使用說明',
+        help_desc: '了解如何使用 GSS 貼圖系統',
+        chrome_title: 'Chrome 網上應用程式店',
+        chrome_desc: '在 Chrome 瀏覽器中安裝 GSS',
+        firefox_title: 'Firefox 附加元件',
+        firefox_desc: '在 Firefox 瀏覽器中安裝 GSS',
+        edge_title: 'Microsoft Edge 附加元件',
+        edge_desc: '在 Edge 瀏覽器中安裝 GSS',
+        platforms_prefix: '支援平台：',
+        platform_twitch: 'Twitch',
+        platform_youtube: 'YouTube',
+        platform_kick: 'Kick',
+        platform_vaughn: 'Vaughn Live',
+        platform_beamstream: 'Beamstream',
+        platform_wtv: 'W.TV',
+        platforms_suffix: '（可自定義）',
+        author: 'Made by Elfin'
+      },
+      'zh-CN': {
+        subtitle: '通用贴图系统 (GSS)',
+        updatelog_title: '更新日志',
+        updatelog_desc: '查看最新版本更新内容',
+        help_title: '使用说明',
+        help_desc: '了解如何使用 GSS 贴图系统',
+        chrome_title: 'Chrome 网上应用店',
+        chrome_desc: '在 Chrome 浏览器中安装 GSS',
+        firefox_title: 'Firefox 附加组件',
+        firefox_desc: '在 Firefox 浏览器中安装 GSS',
+        edge_title: 'Microsoft Edge 附加组件',
+        edge_desc: '在 Edge 浏览器中安装 GSS',
+        platforms_prefix: '支持平台：',
+        platform_twitch: 'Twitch',
+        platform_youtube: 'YouTube',
+        platform_kick: 'Kick',
+        platform_vaughn: 'Vaughn Live',
+        platform_beamstream: 'Beamstream',
+        platform_wtv: 'W.TV',
+        platforms_suffix: '（可自定义）',
+        author: 'Made by Elfin'
+      },
+      'en': {
+        subtitle: 'General Sticker System (GSS)',
+        updatelog_title: 'Update Log',
+        updatelog_desc: 'View latest version updates',
+        help_title: 'Help',
+        help_desc: 'Learn how to use GSS sticker system',
+        chrome_title: 'Chrome Web Store',
+        chrome_desc: 'Install GSS on Chrome browser',
+        firefox_title: 'Firefox Add-ons',
+        firefox_desc: 'Install GSS on Firefox browser',
+        edge_title: 'Microsoft Edge Add-ons',
+        edge_desc: 'Install GSS on Edge browser',
+        platforms_prefix: 'Supported: ',
+        platform_twitch: 'Twitch',
+        platform_youtube: 'YouTube',
+        platform_kick: 'Kick',
+        platform_vaughn: 'Vaughn Live',
+        platform_beamstream: 'Beamstream',
+        platform_wtv: 'W.TV',
+        platforms_suffix: ' (customizable)',
+        author: 'Made by Elfin'
+      },
+      'ja': {
+        subtitle: '汎用ステッカーシステム (GSS)',
+        updatelog_title: '更新ログ',
+        updatelog_desc: '最新バージョンの更新内容を確認',
+        help_title: 'ヘルプ',
+        help_desc: 'GSSステッカーシステムの使い方を学ぶ',
+        chrome_title: 'Chrome Web Store',
+        chrome_desc: 'ChromeブラウザにGSSをインストール',
+        firefox_title: 'Firefox アドオン',
+        firefox_desc: 'FirefoxブラウザにGSSをインストール',
+        edge_title: 'Microsoft Edge アドオン',
+        edge_desc: 'EdgeブラウザにGSSをインストール',
+        platforms_prefix: '対応プラットフォーム：',
+        platform_twitch: 'Twitch',
+        platform_youtube: 'YouTube',
+        platform_kick: 'Kick',
+        platform_vaughn: 'Vaughn Live',
+        platform_beamstream: 'Beamstream',
+        platform_wtv: 'W.TV',
+        platforms_suffix: '（カスタマイズ可能）',
+        author: 'Made by Elfin'
+      },
+      'ko': {
+        subtitle: '범용 스티커 시스템 (GSS)',
+        updatelog_title: '업데이트 로그',
+        updatelog_desc: '최신 버전 업데이트 내용 확인',
+        help_title: '도움말',
+        help_desc: 'GSS 스티커 시스템 사용법 학습',
+        chrome_title: 'Chrome 웹 스토어',
+        chrome_desc: 'Chrome 브라우저에 GSS 설치',
+        firefox_title: 'Firefox 부가 기능',
+        firefox_desc: 'Firefox 브라우저에 GSS 설치',
+        edge_title: 'Microsoft Edge 부가 기능',
+        edge_desc: 'Edge 브라우저에 GSS 설치',
+        platforms_prefix: '지원 플랫폼：',
+        platform_twitch: 'Twitch',
+        platform_youtube: 'YouTube',
+        platform_kick: 'Kick',
+        platform_vaughn: 'Vaughn Live',
+        platform_beamstream: 'Beamstream',
+        platform_wtv: 'W.TV',
+        platforms_suffix: '（사용자 정의 가능）',
+        author: 'Made by Elfin'
+      }
+    };
+
+    const SUPPORTED_LANGS = ['zh-TW', 'zh-CN', 'en', 'ja', 'ko'];
+    let currentLang = 'zh-TW';
+
+    // 切換語言
+    function switchLanguage(lang) {
+      if (!SUPPORTED_LANGS.includes(lang)) return;
+      
+      currentLang = lang;
+      
+      // 更新按鈕狀態
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+      });
+      
+      // 更新內容
+      const data = I18N_DATA[lang];
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.dataset.i18n;
+        if (data[key]) {
+          el.textContent = data[key];
+        }
+      });
+      
+      // 保存到 localStorage
+      try {
+        localStorage.setItem('indexLang', lang);
+      } catch (e) {
+        // localStorage not available
+      }
+    }
+
+    // 初始化
+    function init() {
+      // 從 localStorage 或 URL 參數獲取語言
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlLang = urlParams.get('lang');
+      
+      if (urlLang && SUPPORTED_LANGS.includes(urlLang)) {
+        currentLang = urlLang;
+      } else {
+        try {
+          const stored = localStorage.getItem('indexLang');
+          if (stored && SUPPORTED_LANGS.includes(stored)) {
+            currentLang = stored;
+          }
+        } catch (e) {
+          // localStorage not available
+        }
+      }
+
+      // 設置語言按鈕狀態
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === currentLang);
+      });
+
+      // 綁定事件
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          switchLanguage(btn.dataset.lang);
+        });
+      });
+
+      // 初始渲染
+      switchLanguage(currentLang);
+    }
+
+    // DOM 加載完成後初始化
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  </script>
+</body>
+
+</html>
