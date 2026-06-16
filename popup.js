@@ -587,15 +587,17 @@ function getCurrentPlatform(callback) {
 }
 
 // ==================== 頁面切換功能 ====================
-let currentPage = 'main'; // 'main', 'texo', 或 'settings'
+let currentPage = 'main'; // 'main', 'texo', 'settings', 或 'disclaimer'
 
 function initPageToggle() {
   const tabSticker = document.getElementById('tabSticker');
   const tabTexo = document.getElementById('tabTexo');
   const tabSettings = document.getElementById('tabSettings');
+  const tabDisclaimer = document.getElementById('tabDisclaimer');
   const mainPage = document.getElementById('mainPage');
   const texoPage = document.getElementById('texoPage');
   const settingsPage = document.getElementById('settingsPage');
+  const disclaimerPage = document.getElementById('disclaimerPage');
 
   if (!tabSticker || !tabSettings || !mainPage || !settingsPage) return;
 
@@ -615,9 +617,11 @@ function initPageToggle() {
     mainPage.classList.remove('active');
     if (texoPage) texoPage.classList.remove('active');
     settingsPage.classList.remove('active');
+    if (disclaimerPage) disclaimerPage.classList.remove('active');
     tabSticker.classList.remove('active');
     if (tabTexo) tabTexo.classList.remove('active');
     tabSettings.classList.remove('active');
+    if (tabDisclaimer) tabDisclaimer.classList.remove('active');
 
     // 激活當前頁面
     if (page === 'main') {
@@ -631,12 +635,16 @@ function initPageToggle() {
     } else if (page === 'settings') {
       settingsPage.classList.add('active');
       tabSettings.classList.add('active');
+    } else if (page === 'disclaimer') {
+      if (disclaimerPage) disclaimerPage.classList.add('active');
+      if (tabDisclaimer) tabDisclaimer.classList.add('active');
     }
   }
 
   tabSticker.addEventListener('click', () => switchToPage('main'));
   if (tabTexo) tabTexo.addEventListener('click', () => switchToPage('texo'));
   tabSettings.addEventListener('click', () => switchToPage('settings'));
+  if (tabDisclaimer) tabDisclaimer.addEventListener('click', () => switchToPage('disclaimer'));
 
   // 初始化編織頁面功能
   if (typeof TexoPopup !== 'undefined') {

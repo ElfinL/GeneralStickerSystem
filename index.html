@@ -14,151 +14,293 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(180deg, #0b0f14 0%, #14161c 100%);
+      background: linear-gradient(135deg, #0a0e13 0%, #12151a 50%, #0a0e13 100%);
       color: rgba(255, 255, 255, 0.9);
       min-height: 100vh;
       padding: 20px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle at 30% 30%, rgba(120, 190, 255, 0.03) 0%, transparent 50%),
+                  radial-gradient(circle at 70% 70%, rgba(120, 190, 255, 0.02) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
     }
 
     .container {
       max-width: 700px;
       margin: 0 auto;
+      position: relative;
+      z-index: 1;
     }
 
     .header {
       text-align: center;
-      padding: 30px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      margin-bottom: 20px;
+      padding: 40px 0 12px;
+      margin-bottom: 12px;
+      position: relative;
     }
 
     .header h1 {
-      font-size: 32px;
-      font-weight: 600;
-      margin-bottom: 8px;
+      font-size: 36px;
+      font-weight: 700;
+      margin-bottom: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 12px;
+      gap: 14px;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(120, 190, 255, 0.9) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header h1 img {
+      width: 48px;
+      height: 48px;
+      filter: drop-shadow(0 0 12px rgba(120, 190, 255, 0.4));
     }
 
     .header .subtitle {
-      font-size: 16px;
-      color: rgba(255, 255, 255, 0.5);
+      font-size: 18px;
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 12px;
+      font-weight: 500;
+    }
+
+    .platforms-list {
+      text-align: center;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.45);
       margin-bottom: 8px;
+      padding: 12px 20px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      display: inline-block;
+    }
+
+    .platforms-list span {
+      margin: 0 3px;
     }
 
     .lang-switch {
       display: flex;
       justify-content: center;
-      gap: 12px;
-      margin-bottom: 20px;
+      gap: 8px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
     }
 
     .lang-btn {
-      padding: 8px 20px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      background: rgba(10, 12, 16, 0.8);
-      color: rgba(255, 255, 255, 0.7);
-      border-radius: 20px;
+      padding: 10px 18px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(10, 12, 16, 0.6);
+      color: rgba(255, 255, 255, 0.65);
+      border-radius: 24px;
       cursor: pointer;
       font-size: 14px;
-      transition: all 0.2s;
+      font-weight: 500;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(10px);
     }
 
     .lang-btn:hover {
-      background: rgba(120, 190, 255, 0.14);
-      border-color: rgba(120, 190, 255, 0.45);
+      background: rgba(120, 190, 255, 0.15);
+      border-color: rgba(120, 190, 255, 0.4);
+      color: rgba(255, 255, 255, 0.9);
+      transform: translateY(-1px);
     }
 
     .lang-btn.active {
-      background: rgba(120, 190, 255, 0.35);
-      border-color: rgba(120, 190, 255, 0.7);
-      color: rgba(255, 255, 255, 0.95);
+      background: rgba(120, 190, 255, 0.25);
+      border-color: rgba(120, 190, 255, 0.6);
+      color: rgba(255, 255, 255, 1);
+      box-shadow: 0 0 20px rgba(120, 190, 255, 0.2);
     }
 
     .links-section {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
       margin-bottom: 40px;
     }
 
+    .links-section .link-card:nth-child(1) {
+      grid-column: 1;
+    }
+
+    .links-section .link-card:nth-child(2) {
+      grid-column: 2;
+    }
+
+    .links-section .link-card:nth-child(3) {
+      grid-column: 1;
+    }
+
+    .links-section .link-card:nth-child(4) {
+      grid-column: 2;
+    }
+
+    .links-section .link-card:nth-child(5) {
+      grid-column: 1;
+    }
+
+    .links-section .link-card:nth-child(6) {
+      grid-column: 2;
+    }
+
+    .links-section .link-card:nth-child(7) {
+      grid-column: 1;
+    }
+
     .link-card {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      padding: 24px;
-      transition: all 0.2s;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 20px 24px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       text-decoration: none;
       display: flex;
       align-items: center;
       gap: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .link-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(120, 190, 255, 0.1) 0%, rgba(120, 190, 255, 0.05) 100%);
+      opacity: 0;
+      transition: opacity 0.3s;
     }
 
     .link-card:hover {
-      background: rgba(120, 190, 255, 0.1);
+      background: linear-gradient(135deg, rgba(120, 190, 255, 0.12) 0%, rgba(120, 190, 255, 0.06) 100%);
       border-color: rgba(120, 190, 255, 0.3);
-      transform: translateY(-2px);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 16px rgba(120, 190, 255, 0.1);
+    }
+
+    .link-card:hover::before {
+      opacity: 1;
     }
 
     .link-card .icon {
-      font-size: 32px;
+      font-size: 28px;
+      position: relative;
+      z-index: 1;
+      filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
     }
 
     .link-card .text {
       flex: 1;
+      position: relative;
+      z-index: 1;
     }
 
     .link-card .title {
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 600;
       color: rgba(255, 255, 255, 0.95);
       margin-bottom: 4px;
     }
 
     .link-card .description {
-      font-size: 14px;
+      font-size: 13px;
       color: rgba(255, 255, 255, 0.5);
     }
 
     .link-card .arrow {
-      font-size: 20px;
-      color: rgba(255, 255, 255, 0.3);
+      font-size: 18px;
+      color: rgba(255, 255, 255, 0.25);
+      position: relative;
+      z-index: 1;
+      transition: all 0.3s;
     }
 
-    .platforms-list {
-      text-align: center;
-      font-size: 13px;
-      color: rgba(255, 255, 255, 0.5);
-      margin-bottom: 16px;
-    }
-
-    .platforms-list span {
-      margin: 0 4px;
+    .link-card:hover .arrow {
+      color: rgba(120, 190, 255, 0.6);
+      transform: translateX(4px);
     }
 
     .footer {
       text-align: center;
-      padding: 40px 0;
+      padding: 32px 0;
       font-size: 14px;
-      color: rgba(255, 255, 255, 0.4);
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.35);
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
     }
 
     .footer .author {
-      margin-bottom: 8px;
-      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 10px;
+      color: rgba(255, 255, 255, 0.55);
+      font-weight: 500;
     }
 
     .footer a {
-      color: #4a90e2;
+      color: rgba(120, 190, 255, 0.7);
       text-decoration: none;
-      transition: color 0.2s;
+      transition: all 0.2s;
+      font-weight: 500;
     }
 
     .footer a:hover {
-      color: #6ba3e8;
+      color: rgba(120, 190, 255, 1);
+      text-shadow: 0 0 12px rgba(120, 190, 255, 0.4);
+    }
+
+    @media (max-width: 600px) {
+      .header h1 {
+        font-size: 28px;
+      }
+
+      .header h1 img {
+        width: 40px;
+        height: 40px;
+      }
+
+      .header .subtitle {
+        font-size: 15px;
+      }
+
+      .platforms-list {
+        font-size: 12px;
+        padding: 10px 16px;
+      }
+
+      .links-section {
+        grid-template-columns: 1fr;
+      }
+
+      .link-card {
+        padding: 16px 20px;
+      }
+
+      .link-card .icon {
+        font-size: 24px;
+      }
+
+      .link-card .title {
+        font-size: 15px;
+      }
+
+      .link-card .description {
+        font-size: 12px;
+      }
     }
   </style>
 </head>
@@ -189,20 +331,19 @@
     </div>
 
     <div class="links-section">
+      <a href="https://github.com/ElfinL" target="_blank" rel="noopener" class="link-card">
+        <div class="icon">😼</div>
+        <div class="text">
+          <div class="title">GitHub</div>
+        </div>
+        <div class="arrow">→</div>
+      </a>
+
       <a href="updatelog.html" class="link-card">
         <div class="icon">📢</div>
         <div class="text">
           <div class="title" data-i18n="updatelog_title">更新日誌</div>
           <div class="description" data-i18n="updatelog_desc">查看最新版本更新內容</div>
-        </div>
-        <div class="arrow">→</div>
-      </a>
-
-      <a href="help.html" class="link-card">
-        <div class="icon">❓</div>
-        <div class="text">
-          <div class="title" data-i18n="help_title">使用說明</div>
-          <div class="description" data-i18n="help_desc">了解如何使用 GSS 貼圖系統</div>
         </div>
         <div class="arrow">→</div>
       </a>
@@ -216,11 +357,28 @@
         <div class="arrow">→</div>
       </a>
 
+      <a href="help.html" class="link-card">
+        <div class="icon">❓</div>
+        <div class="text">
+          <div class="title" data-i18n="help_title">使用說明</div>
+          <div class="description" data-i18n="help_desc">了解如何使用 GSS 貼圖系統</div>
+        </div>
+        <div class="arrow">→</div>
+      </a>
+
       <a href="https://addons.mozilla.org/zh-CN/firefox/addon/general-sticker-system-gss/" target="_blank" rel="noopener" class="link-card">
         <div class="icon">🦊</div>
         <div class="text">
           <div class="title" data-i18n="firefox_title">Firefox 附加元件</div>
           <div class="description" data-i18n="firefox_desc">在 Firefox 瀏覽器中安裝 GSS</div>
+        </div>
+        <div class="arrow">→</div>
+      </a>
+
+      <a href="https://github.com/ElfinL/GeneralStickerSystem/issues" target="_blank" rel="noopener" class="link-card">
+        <div class="icon">💬</div>
+        <div class="text">
+          <div class="title" data-i18n="issues_title">插件交流與回報</div>
         </div>
         <div class="arrow">→</div>
       </a>
@@ -233,13 +391,19 @@
         </div>
         <div class="arrow">→</div>
       </a>
+
+      <a href="https://elfinl.github.io/General-Sticker-System/disclaimer.html" target="_blank" rel="noopener" class="link-card">
+        <div class="icon">🛡️</div>
+        <div class="text">
+          <div class="title" data-i18n="disclaimer_title">預防性聲明</div>
+        </div>
+        <div class="arrow">→</div>
+      </a>
+
     </div>
 
     <div class="footer">
-      <div class="author" data-i18n="author">Made by Elfin</div>
-      <div>
-        <a href="https://github.com/ElfinL" target="_blank" rel="noopener">GitHub</a>
-      </div>
+      <div class="author" >Made by <a href="https://github.com/ElfinL" target="_blank" rel="noopener">Elfin</a></div>
     </div>
   </div>
 
@@ -258,6 +422,8 @@
         firefox_desc: '在 Firefox 瀏覽器中安裝 GSS',
         edge_title: 'Microsoft Edge 附加元件',
         edge_desc: '在 Edge 瀏覽器中安裝 GSS',
+        issues_title: '插件交流與回報',
+        disclaimer_title: '預防性聲明',
         platforms_prefix: '支援平台：',
         platform_twitch: 'Twitch',
         platform_youtube: 'YouTube',
@@ -266,7 +432,6 @@
         platform_beamstream: 'Beamstream',
         platform_wtv: 'W.TV',
         platforms_suffix: '（可自定義）',
-        author: 'Made by Elfin'
       },
       'zh-CN': {
         subtitle: '通用贴图系统 (GSS)',
@@ -280,6 +445,8 @@
         firefox_desc: '在 Firefox 浏览器中安装 GSS',
         edge_title: 'Microsoft Edge 附加组件',
         edge_desc: '在 Edge 浏览器中安装 GSS',
+        issues_title: '插件交流与回报',
+        disclaimer_title: '预防性声明',
         platforms_prefix: '支持平台：',
         platform_twitch: 'Twitch',
         platform_youtube: 'YouTube',
@@ -288,7 +455,6 @@
         platform_beamstream: 'Beamstream',
         platform_wtv: 'W.TV',
         platforms_suffix: '（可自定义）',
-        author: 'Made by Elfin'
       },
       'en': {
         subtitle: 'General Sticker System (GSS)',
@@ -302,6 +468,8 @@
         firefox_desc: 'Install GSS on Firefox browser',
         edge_title: 'Microsoft Edge Add-ons',
         edge_desc: 'Install GSS on Edge browser',
+        issues_title: 'Plugin Discussion & Feedback',
+        disclaimer_title: 'Proactive Notice',
         platforms_prefix: 'Supported: ',
         platform_twitch: 'Twitch',
         platform_youtube: 'YouTube',
@@ -310,7 +478,6 @@
         platform_beamstream: 'Beamstream',
         platform_wtv: 'W.TV',
         platforms_suffix: ' (customizable)',
-        author: 'Made by Elfin'
       },
       'ja': {
         subtitle: '汎用ステッカーシステム (GSS)',
@@ -324,6 +491,8 @@
         firefox_desc: 'FirefoxブラウザにGSSをインストール',
         edge_title: 'Microsoft Edge アドオン',
         edge_desc: 'EdgeブラウザにGSSをインストール',
+        issues_title: 'プラグイン交流とフィードバック',
+        disclaimer_title: '事前予防声明',
         platforms_prefix: '対応プラットフォーム：',
         platform_twitch: 'Twitch',
         platform_youtube: 'YouTube',
@@ -332,7 +501,6 @@
         platform_beamstream: 'Beamstream',
         platform_wtv: 'W.TV',
         platforms_suffix: '（カスタマイズ可能）',
-        author: 'Made by Elfin'
       },
       'ko': {
         subtitle: '범용 스티커 시스템 (GSS)',
@@ -346,6 +514,8 @@
         firefox_desc: 'Firefox 브라우저에 GSS 설치',
         edge_title: 'Microsoft Edge 부가 기능',
         edge_desc: 'Edge 브라우저에 GSS 설치',
+        issues_title: '플러그인 교류 및 피드백',
+        disclaimer_title: '사전 예방 성명',
         platforms_prefix: '지원 플랫폼：',
         platform_twitch: 'Twitch',
         platform_youtube: 'YouTube',
@@ -354,7 +524,6 @@
         platform_beamstream: 'Beamstream',
         platform_wtv: 'W.TV',
         platforms_suffix: '（사용자 정의 가능）',
-        author: 'Made by Elfin'
       }
     };
 

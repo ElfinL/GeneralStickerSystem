@@ -1537,8 +1537,9 @@ function createPanelIfNeeded() {
   panel.id = UI.panelId;
 
   // 检测是否在 iframe 中（共用聊天室模式）
+  // YouTube 不使用 iframe-mode，保持與其他平台一致的面板大小
   const isInIframe = window.self !== window.top;
-  if (isInIframe) {
+  if (isInIframe && !isYouTube()) {
     panel.classList.add('iframe-mode');
   }
 

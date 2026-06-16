@@ -68,6 +68,7 @@ const I18N = {
     tabSticker: '🎨 貼圖',
     tabSettings: '⚙️ 設定',
     tabTexo: '編織',
+    tabDisclaimer: '聲明',
     openEditor: '📚 圖庫編輯',
     helpTitle: '使用說明',
     texoTitle: '🧶 實況編織核心',
@@ -157,6 +158,19 @@ const I18N = {
   <li>劇院模式：全屏觀看體驗</li>
   <li>聊天室控制：調整聊天室顯示</li>
 </ul>`,
+    disclaimerTitle: '🛡️ 「預防性聲明」關於發布管道和宣傳',
+    disclaimerOfficialChannelsTitle: '官方主要渠道',
+    disclaimerOfficialChannelsDesc: '本插件僅且只能在以下管道下載到官方原版：',
+    disclaimerChannelGithub: 'GitHub',
+    disclaimerChannelChrome: 'Chrome Web Store',
+    disclaimerChannelFirefox: 'Firefox Add-ons',
+    disclaimerChannelEdge: 'Microsoft Edge Add-ons',
+    disclaimerEarlyChannelsTitle: '歷史早期渠道',
+    disclaimerEarlyChannelsDesc: '以及 2026 年 5 月 17 日前，在一個 Discord 頻道發放早期的安裝檔和資訊。',
+    disclaimerWarning: '本人從未授權、也絕不認可任何第三方網站、網盤、整合包、群文件的分發。',
+    disclaimerUnauthorizedWarning: '除了上述寫明的管道外，其餘任何地方分發的檔案，本人均採用絕對不信任態度。',
+    disclaimerPromotionTitle: '宣傳方式',
+    disclaimerPromotionDesc: '此外本人除了早期在 Discord 發表資訊與安裝檔之外，從未主動宣傳過插件，一律採用「緣份式散播」。對於那些認同、並主動幫忙宣傳本插件的用戶，在此致上最深切的感謝。',
   },
   'zh-CN': {
     editorTitle: (version) => `General Sticker System (GSS) V${version} 图库编辑器`,
@@ -220,9 +234,10 @@ const I18N = {
     errDupId: (id) => `重复 ID: ${id}`,
     sendSameSticker: '↵ 发送相同图片',
     errUnknown: '未知错误',
-    tabSticker: '� 贴纸',
+    tabSticker: '🎨 贴纸',
     tabSettings: '⚙️ 设置',
     tabTexo: '编织',
+    tabDisclaimer: '声明',
     openEditor: '📚 图库编辑',
     helpTitle: '使用说明',
     texoTitle: '🧶 实况编织核心',
@@ -312,6 +327,19 @@ const I18N = {
   <li>剧院模式：全屏观看体验</li>
   <li>聊天室控制：调整聊天室显示</li>
 </ul>`,
+    disclaimerTitle: '🛡️ 「预防性声明」关于发布管道和宣传',
+    disclaimerOfficialChannelsTitle: '官方主要渠道',
+    disclaimerOfficialChannelsDesc: '本插件仅且只能在以下管道下载到官方原版：',
+    disclaimerChannelGithub: 'GitHub',
+    disclaimerChannelChrome: 'Chrome Web Store',
+    disclaimerChannelFirefox: 'Firefox Add-ons',
+    disclaimerChannelEdge: 'Microsoft Edge Add-ons',
+    disclaimerEarlyChannelsTitle: '历史早期渠道',
+    disclaimerEarlyChannelsDesc: '以及 2026 年 5 月 17 日前，在一个 Discord 频道发放早期的安装档和资讯。',
+    disclaimerWarning: '本人从未授权、也绝不认可任何第三方网站、网盘、整合包、群文件的分发。',
+    disclaimerUnauthorizedWarning: '除了上述写明的管道外，其余任何地方分发的档案，本人均采用绝对不信任态度。',
+    disclaimerPromotionTitle: '宣传方式',
+    disclaimerPromotionDesc: '此外本人除了早期在 Discord 发表资讯与安装档之外，从未主动宣传过插件，一律采用「缘分式散播」。对于那些认同、并主动帮忙宣传本插件的用户，在此致上最深切的感谢。',
   },
   en: {
     editorTitle: (version) => `General Sticker System (GSS) V${version} Sticker Editor`,
@@ -375,9 +403,10 @@ const I18N = {
     errDupId: (id) => `Duplicate ID: ${id}`,
     sendSameSticker: '↵ Send Same Image',
     errUnknown: 'Unknown error',
-    tabSticker: '� Stickers',
+    tabSticker: '🎨 Stickers',
     tabSettings: '⚙️ Settings',
     tabTexo: 'Weave',
+    tabDisclaimer: 'Disclaimer',
     openEditor: '📚 Editor',
     helpTitle: 'Help',
     texoTitle: '🧶 Texo Stream Core',
@@ -470,6 +499,19 @@ const I18N = {
   <li>Theater Mode: Fullscreen viewing</li>
   <li>Chat Control: Adjust chat display</li>
 </ul>`,
+    disclaimerTitle: '🛡️ "Proactive Notice" Regarding Distribution Channels and Publicity',
+    disclaimerOfficialChannelsTitle: 'Official Main Channels',
+    disclaimerOfficialChannelsDesc: 'This plugin can only be downloaded from the following official channels:',
+    disclaimerChannelGithub: 'GitHub',
+    disclaimerChannelChrome: 'Chrome Web Store',
+    disclaimerChannelFirefox: 'Firefox Add-ons',
+    disclaimerChannelEdge: 'Microsoft Edge Add-ons',
+    disclaimerEarlyChannelsTitle: 'Historical Early Channels',
+    disclaimerEarlyChannelsDesc: 'And before May 17, 2026, early installation files and information were distributed in a Discord channel.',
+    disclaimerWarning: 'I have never authorized, nor will I ever recognize, any distribution by third-party websites, cloud storage, integration packages, or group files.',
+    disclaimerUnauthorizedWarning: 'Except for the channels explicitly mentioned above, I adopt an absolutely distrustful attitude toward any files distributed elsewhere.',
+    disclaimerPromotionTitle: 'Promotion Method',
+    disclaimerPromotionDesc: 'Furthermore, except for the early release of information and installation files on Discord, I have never actively promoted this extension; distribution relies entirely on "serendipity and fate." To those who recognize the value of my work and have proactively helped share it, you have my deepest and most sincere gratitude.',
   },
   ja: {
     editorTitle: (version) => `General Sticker System (GSS) V${version} ステッカーエディタ`,
@@ -536,6 +578,7 @@ const I18N = {
     tabSticker: '🎨 ステッカー',
     tabSettings: '⚙️ 設定',
     tabTexo: '編織',
+    tabDisclaimer: '声明',
     openEditor: '📚 エディタ',
     helpTitle: '使い方',
     texoTitle: '🧶 Texo Stream Core',
@@ -625,6 +668,19 @@ const I18N = {
   <li>シアターモード：全画面表示</li>
   <li>チャット制御：チャット表示調整</li>
 </ul>`,
+    disclaimerTitle: '🛡️ 「事前予防声明」公式配布ルートおよび宣伝について',
+    disclaimerOfficialChannelsTitle: '公式主要チャンネル',
+    disclaimerOfficialChannelsDesc: 'このプラグインは以下の公式チャンネルからのみ公式版をダウンロードできます：',
+    disclaimerChannelGithub: 'GitHub',
+    disclaimerChannelChrome: 'Chrome Web Store',
+    disclaimerChannelFirefox: 'Firefox アドオン',
+    disclaimerChannelEdge: 'Microsoft Edge アドオン',
+    disclaimerEarlyChannelsTitle: '歴史的初期チャンネル',
+    disclaimerEarlyChannelsDesc: 'および2026年5月17日以前、Discordチャンネルで初期のインストールファイルと情報を配布しました。',
+    disclaimerWarning: '私は第三者のウェブサイト、クラウドストレージ、統合パッケージ、グループファイルによる配布を認可したことはなく、絶対に認めません。',
+    disclaimerUnauthorizedWarning: '上記に明記したチャンネルを除き、その他の場所で配布されるファイルについては、絶対に信頼しない態度をとります。',
+    disclaimerPromotionTitle: '宣伝方法',
+    disclaimerPromotionDesc: 'また、初期にDiscordで情報やインストーラーを公開したのを除き、私はこれまで本プラグインの宣伝活動を一切行っておりません。配布はすべて「縁（えにし）に任せるスタイル」で行っています。本プラグインの価値を認め、自主的に宣伝してくださっているユーザーの皆様には、心より深く感謝申し上げます。',
   },
   ko: {
     editorTitle: (version) => `General Sticker System (GSS) V${version} 스티커 편집기`,
@@ -691,6 +747,7 @@ const I18N = {
     tabSticker: '🎨 스티커',
     tabSettings: '⚙️ 설정',
     tabTexo: '편직',
+    tabDisclaimer: '성명',
     openEditor: '📚 편집기',
     helpTitle: '사용 방법',
     texoTitle: '🧶 Texo Stream Core',
@@ -780,6 +837,19 @@ const I18N = {
   <li>극장 모드: 전체 화면 보기</li>
   <li>채팅 제어: 채팅 표시 조정</li>
 </ul>`,
+    disclaimerTitle: '🛡️ "사전 예방 성명" 공식 배포 경로 및 홍보에 관한 안내',
+    disclaimerOfficialChannelsTitle: '공식 주요 채널',
+    disclaimerOfficialChannelsDesc: '이 플러그인은 다음 공식 채널에서만 공식 버전을 다운로드할 수 있습니다:',
+    disclaimerChannelGithub: 'GitHub',
+    disclaimerChannelChrome: 'Chrome Web Store',
+    disclaimerChannelFirefox: 'Firefox 부가 기능',
+    disclaimerChannelEdge: 'Microsoft Edge 부가 기능',
+    disclaimerEarlyChannelsTitle: '역사적 초기 채널',
+    disclaimerEarlyChannelsDesc: '그리고 2026년 5월 17일 이전, Discord 채널에서 초기 설치 파일과 정보를 배포했습니다.',
+    disclaimerWarning: '저는 제3자 웹사이트, 클라우드 스토리지, 통합 패키지, 그룹 파일의 배포를 승인한 적이 없으며, 절대 인정하지 않습니다.',
+    disclaimerUnauthorizedWarning: '위에 명시된 채널을 제외하고, 다른 곳에서 배포되는 파일에 대해서는 절대 신뢰하지 않는 태도를 취합니다.',
+    disclaimerPromotionTitle: '홍보 방식',
+    disclaimerPromotionDesc: '아울러, 초기 Discord에 정보와 설치 파일을 게시했던 것을 제외하고는 본인은 단 한 번도 플러그인을 주도적으로 홍보한 적이 없으며, 오직 "인연에 따른 전파" 방식을 따르고 있습니다. 본인의 결과물을 인정하고 자발적으로 홍보해 주신 유저분들께 이 자리를 빌려 진심으로 깊은 감사의 말씀을 전합니다.',
   }
 };
 
@@ -1113,6 +1183,17 @@ function applyLanguage(lang) {
 
   const openEditorBtn = document.getElementById('openEditorBtn');
   if (openEditorBtn) openEditorBtn.textContent = t('openEditor');
+
+  // 處理所有帶有 data-i18n 屬性的元素
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (key) {
+      const translatedText = t(key);
+      if (translatedText) {
+        el.textContent = translatedText;
+      }
+    }
+  });
 
   chrome.storage.sync.set({ uiLang: currentLang });
 }

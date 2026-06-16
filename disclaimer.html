@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GSS Disclaimer</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(180deg, #0b0f14 0%, #14161c 100%);
+      color: rgba(255, 255, 255, 0.9);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      padding: 30px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.9);
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .header .subtitle {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .lang-switch {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 30px;
+    }
+
+    .lang-btn {
+      padding: 8px 20px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(10, 12, 16, 0.8);
+      color: rgba(255, 255, 255, 0.7);
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .lang-btn:hover {
+      background: rgba(120, 190, 255, 0.14);
+      border-color: rgba(120, 190, 255, 0.45);
+    }
+
+    .lang-btn.active {
+      background: rgba(120, 190, 255, 0.35);
+      border-color: rgba(120, 190, 255, 0.7);
+      color: rgba(255, 255, 255, 0.95);
+    }
+
+    .disclaimer-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .disclaimer-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.95);
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .disclaimer-content {
+      font-size: 14px;
+      line-height: 1.8;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .disclaimer-content p {
+      margin-bottom: 12px;
+    }
+
+    .disclaimer-content strong {
+      color: rgba(255, 255, 255, 0.95);
+      font-weight: 600;
+    }
+
+    .disclaimer-content ul {
+      margin-left: 20px;
+      margin-bottom: 12px;
+    }
+
+    .disclaimer-content li {
+      margin-bottom: 8px;
+    }
+
+    .disclaimer-content a {
+      color: #4a90e2;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .disclaimer-content a:hover {
+      color: #6ab0ff;
+      text-decoration: underline;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 30px 0;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .footer a {
+      color: #4a90e2;
+      text-decoration: none;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🛡️ GSS Disclaimer</h1>
+      <div class="subtitle">General Sticker System</div>
+    </div>
+
+    <div class="lang-switch">
+      <button class="lang-btn active" data-lang="zh-TW">繁中</button>
+      <button class="lang-btn" data-lang="zh-CN">简中</button>
+      <button class="lang-btn" data-lang="en">English</button>
+      <button class="lang-btn" data-lang="ja">日本語</button>
+      <button class="lang-btn" data-lang="ko">한국어</button>
+    </div>
+
+    <div id="disclaimer-container"></div>
+
+    <div class="footer">
+      Made by <a href="https://github.com/ElfinL" target="_blank" rel="noopener">Elfin</a>
+    </div>
+  </div>
+
+  <script>
+    // 聲明數據 - 所有語言的聲明內容
+    const DISCLAIMER_DATA = {
+      'zh-TW': {
+        title: '🛡️ 「預防性聲明」關於發布管道和宣傳',
+        content: [
+          '<p><strong>官方主要渠道：</strong></p>',
+          '<p>本插件僅且只能在以下管道下載到官方原版：</p>',
+          '<ul>',
+          '<li><a href="https://github.com/ElfinL" target="_blank" rel="noopener">GitHub</a></li>',
+          '<li><a href="https://chromewebstore.google.com/detail/general-sticker-system-gs/agngppbecmofipmmmjgafkojgggcembi" target="_blank" rel="noopener">Chrome Web Store</a></li>',
+          '<li><a href="https://addons.mozilla.org/zh-CN/firefox/addon/general-sticker-system-gss/" target="_blank" rel="noopener">Firefox Add-ons</a></li>',
+          '<li><a href="https://microsoftedge.microsoft.com/addons/detail/general-sticker-system-g/cooepcjakomllpddoiofpcfednangjgb" target="_blank" rel="noopener">Microsoft Edge Add-ons</a></li>',
+          '</ul>',
+          '<p><strong>歷史早期渠道：</strong></p>',
+          '<p>以及 2026 年 5 月 17 日前，在一個 Discord 頻道發放早期的安裝檔和資訊。</p>',
+          '<p>本人從未授權、也絕不認可任何第三方網站、網盤、整合包、群文件的分發。</p>',
+          '<p>除了上述寫明的管道外，其餘任何地方分發的檔案，本人均採用絕對不信任態度。</p>',
+          '<p><strong>宣傳方式：</strong></p>',
+          '<p>此外本人除了早期在 Discord 發表資訊與安裝檔之外，從未主動宣傳過插件，一律採用「緣份式散播」。對於那些認同、並主動幫忙宣傳本插件的用戶，在此致上最深切的感謝。</p>'
+        ]
+      },
+      'zh-CN': {
+        title: '🛡️ 「预防性声明」关于发布管道和宣传',
+        content: [
+          '<p><strong>官方主要渠道：</strong></p>',
+          '<p>本插件仅且只能在以下管道下载到官方原版：</p>',
+          '<ul>',
+          '<li><a href="https://github.com/ElfinL" target="_blank" rel="noopener">GitHub</a></li>',
+          '<li><a href="https://chromewebstore.google.com/detail/general-sticker-system-gs/agngppbecmofipmmmjgafkojgggcembi" target="_blank" rel="noopener">Chrome Web Store</a></li>',
+          '<li><a href="https://addons.mozilla.org/zh-CN/firefox/addon/general-sticker-system-gss/" target="_blank" rel="noopener">Firefox Add-ons</a></li>',
+          '<li><a href="https://microsoftedge.microsoft.com/addons/detail/general-sticker-system-g/cooepcjakomllpddoiofpcfednangjgb" target="_blank" rel="noopener">Microsoft Edge Add-ons</a></li>',
+          '</ul>',
+          '<p><strong>历史早期渠道：</strong></p>',
+          '<p>以及 2026 年 5 月 17 日前，在一个 Discord 频道发放早期的安装档和资讯。</p>',
+          '<p>本人从未授权、也绝不认可任何第三方网站、网盘、整合包、群文件的分发。</p>',
+          '<p>除了上述写明的管道外，其余任何地方分发的档案，本人均采用绝对不信任态度。</p>',
+          '<p><strong>宣传方式：</strong></p>',
+          '<p>此外本人除了早期在 Discord 发表资讯与安装档之外，从未主动宣传过插件，一律采用「缘分式散播」。对于那些认同、并主动帮忙宣传本插件的用户，在此致上最深切的感谢。</p>'
+        ]
+      },
+      'en': {
+        title: '🛡️ "Proactive Notice" Regarding Distribution Channels and Publicity',
+        content: [
+          '<p><strong>Official Main Channels:</strong></p>',
+          '<p>This plugin can only be downloaded from the following official channels:</p>',
+          '<ul>',
+          '<li><a href="https://github.com/ElfinL" target="_blank" rel="noopener">GitHub</a></li>',
+          '<li><a href="https://chromewebstore.google.com/detail/general-sticker-system-gs/agngppbecmofipmmmjgafkojgggcembi" target="_blank" rel="noopener">Chrome Web Store</a></li>',
+          '<li><a href="https://addons.mozilla.org/zh-CN/firefox/addon/general-sticker-system-gss/" target="_blank" rel="noopener">Firefox Add-ons</a></li>',
+          '<li><a href="https://microsoftedge.microsoft.com/addons/detail/general-sticker-system-g/cooepcjakomllpddoiofpcfednangjgb" target="_blank" rel="noopener">Microsoft Edge Add-ons</a></li>',
+          '</ul>',
+          '<p><strong>Historical Early Channels:</strong></p>',
+          '<p>And before May 17, 2026, early installation files and information were distributed in a Discord channel.</p>',
+          '<p>I have NEVER authorized, nor will I ever recognize or validate, any distribution via third-party websites, cloud drives, mod packs, or group chat files.</p>',
+          '<p>Except for the channels explicitly mentioned above, I adopt an absolutely distrustful attitude toward any files distributed elsewhere.</p>',
+          '<p><strong>Promotion Method:</strong></p>',
+          '<p>Furthermore, except for the early release of information and installation files on Discord, I have never actively promoted this extension; distribution relies entirely on "serendipity and fate." To those who recognize the value of my work and have proactively helped share it, you have my deepest and most sincere gratitude.</p>'
+        ]
+      },
+      'ja': {
+        title: '🛡️ 「事前予防声明」公式配布ルートおよび宣伝について',
+        content: [
+          '<p><strong>公式主要チャンネル：</strong></p>',
+          '<p>このプラグインは以下の公式チャンネルからのみ公式版をダウンロードできます：</p>',
+          '<ul>',
+          '<li><a href="https://github.com/ElfinL" target="_blank" rel="noopener">GitHub</a></li>',
+          '<li><a href="https://chromewebstore.google.com/detail/general-sticker-system-gs/agngppbecmofipmmmjgafkojgggcembi" target="_blank" rel="noopener">Chrome Web Store</a></li>',
+          '<li><a href="https://addons.mozilla.org/zh-CN/firefox/addon/general-sticker-system-gss/" target="_blank" rel="noopener">Firefox アドオン</a></li>',
+          '<li><a href="https://microsoftedge.microsoft.com/addons/detail/general-sticker-system-g/cooepcjakomllpddoiofpcfednangjgb" target="_blank" rel="noopener">Microsoft Edge アドオン</a></li>',
+          '</ul>',
+          '<p><strong>歴史的初期チャンネル：</strong></p>',
+          '<p>および2026年5月17日以前、Discordチャンネルで初期のインストールファイルと情報を配布しました。</p>',
+          '<p>私は、第三者ウェブサイト、オンラインストレージ、統合パック、グループチャット等での配布を一切許可しておらず、断じて認めません。</p>',
+          '<p>上記に明記したチャンネルを除き、その他の場所で配布されるファイルについては、絶対に信頼しない態度をとります。</p>',
+          '<p><strong>宣伝方法：</strong></p>',
+          '<p>また、初期にDiscordで情報やインストーラーを公開したのを除き、私はこれまで本プラグインの宣伝活動を一切行っておりません。配布はすべて「縁（えにし）に任せるスタイル」で行っています。本プラグインの価値を認め、自主的に宣伝してくださっているユーザーの皆様には、心より深く感謝申し上げます。</p>'
+        ]
+      },
+      'ko': {
+        title: '🛡️ "사전 예방 성명" 공식 배포 경로 및 홍보에 관한 안내',
+        content: [
+          '<p><strong>공식 주요 채널：</strong></p>',
+          '<p>이 플러그인은 다음 공식 채널에서만 공식 버전을 다운로드할 수 있습니다：</p>',
+          '<ul>',
+          '<li><a href="https://github.com/ElfinL" target="_blank" rel="noopener">GitHub</a></li>',
+          '<li><a href="https://chromewebstore.google.com/detail/general-sticker-system-gs/agngppbecmofipmmmjgafkojgggcembi" target="_blank" rel="noopener">Chrome Web Store</a></li>',
+          '<li><a href="https://addons.mozilla.org/zh-CN/firefox/addon/general-sticker-system-gss/" target="_blank" rel="noopener">Firefox 부가 기능</a></li>',
+          '<li><a href="https://microsoftedge.microsoft.com/addons/detail/general-sticker-system-g/cooepcjakomllpddoiofpcfednangjgb" target="_blank" rel="noopener">Microsoft Edge 부가 기능</a></li>',
+          '</ul>',
+          '<p><strong>역사적 초기 채널：</strong></p>',
+          '<p>그리고 2026년 5월 17일 이전, Discord 채널에서 초기 설치 파일과 정보를 배포했습니다.</p>',
+          '<p>본인은 제3자 웹사이트, 클라우드 디스크, 통합 팩, 단톡방/그룹 채팅 등을 통한 배포를 일절 허가한 적이 없으며, 결코 용인하지 않을 것입니다.</p>',
+          '<p>위에 명시된 채널을 제외하고, 다른 곳에서 배포되는 파일에 대해서는 절대 신뢰하지 않는 태도를 취합니다.</p>',
+          '<p><strong>홍보 방식：</strong></p>',
+          '<p>아울러, 초기 Discord에 정보와 설치 파일을 게시했던 것을 제외하고는 본인은 단 한 번도 플러그인을 주도적으로 홍보한 적이 없으며, 오직 "인연에 따른 전파" 방식을 따르고 있습니다. 본인의 결과물을 인정하고 자발적으로 홍보해 주신 유저분들께 이 자리를 빌려 진심으로 깊은 감사의 말씀을 전합니다.</p>'
+        ]
+      }
+    };
+
+    let currentLang = 'zh-TW';
+
+    function renderDisclaimer() {
+      const container = document.getElementById('disclaimer-container');
+      const data = DISCLAIMER_DATA[currentLang] || DISCLAIMER_DATA['zh-TW'];
+      
+      container.innerHTML = `
+        <div class="disclaimer-card">
+          <div class="disclaimer-title">${data.title}</div>
+          <div class="disclaimer-content">
+            ${data.content.join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function switchLanguage(lang) {
+      currentLang = lang;
+      
+      // 更新按鈕狀態
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        if (btn.dataset.lang === lang) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+      
+      renderDisclaimer();
+    }
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded', () => {
+      // 綁定語言切換按鈕
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          switchLanguage(btn.dataset.lang);
+        });
+      });
+      
+      // 渲染初始內容
+      renderDisclaimer();
+    });
+  </script>
+</body>
+
+</html>
