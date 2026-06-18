@@ -52,7 +52,7 @@
     "description": "Sticker size adjustment description"
   },
   "stickerSizeRange": {
-    "message": "範囲：5% - 200% • 毎回 ±5%",
+    "message": "範囲：5% - 300% • 毎回 ±5%",
     "description": "Sticker size range info"
   },
   "stickerSizeAdjusted": {
@@ -70,6 +70,14 @@
   "stickerSizeModeSmall": {
     "message": "小",
     "description": "Small sticker mode"
+  },
+  "stickerSizeModeCustom": {
+    "message": "カスタム",
+    "description": "Custom sticker mode"
+  },
+  "stickerSizePercentLabel": {
+    "message": "ズーム倍率",
+    "description": "Sticker size percent label"
   },
   "autoSend": {
     "message": "自動送信",

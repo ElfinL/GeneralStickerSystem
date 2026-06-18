@@ -1099,6 +1099,19 @@
             <button type="button" class="sticker-size-btn" data-size="large" id="stickerSizeLargeBtn" style="flex: 1; padding: 6px 8px; font-size: 11px; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); cursor: pointer; transition: all 0.2s;">大</button>
             <button type="button" class="sticker-size-btn" data-size="medium" id="stickerSizeMediumBtn" style="flex: 1; padding: 6px 8px; font-size: 11px; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); cursor: pointer; transition: all 0.2s;">中</button>
             <button type="button" class="sticker-size-btn" data-size="small" id="stickerSizeSmallBtn" style="flex: 1; padding: 6px 8px; font-size: 11px; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); cursor: pointer; transition: all 0.2s;">小</button>
+            <button type="button" class="sticker-size-btn" data-size="custom" id="stickerSizeCustomBtn" style="flex: 1; padding: 6px 8px; font-size: 11px; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); cursor: pointer; transition: all 0.2s;">自定義</button>
+          </div>
+          
+          <!-- 自定義大小設定區域 -->
+          <div id="customSizeArea" style="margin-top: 10px; display: none; flex-direction: column; gap: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05);">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span style="font-size: 11px; color: rgba(255,255,255,0.7);" id="stickerSizePercentLabel">縮放百分比</span>
+              <div style="display: flex; align-items: center; gap: 5px;">
+                <input type="number" id="customStickerSizeInput" min="5" max="300" step="5" value="100" 
+                  style="width: 60px; height: 24px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; color: white; text-align: center; font-size: 11px;">
+                <span style="font-size: 11px; color: rgba(255,255,255,0.5);">%</span>
+              </div>
+            </div>
           </div>
         </div>
 

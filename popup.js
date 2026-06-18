@@ -840,12 +840,13 @@ function updateDisableNativeContextMenuButtonState(btn, isDisabled) {
 
 function initStickerSizeControl() {
   const buttons = document.querySelectorAll('.sticker-size-btn');
+  const customSizeArea = document.getElementById('customSizeArea');
+  const customInput = document.getElementById('customStickerSizeInput');
   
   if (buttons.length === 0) return;
   
   // 載入當前設定（預設為大圖模式）
-  chrome.storage.local.get(['stickerSizeMode'], (result) => {
-    // 如果 stickerSizeMode 不存在或為舊的 boolean 值，轉換為新的 string 值
+  chrome.storage.local.get(['stickerSizeMode', 'stickerSizePercent'], (result) => {
     let currentMode = result.stickerSizeMode;
     if (currentMode === undefined || currentMode === false) {
       currentMode = 'large'; // 預設大圖模式
@@ -853,32 +854,63 @@ function initStickerSizeControl() {
       currentMode = 'small'; // 舊的 true 轉為小圖模式
     }
     
+    // 初始化自定義數值
+    if (customInput) {
+      customInput.value = result.stickerSizePercent || 100;
+    }
+    
     updateStickerSizeButtons(currentMode);
     
-    // 如果 stickerSizeMode 不存在，設置默認值
+    // 顯示/隱藏自定義區域
+    if (customSizeArea) {
+      customSizeArea.style.display = (currentMode === 'custom') ? 'flex' : 'none';
+    }
+    
     if (result.stickerSizeMode === undefined) {
       chrome.storage.local.set({ stickerSizeMode: 'large' });
     }
     
-    // 初始化時立即應用設定到所有頁面
-    chrome.tabs.query({}, (tabs) => {
-      tabs.forEach(tab => {
-        chrome.tabs.sendMessage(tab.id, {
-          type: 'GSS_CONTROL',
-          command: 'updateStickerSizeMode',
-          data: { mode: currentMode }
-        }).catch(() => {
-          // 忽略無法連接的頁面錯誤
-        });
-      });
-    });
+    // 通知所有頁面更新設定
+    notifySizeChange(currentMode, customInput?.value);
   });
   
   // 按鈕點擊事件
   buttons.forEach(button => {
     button.addEventListener('click', () => {
       const mode = button.getAttribute('data-size');
+      if (customSizeArea) {
+        customSizeArea.style.display = (mode === 'custom') ? 'flex' : 'none';
+      }
       saveStickerSizeMode(mode);
+    });
+  });
+
+  // 自定義數值變更事件
+  if (customInput) {
+    customInput.addEventListener('change', () => {
+      let val = parseInt(customInput.value);
+      if (isNaN(val) || val < 5) val = 5;
+      if (val > 300) val = 300;
+      customInput.value = val;
+      chrome.storage.local.set({ stickerSizePercent: val, stickerSizeMode: 'custom' }, () => {
+        updateStickerSizeButtons('custom');
+        notifySizeChange('custom', val);
+      });
+    });
+  }
+}
+
+function notifySizeChange(mode, percent) {
+  chrome.tabs.query({}, (tabs) => {
+    tabs.forEach(tab => {
+      chrome.tabs.sendMessage(tab.id, {
+        type: 'GSS_CONTROL',
+        command: 'updateStickerSizeMode',
+        data: { 
+          mode: mode,
+          percent: percent
+        }
+      }).catch(() => {});
     });
   });
 }
@@ -902,23 +934,14 @@ function saveStickerSizeMode(mode) {
     const modeNames = {
       'large': t('stickerSizeModeLarge') || '大',
       'medium': t('stickerSizeModeMedium') || '中',
-      'small': t('stickerSizeModeSmall') || '小'
+      'small': t('stickerSizeModeSmall') || '小',
+      'custom': t('stickerSizeModeCustom') || '自定義'
     };
     const message = `已切換為${modeNames[mode]}`;
     showSettingsStatus(message, '#4CAF50');
     
-    // 通知所有頁面更新設定
-    chrome.tabs.query({}, (tabs) => {
-      tabs.forEach(tab => {
-        chrome.tabs.sendMessage(tab.id, {
-          type: 'GSS_CONTROL',
-          command: 'updateStickerSizeMode',
-          data: { mode: mode }
-        }).catch(() => {
-          // 忽略無法連接的頁面錯誤
-        });
-      });
-    });
+    const customInput = document.getElementById('customStickerSizeInput');
+    notifySizeChange(mode, customInput?.value);
   });
 }
 
@@ -1190,6 +1213,7 @@ function initStickerSizeButtons() {
   const largeBtn = document.getElementById('stickerSizeLargeBtn');
   const mediumBtn = document.getElementById('stickerSizeMediumBtn');
   const smallBtn = document.getElementById('stickerSizeSmallBtn');
+  const customBtn = document.getElementById('stickerSizeCustomBtn');
 
   if (largeBtn && typeof t === 'function') {
     largeBtn.textContent = t('stickerSizeModeLarge') || '大';
@@ -1199,6 +1223,14 @@ function initStickerSizeButtons() {
   }
   if (smallBtn && typeof t === 'function') {
     smallBtn.textContent = t('stickerSizeModeSmall') || '小';
+  }
+  if (customBtn && typeof t === 'function') {
+    customBtn.textContent = t('stickerSizeModeCustom') || '自定義';
+  }
+  
+  const percentLabel = document.getElementById('stickerSizePercentLabel');
+  if (percentLabel && typeof t === 'function') {
+    percentLabel.textContent = t('stickerSizePercentLabel') || '縮放百分比';
   }
 }
 

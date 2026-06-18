@@ -93,6 +93,13 @@ function findChatContainer(requireScrollable = false) {
 function scrollToBottom(wrapper, platform = null) {
   const currentPlatform = platform || getCurrentPlatform();
   
+  // 如果是小圖模式，跳過自動捲動
+  const isInline = (window.gssStickerSizeMode === 'small');
+  if (isInline) {
+    console.log('[GSS] Skip scroll: inline mode');
+    return;
+  }
+  
   // WTV 使用獨立邏輯，不走這裡
   if (currentPlatform === 'wtv') {
     console.warn('[GSS] WTV should use its own scroll logic');
@@ -4039,10 +4046,7 @@ function setupUiAutoMount() {
   // 載入 TSC 系統設置
   loadTscSettings();
   
-  // 載入貼圖大小設定
-  loadStickerSizeSetting();
-  
-  // 載入貼圖大小模式設定（大圖/小圖）
+  // 載入貼圖大小模式設定（包含模式、百分比、行內模式）
   loadStickerSizeModeSetting();
   
   // 【新增】全局監聽新貼圖創建，自動應用大小設定
@@ -4074,9 +4078,9 @@ function setupUiAutoMount() {
         if (hasNewStickers) break;
       }
       
-      // 如果有新貼圖，應用大小設定
-      if (hasNewStickers && window.gssStickerSizePercent && window.gssStickerSizePercent !== 100) {
-        applyStickerSizeToAllImages(window.gssStickerSizePercent);
+      // 如果有新貼圖，應用大小模式設定（包含大/中/小/自定義）
+      if (hasNewStickers) {
+        applyStickerSizeMode(window.gssStickerSizeMode);
       }
     }, 300); // 300ms 節流
   });
@@ -5450,9 +5454,9 @@ function handleGssControlCommand(command, sendResponse) {
         break;
       }
 
-      // 貼圖大小模式更新（大圖/中圖/小圖）
+      // 貼圖大小模式更新（大圖/中圖/小圖/自定義）
       case 'updateStickerSizeMode': {
-        // 支持新的 mode 參數（large/medium/small），同時向後兼容舊的 isSmallMode 參數
+        // 支持新的 mode 參數（large/medium/small/custom），同時向後兼容舊的 isSmallMode 參數
         let mode = request.data?.mode;
         if (!mode) {
           // 向後兼容舊的 isSmallMode 參數
@@ -5460,12 +5464,19 @@ function handleGssControlCommand(command, sendResponse) {
           mode = isSmallMode ? 'small' : 'large';
         }
         window.gssStickerSizeMode = mode;
+        
+        // 獲取自定義參數
+        if (mode === 'custom') {
+          if (request.data?.percent !== undefined) window.gssStickerSizePercent = request.data.percent;
+        }
+        
         applyStickerSizeMode(mode);
         
         const modeNames = {
           'large': '大圖模式',
           'medium': '中圖模式',
-          'small': '小圖模式'
+          'small': '小圖模式',
+          'custom': '自定義模式'
         };
         sendResponse({ success: true, message: `✅ 已切換為${modeNames[mode]}`, mode: mode });
         break;
@@ -5503,8 +5514,8 @@ function loadStickerSizeSetting() {
       const size = result.stickerSizePercent || 100;
       window.gssStickerSizePercent = size;
       console.log('[GSS] Sticker size percent loaded:', size);
-      // 應用到現有貼圖
-      applyStickerSizeToAllImages(size);
+      // 注意：此處不再直接呼叫 applyStickerSizeToAllImages，
+      // 而是等待接下來的 loadStickerSizeModeSetting 統一應用
     });
   } catch (e) {
     window.gssStickerSizePercent = 100;
@@ -5516,8 +5527,8 @@ function loadStickerSizeSetting() {
  */
 function loadStickerSizeModeSetting() {
   try {
-    chrome.storage.local.get(['stickerSizeMode'], (result) => {
-      // 支持新的 string 值（large/medium/small），同時向後兼容舊的 boolean 值
+    chrome.storage.local.get(['stickerSizeMode', 'stickerSizePercent'], (result) => {
+      // 支持新的 string 值（large/medium/small/custom），同時向後兼容舊的 boolean 值
       let mode = result.stickerSizeMode;
       if (mode === undefined || mode === false) {
         mode = 'large'; // 預設大圖模式
@@ -5525,7 +5536,9 @@ function loadStickerSizeModeSetting() {
         mode = 'small'; // 舊的 true 轉為小圖模式
       }
       window.gssStickerSizeMode = mode;
-      console.log('[GSS] Sticker size mode loaded:', mode);
+      window.gssStickerSizePercent = result.stickerSizePercent || 100;
+      
+      console.log('[GSS] Sticker size mode loaded:', mode, window.gssStickerSizePercent + '%');
       // 應用貼圖大小模式
       applyStickerSizeMode(mode);
     });
@@ -5544,20 +5557,31 @@ function applyStickerSizeMode(mode) {
     'medium': '60px',
     'small': '32px'
   };
-  const maxSize = sizeMap[mode] || '100px';
+  
+  let maxSize = sizeMap[mode];
+  let isInline = (mode === 'small');
+  
+  if (mode === 'custom') {
+    const percent = window.gssStickerSizePercent || 100;
+    maxSize = (100 * (percent / 100)) + 'px';
+    // 自定義模式統一使用 block 顯示（換行 + 自動捲動）
+    isInline = false;
+  }
+  
+  if (!maxSize) maxSize = '100px';
   
   // 使用 CSS 變量控制大小和顯示方式
   document.documentElement.style.setProperty('--gss-sticker-max-width', maxSize);
   document.documentElement.style.setProperty('--gss-sticker-max-height', maxSize);
   
-  if (mode === 'small') {
-    // 小圖模式：inline-block（不換行）
+  if (isInline) {
+    // 只有小圖模式：inline-block（不換行）
     document.documentElement.style.setProperty('--gss-sticker-display', 'inline-block');
     document.documentElement.style.setProperty('--gss-sticker-margin', '0 2px');
     document.documentElement.style.setProperty('--gss-sticker-clear', 'none');
     document.documentElement.style.setProperty('--gss-sticker-img-display', 'inline-block');
   } else {
-    // 大圖和中圖模式：block（換行）
+    // 大、中、自定義模式：block（換行）
     document.documentElement.style.setProperty('--gss-sticker-display', 'block');
     document.documentElement.style.setProperty('--gss-sticker-margin', '4px 0');
     document.documentElement.style.setProperty('--gss-sticker-clear', 'both');
@@ -5585,8 +5609,8 @@ function applyStickerSizeMode(mode) {
       el.style.setProperty('max-width', maxSize, 'important');
       el.style.setProperty('max-height', maxSize, 'important');
       
-      if (mode === 'small') {
-        // 小圖模式：改為 inline-block（不換行）
+      if (isInline) {
+        // 小圖或自定義小圖模式：改為 inline-block（不換行）
         el.style.setProperty('display', 'inline-block', 'important');
         el.style.setProperty('margin', '0 2px', 'important');
         el.style.setProperty('clear', 'none', 'important');
@@ -5599,12 +5623,21 @@ function applyStickerSizeMode(mode) {
     });
   });
   
+  // 處理 YouTube Shorts 容器（它們不使用 CSS 變量，需要單獨處理）
+  const shortsContainers = document.querySelectorAll('.dlsq-yt-shorts, .gss-yt-shorts');
+  const scale = (parseFloat(maxSize) / 100);
+  shortsContainers.forEach((container) => {
+    if (typeof applySizeToShortsContainer === 'function') {
+      applySizeToShortsContainer(container, scale);
+    }
+  });
+  
   // 小圖模式：禁用聊天面板的滾輪分頁功能
   const pagination = document.querySelector('#' + UI.panelId + ' .pagination');
   const grid = document.querySelector('#' + UI.panelId + ' .grid');
   
   if (pagination && grid) {
-    if (mode === 'small') {
+    if (isInline) {
       // 移除滾輪事件監聽器
       pagination.removeEventListener('wheel', pagination._wheelHandler);
       grid.removeEventListener('wheel', grid._wheelHandler);
@@ -5635,37 +5668,17 @@ function applyStickerSizeMode(mode) {
     }
   }
   
-  console.log('[GSS] Applied sticker size mode:', mode, `(${maxSize})`);
+  console.log('[GSS] Applied sticker size mode:', mode, `(${maxSize})`, isInline ? '(inline)' : '(block)');
 }
 
 /**
  * 將貼圖大小設定應用到所有現有貼圖
- * @param {number} percent - 百分比（5-200）
+ * @param {number} percent - 百分比
  */
 function applyStickerSizeToAllImages(percent) {
-  const scale = percent / 100;
-  const baseSize = 100; // 基礎尺寸 100px
-  const newSize = baseSize * scale;
-  
-  // 【核心修改】直接設置 CSS 變量，這樣所有使用該變量的元素都會自動更新
-  document.documentElement.style.setProperty('--gss-sticker-max-width', `${newSize}px`);
-  document.documentElement.style.setProperty('--gss-sticker-max-height', `${newSize}px`);
-  
-  // 【額外保險】檢查是否有 CB- 貼圖，並手動應用樣式
-  const cbImages = document.querySelectorAll('img.dlsq-chat-img');
-  cbImages.forEach((img) => {
-    if (img.alt && img.alt.startsWith('CB-')) {
-      // 強制應用 CSS 變量
-      img.style.setProperty('max-width', `${newSize}px`, 'important');
-      img.style.setProperty('max-height', `${newSize}px`, 'important');
-    }
-  });
-  
-  // 處理 YouTube Shorts 容器（它們不使用 CSS 變量，需要單獨處理）
-  const shortsContainers = document.querySelectorAll('.dlsq-yt-shorts, .gss-yt-shorts');
-  shortsContainers.forEach((container) => {
-    applySizeToShortsContainer(container, scale);
-  });
+  window.gssStickerSizePercent = percent;
+  // 統一使用 applyStickerSizeMode 來處理所有情況
+  applyStickerSizeMode(window.gssStickerSizeMode);
 }
 
 /**
@@ -8895,6 +8908,10 @@ function processTwitchIMTextNode(textNode, messageEl) {
 
 // Twitch 專用：卷軸滾動到底部
 function scrollTwitchChatToBottom() {
+  // 如果是小圖模式，跳過自動捲動
+  const isInline = (window.gssStickerSizeMode === 'small');
+  if (isInline) return;
+
   // Twitch 聊天容器選擇器（卷軸滾動用）
   const selectors = [
     '.scrollable-area', // 【修正】Twitch 真正可滾動的容器
