@@ -536,7 +536,7 @@ function isSafeImageUrl(url) {
       return false;
     }
 
-    // 檢查是否包含可疑字符
+    // 檢查是否包含可疑字符（包含對 URL 編碼後的代碼進行解碼檢查）
     const suspiciousPatterns = [
       /javascript:/i,
       /data:/i,
@@ -548,6 +548,17 @@ function isSafeImageUrl(url) {
 
     if (suspiciousPatterns.some(pattern => pattern.test(url))) {
       return false;
+    }
+
+    // 進階檢查：解碼後的 URL 是否包含惡意代碼
+    try {
+      const decodedUrl = decodeURIComponent(url);
+      if (suspiciousPatterns.some(pattern => pattern.test(decodedUrl))) {
+        console.warn('[GSS] 偵測到編碼後的惡意代碼:', decodedUrl);
+        return false;
+      }
+    } catch (e) {
+      // 如果解碼失敗，可能是 URL 本身格式有問題，為安全起見繼續檢查
     }
 
     return true;
@@ -6118,7 +6129,30 @@ function scanAndReplaceIMImages(container = document.body) {
       const wrapper = document.createElement('span');
       wrapper.className = 'dlsq-im-replaced dlsq-hidden-decoded';
 
-      if (isDLSticker) {
+      if (isDLSticker || hiddenStickerId.startsWith('DL-')) {
+        // DL 貼圖：顯示實際圖片
+        const dlId = hiddenStickerId.startsWith('DL-') ? hiddenStickerId.slice(3) : hiddenStickerId;
+        const imgUrl = `https://images.prd.dlivecdn.com/emote/${dlId}`;
+        const img = document.createElement('img');
+        img.src = imgUrl;
+        img.alt = hiddenStickerId;
+        img.className = 'dlsq-im-replaced dlsq-converted-image dlsq-chat-img';
+        
+        // 添加點擊事件：點擊放大媒體
+        img.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const overlay = document.createElement('div');
+          overlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); z-index: 999999; display: flex; align-items: center; justify-content: center; cursor: pointer;';
+          const largeImg = document.createElement('img');
+          largeImg.src = imgUrl;
+          largeImg.style.cssText = 'max-width: 90vw; max-height: 90vh; object-fit: contain; border-radius: 8px;';
+          overlay.appendChild(largeImg);
+          document.body.appendChild(overlay);
+          overlay.addEventListener('click', () => document.body.removeChild(overlay));
+        });
+        
+        wrapper.appendChild(img);
       } else if (hiddenStickerId.startsWith('YT-')) {
         // YouTube 貼圖：顯示縮略圖
         const url = decodeStickerId(hiddenStickerId);
@@ -6127,69 +6161,15 @@ function scanAndReplaceIMImages(container = document.body) {
           img.src = url;
           img.alt = hiddenStickerId;
           img.className = 'dlsq-im-replaced dlsq-converted-image dlsq-chat-img';
-          // 【修改】移除硬編碼的 max-width/max-height，改用 CSS 變量
           img.style.borderRadius = '4px';
           img.style.border = '2px solid #FF0000';
-          img.style.display = 'block'; wrapper.appendChild(img);
+          img.style.display = 'block'; 
+          wrapper.appendChild(img);
         }
-      } else if (hiddenStickerId.startsWith('CB-')) {
-        // DL 貼圖：顯示實際圖片
-        const dlId = hiddenStickerId.slice(3); // 去掉 "DL-" 前綴
-        const imgUrl = `https://images.prd.dlivecdn.com/emote/${dlId}`;
-        const img = document.createElement('img');
-        img.src = imgUrl;
-        img.alt = hiddenStickerId;
-        img.className = 'dlsq-im-replaced dlsq-converted-image dlsq-chat-img'; // 【標記】標記為已轉換圖片
-        
-        // 【新增】添加點擊事件：點擊放大媒體
-        img.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          // 創建放大圖片覆蓋層
-          const overlay = document.createElement('div');
-          overlay.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0,0,0,0.9);
-            z-index: 999999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-          `;
-
-          const largeImg = document.createElement('img');
-          largeImg.src = imgUrl;
-          largeImg.style.cssText = `
-            max-width: 90vw;
-            max-height: 90vh;
-            object-fit: contain;
-            border-radius: 8px;
-          `;
-
-          overlay.appendChild(largeImg);
-          document.body.appendChild(overlay);
-
-          // 點擊關閉
-          overlay.addEventListener('click', () => {
-            document.body.removeChild(overlay);
-          });
-        });
-        
-        wrapper.appendChild(img);
       } else if (hiddenStickerId.startsWith('GSS-')) {
-        // 【新功能】GSS- 圖片/影片連結處理
+        // GSS- 圖片/影片連結處理
         let imageUrl = hiddenStickerId.replace(/^GSS-/i, '');
-
-        // 【關鍵】自動補完 HTTP 協議（如果沒有的話）
-        if (!imageUrl.match(/^https?:\/\//i)) {
-          imageUrl = 'https://' + imageUrl;
-        }
-
-        // 安全檢查：只允許特定圖片/影片格式和受信任的域名
+        if (!imageUrl.match(/^https?:\/\//i)) imageUrl = 'https://' + imageUrl;
         if (isSafeImageUrl(imageUrl)) {
           const isVideo = /\.mp4$/i.test(imageUrl);
           let mediaElement;
@@ -6305,139 +6285,43 @@ function scanAndReplaceIMImages(container = document.body) {
           errorText.style.cssText = 'font-size: 10px; color: #ff9800; display: block; text-align: center;';
           wrapper.appendChild(errorText);
         }
-      } else if (hiddenStickerId.startsWith('CB-')) {
-        // CB 貼圖：顯示圖片
+      } else if (hiddenStickerId.startsWith('CB-') || hiddenStickerId.startsWith('IM-') || hiddenStickerId.startsWith('ME-')) {
+        // CB/IM/ME 貼圖處理
         const url = decodeStickerId(hiddenStickerId);
         if (url) {
           const isVideo = /\.mp4$/i.test(url);
+          let mediaElement;
           if (isVideo) {
-            const video = document.createElement('video');
-            video.src = url;
-            video.alt = hiddenStickerId;
-            video.muted = true;
-            video.autoplay = true;
-            video.loop = true;
-            video.playsInline = true;
-            video.className = 'dlsq-im-replaced dlsq-chat-video';
-            wrapper.appendChild(video);
-            // 【修復】CB 格式的 MP4 視頻也需要觸發滾動
-            bindMediaScroll(video, wrapper);
+            mediaElement = document.createElement('video');
+            mediaElement.src = url; mediaElement.alt = hiddenStickerId;
+            mediaElement.muted = true; mediaElement.autoplay = true; mediaElement.loop = true; mediaElement.playsInline = true;
+            mediaElement.className = 'dlsq-im-replaced dlsq-chat-video';
           } else {
-            const img = document.createElement('img');
-            img.src = url;
-            img.alt = hiddenStickerId;
-            img.className = 'dlsq-im-replaced dlsq-converted-image dlsq-chat-img';
-            wrapper.appendChild(img);
+            mediaElement = document.createElement('img');
+            mediaElement.src = url; mediaElement.alt = hiddenStickerId;
+            mediaElement.className = 'dlsq-im-replaced dlsq-converted-image dlsq-chat-img';
           }
-        }
-      } else {
-        // IM 或 ME 貼圖：顯示圖片
-        const url = decodeStickerId(hiddenStickerId);
-        if (url) {
-          const isVideo = /\.mp4$/i.test(url);
-          if (isVideo) {
-            // 創建 video 元素
-            const video = document.createElement('video');
-            video.src = url;
-            video.alt = hiddenStickerId;
-            video.muted = true;
-            video.autoplay = true;
-            video.loop = true;
-            video.playsInline = true;
-            video.className = 'dlsq-im-replaced dlsq-chat-video';
-            
-            // 【新增】添加點擊事件：點擊放大媒體
-            video.addEventListener('click', (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              // 創建放大影片覆蓋層
-              const overlay = document.createElement('div');
-              overlay.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100vw;
-                height: 100vh;
-                background: rgba(0,0,0,0.9);
-                z-index: 999999;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                cursor: pointer;
-              `;
 
-              const largeVideo = document.createElement('video');
-              largeVideo.src = url;
-              largeVideo.controls = true;
-              largeVideo.autoplay = true;
-              largeVideo.loop = true;
-              largeVideo.muted = true;
-              largeVideo.style.cssText = `
-                max-width: 90vw;
-                max-height: 90vh;
-                object-fit: contain;
-                border-radius: 8px;
-              `;
+          mediaElement.addEventListener('click', (e) => {
+            e.preventDefault(); e.stopPropagation();
+            const overlay = document.createElement('div');
+            overlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); z-index: 999999; display: flex; align-items: center; justify-content: center; cursor: pointer;';
+            let largeMedia;
+            if (isVideo) {
+              largeMedia = document.createElement('video');
+              largeMedia.src = url; largeMedia.controls = true; largeMedia.autoplay = true; largeMedia.loop = true; largeMedia.muted = true;
+            } else {
+              largeMedia = document.createElement('img');
+              largeMedia.src = url;
+            }
+            largeMedia.style.cssText = 'max-width: 90vw; max-height: 90vh; object-fit: contain; border-radius: 8px;';
+            overlay.appendChild(largeMedia);
+            document.body.appendChild(overlay);
+            overlay.addEventListener('click', () => document.body.removeChild(overlay));
+          });
 
-              overlay.appendChild(largeVideo);
-              document.body.appendChild(overlay);
-
-              // 點擊關閉
-              overlay.addEventListener('click', () => {
-                document.body.removeChild(overlay);
-              });
-            });
-            
-            wrapper.appendChild(video);
-            // 【修復】IM/ME 格式的 MP4 視頻也需要觸發滾動
-            bindMediaScroll(video, wrapper);
-          } else {
-            // 創建 img 元素
-            const img = document.createElement('img');
-            img.src = url;
-            img.alt = hiddenStickerId; // 【修復】設置 alt 與 DL 圖保持一致，防止翻譯清除
-            img.className = 'dlsq-im-replaced dlsq-converted-image dlsq-chat-img'; // 【標記】標記為已轉換圖片
-            
-            // 【新增】添加點擊事件：點擊放大媒體
-            img.addEventListener('click', (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              // 創建放大圖片覆蓋層
-              const overlay = document.createElement('div');
-              overlay.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100vw;
-                height: 100vh;
-                background: rgba(0,0,0,0.9);
-                z-index: 999999;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                cursor: pointer;
-              `;
-
-              const largeImg = document.createElement('img');
-              largeImg.src = url;
-              largeImg.style.cssText = `
-                max-width: 90vw;
-                max-height: 90vh;
-                object-fit: contain;
-                border-radius: 8px;
-              `;
-
-              overlay.appendChild(largeImg);
-              document.body.appendChild(overlay);
-
-              // 點擊關閉
-              overlay.addEventListener('click', () => {
-                document.body.removeChild(overlay);
-              });
-            });
-            
-            wrapper.appendChild(img);
-          }
+          wrapper.appendChild(mediaElement);
+          bindMediaScroll(mediaElement, wrapper);
         }
       }
 
