@@ -21,7 +21,7 @@ const SharedChat = {
     },
     vaughn: {
       chatSelector: '#chat, .chat-container, .chat-messages',
-      urlPattern: /vaughn\.live/
+      urlPattern: /vaughn\.live|w\.tv/
     },
     kick: {
       chatSelector: '#chat-container, .chat, .message-list',
@@ -97,10 +97,10 @@ const SharedChat = {
 
   // 检查 KICK 是否可以在当前页面嵌入
   canEmbedKick() {
-    // KICK 在 DLive 和 Vaughn 页面可能因 CSRF 限制无法嵌入
+    // KICK 在 DLive 和 Vaughn 頁面可能因 CSRF 限制無法嵌入
     const hostname = window.location.hostname;
-    if (hostname.includes('dlive.tv') || hostname.includes('vaughn.live')) {
-      // 这些平台可能受 CSRF 限制
+    if (hostname.includes('dlive.tv') || hostname.includes('vaughn.live') || hostname.includes('w.tv')) {
+      // These platforms may have CSRF restrictions
       return { allowed: true, warning: 'kick_csrf' };
     }
     return { allowed: true };
@@ -274,7 +274,7 @@ const SharedChat = {
     // 檢查跨平台限制：KICK 頁面無法嵌入 Twitch 聊天（Twitch 安全策略限制）
     if (platform === 'kick' && parsed.platform === 'twitch') {
       // 使用多語言警告文本（如果 t() 函數可用）
-      const warningText = typeof t === 'function' ? t('sharedChatKickTwitchWarning') : '⚠️ Twitch 聊天室無法在 KICK 頁面嵌入\n\n這是 Twitch 的安全策略限制，\n請在 DLive 或 Vaughn 頁面使用 Twitch 主聊天室。';
+      const warningText = typeof t === 'function' ? t('sharedChatKickTwitchWarning') : '⚠️ Twitch 聊天室無法在 KICK 頁面嵌入\n\n這是 Twitch 的安全策略限制，\n請在 DLive 或 Vaughn/W.TV 頁面使用 Twitch 主聊天室。';
       alert(warningText);
       return;
     }

@@ -157,7 +157,7 @@ async function checkStreamStatusInBackground(url) {
       result = await checkTwitchStatus(url);
     } else if (lowerUrl.includes('dlive.tv')) {
       result = await checkDLiveStatus(url);
-    } else if (lowerUrl.includes('vaughn.live')) {
+    } else if (lowerUrl.includes('vaughn.live') || lowerUrl.includes('w.tv')) {
       result = await checkVaughnStatus(url);
     } else if (lowerUrl.includes('kick.com')) {
       result = await checkKickStatus(url);
@@ -246,14 +246,14 @@ async function checkDLiveStatus(url) {
   }
 }
 
-// Vaughn Live 狀態檢測 - 暫時返回 unknown（灰色）
+// Vaughn Live / W.TV 狀態檢測 - 暫時返回 unknown（灰色）
 // TODO: 找到可靠的檢測方法後再實作
 async function checkVaughnStatus(url) {
-  const match = url.match(/vaughn\.live\/([^\/\?]+)/i);
+  const match = url.match(/(?:vaughn\.live|w\.tv)\/([^\/\?]+)/i);
   if (!match) return { status: 'unknown' };
 
   const channel = match[1];
-  console.log('[GSS Background] Vaughn 檢測暫時禁用:', channel, '-> 返回 unknown (灰色)');
+  console.log('[GSS Background] Vaughn/W.TV 檢測暫時禁用:', channel, '-> 返回 unknown (灰色)');
 
   // 暫時返回 unknown，顯示灰色狀態
   // 等找到可靠檢測方法後再實作

@@ -227,6 +227,8 @@ const TexoPanel = {
         'https://*.dlive.tv/*',
         'https://*.twitch.tv/*',
         'https://*.vaughn.live/*',
+        'https://w.tv/*',
+        'https://*.w.tv/*',
         'https://*.kick.com/*',
         'https://*.youtube.com/*',
         'https://youtube.com/*'
@@ -554,8 +556,8 @@ const TexoPanel = {
       logoSelector = '.header__logo, .application--logo, a[href="/"], [class*="logo"]';
     } else if (hostname.includes('kick.com')) {
       logoSelector = '.kick-logo, a[href="/"], [class*="logo"]';
-    } else if (hostname.includes('vaughn.live')) {
-      // Vaughn: 只找 img.the_logo，避免選到 div.the_logo
+    } else if (hostname.includes('vaughn.live') || hostname.includes('w.tv')) {
+      // Vaughn / W.TV: 只找 img.the_logo，避免選到 div.the_logo
       logoSelector = 'img.the_logo, a[href="/"]';
     } else if (hostname.includes('beamstream.gg')) {
       // Beamstream: 選 a.router-link-active（包含 logo img）
@@ -571,6 +573,7 @@ const TexoPanel = {
       'dlive.tv': { main: '#000', text: '#fff', bg: '#F2B705' },
       'kick.com': { main: '#000', text: '#000', bg: '#55fc18ec' },
       'vaughn.live': { main: '#033E8C', text: '#fff', bg: '#FFF' },
+      'w.tv': { main: '#FFF', text: '#fff', bg: '#171717' },
       'beamstream.gg': { main: '#FFF', text: '#FFF', bg: '#191919' },
     };
     const color = platformColors[Object.keys(platformColors).find(k => hostname.includes(k))] || { main: '#fff', text: '#fff', bg: 'rgba(255, 255, 255, 0.15)' };
@@ -651,6 +654,27 @@ const TexoPanel = {
           justify-content: center !important;
           cursor: pointer !important;
           color: #191919 !important;
+          font-size: 12px !important;
+          z-index: 999999 !important;
+          font-family: Arial, sans-serif !important;
+        `;
+      } else if (hostname.includes('w.tv')) {
+        // W.TV 特殊處理：WTV 深色背景，白色箭頭
+        collapsedBtn.style.cssText = `
+          position: absolute !important;
+          right: ${rightOffset} !important;
+          top: 50% !important;
+          transform: translateY(-50%) !important;
+          width: 24px !important;
+          height: 24px !important;
+          background: #171717 !important;
+          border: 1px solid #FFF !important;
+          border-radius: 4px !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          cursor: pointer !important;
+          color: #FFF !important;
           font-size: 12px !important;
           z-index: 999999 !important;
           font-family: Arial, sans-serif !important;
@@ -943,7 +967,7 @@ const TexoPanel = {
       else if (lowerUrl.includes('youtube.com') || lowerUrl.includes('youtu.be')) platformType = 'youtube';
       else if (lowerUrl.includes('kick.com')) platformType = 'kick';
       else if (lowerUrl.includes('dlive.tv')) platformType = 'dlive';
-      else if (lowerUrl.includes('vaughn.live')) platformType = 'vaughn';
+      else if (lowerUrl.includes('vaughn.live') || lowerUrl.includes('w.tv')) platformType = 'vaughn';
 
       platformCounts[platformType] = (platformCounts[platformType] || 0) + 1;
       const index = platformCounts[platformType] - 1;
@@ -996,7 +1020,7 @@ const TexoPanel = {
       result = index === 0 ? 'Kick' : `Kick${index + 1}`;
     } else if (lowerUrl.includes('dlive.tv')) {
       result = index === 0 ? 'DLive' : `DLive${index + 1}`;
-    } else if (lowerUrl.includes('vaughn.live')) {
+    } else if (lowerUrl.includes('vaughn.live') || lowerUrl.includes('w.tv')) {
       result = index === 0 ? 'Vaughn' : `Vaughn${index + 1}`;
     } else {
       result = defaultLabel || `${tscT('tscChannel')}${index + 1}`;
@@ -1011,7 +1035,7 @@ const TexoPanel = {
     if (lower.includes('kick.com')) return 'kick';
     if (lower.includes('youtube.com') || lower.includes('youtu.be')) return 'youtube';
     if (lower.includes('dlive.tv')) return 'dlive';
-    if (lower.includes('vaughn.live')) return 'vaughn';
+    if (lower.includes('vaughn.live') || lower.includes('w.tv')) return 'vaughn';
     return null;
   },
 
