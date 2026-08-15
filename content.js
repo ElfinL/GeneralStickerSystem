@@ -2953,18 +2953,19 @@ async function removeStickerIdFromStorage(id) {
 
   // GSS- 格式：保持原始格式，不做任何修改
 
-  // IM/ME 格式：將 -gif, -png, -jpg, -jpeg, -mp4 結尾替換為 . 點格式
-  if (trimmed.startsWith('IM-') || trimmed.startsWith('ME-')) {
-    trimmed = trimmed.replace(/-(gif|png|jpg|jpeg|mp4)$/i, '.$1');
+  // IM/ME/CB 格式：將 -gif, -png, -jpg, -jpeg, -mp4, -webp 結尾替換為 . 點格式
+  if (trimmed.startsWith('IM-') || trimmed.startsWith('ME-') || trimmed.startsWith('CB-')) {
+    trimmed = TAG ? TAG.normalizeId(trimmed) : trimmed.replace(/-(gif|png|jpg|jpeg|mp4|webp)$/i, '.$1');
   }
 
-  // 支援 DL- 前綴（DLive 貼圖）、IM- 前綴（Imgur 圖片）、ME- 前綴（meee.com.tw 圖片）、YT-（YouTube）、GSS-（圖片/影片連結）
+  // 支援 DL- 前綴（DLive 貼圖）、IM- 前綴（Imgur 圖片）、ME- 前綴（meee.com.tw 圖片）、YT-（YouTube）、CB-（Catbox）、GSS-（圖片/影片連結）
   const isValidDL = /^(?:DL-)?[A-Za-z0-9_]+$/.test(trimmed);
   const isValidIM = /^IM-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4)$/i.test(trimmed);
   const isValidME = /^ME-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4)$/i.test(trimmed);
   const isValidYT = /^YT-[a-zA-Z0-9_-]+$/i.test(trimmed);
+  const isValidCB = /^CB-[a-zA-Z0-9_-]+(?:\.(?:gif|png|jpg|jpeg|mp4|webp))?$/i.test(trimmed);
   const isValidGSS = isGSSFormat;
-  if (!isValidDL && !isValidIM && !isValidME && !isValidYT && !isValidGSS) {
+  if (!isValidDL && !isValidIM && !isValidME && !isValidYT && !isValidCB && !isValidGSS) {
     throw new Error(`ID 格式不正確：${trimmed}`);
   }
 
@@ -2987,18 +2988,19 @@ async function applyTagToStickerIdInStorage(id, tagLabel) {
 
   // GSS- 格式：保持原始格式，不做任何修改
 
-  // IM/ME 格式：將 -gif, -png, -jpg, -jpeg, -mp4 結尾替換為 . 點格式
-  if (trimmed.startsWith('IM-') || trimmed.startsWith('ME-')) {
-    trimmed = trimmed.replace(/-(gif|png|jpg|jpeg|mp4)$/i, '.$1');
+  // IM/ME/CB 格式：將 -gif, -png, -jpg, -jpeg, -mp4, -webp 結尾替換為 . 點格式
+  if (trimmed.startsWith('IM-') || trimmed.startsWith('ME-') || trimmed.startsWith('CB-')) {
+    trimmed = TAG.normalizeId(trimmed);
   }
 
-  // 支援 DL- 前綴（DLive 貼圖）、IM- 前綴（Imgur 圖片）、ME- 前綴（meee.com.tw 圖片）、YT-（YouTube）、GSS-（圖片/影片連結）
+  // 支援 DL- 前綴（DLive 貼圖）、IM- 前綴（Imgur 圖片）、ME- 前綴（meee.com.tw 圖片）、YT-（YouTube）、CB-（Catbox）、GSS-（圖片/影片連結）
   const isValidDL = /^(?:DL-)?[A-Za-z0-9_]+$/.test(trimmed);
   const isValidIM = /^IM-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4)$/i.test(trimmed);
   const isValidME = /^ME-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4)$/i.test(trimmed);
   const isValidYT = /^YT-[a-zA-Z0-9_-]+$/i.test(trimmed);
+  const isValidCB = /^CB-[a-zA-Z0-9_-]+(?:\.(?:gif|png|jpg|jpeg|mp4|webp))?$/i.test(trimmed);
   const isValidGSS = /^GSS-(?:https?:\/\/)?[^\s]+\.(?:jpg|jpeg|png|gif|webp|bmp|svg|mp4)(?:\?[^\s]*)?$/i.test(trimmed);
-  if (!isValidDL && !isValidIM && !isValidME && !isValidYT && !isValidGSS) {
+  if (!isValidDL && !isValidIM && !isValidME && !isValidYT && !isValidCB && !isValidGSS) {
     throw new Error(`ID 格式不正確：${trimmed}`);
   }
   const label = TAG.normalizeTagToken(tagLabel);

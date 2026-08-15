@@ -6,7 +6,7 @@
   const IM_ID_RE = /^IM-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4)$/i;
   const ME_ID_RE = /^ME-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4)$/i;
   const YT_ID_RE = /^YT-[a-zA-Z0-9_-]+$/;
-  const CB_ID_RE = /^CB-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4|webp)?$/i;
+  const CB_ID_RE = /^CB-[a-zA-Z0-9_-]+(?:\.(?:gif|png|jpg|jpeg|mp4|webp))?$/i;
   const GSS_ID_RE = /^GSS-(?:https?:\/\/)?[^\s]+\.(?:jpg|jpeg|png|gif|webp|bmp|svg|mp4)(?:\?[^\s]*)?$/i;
 
 
