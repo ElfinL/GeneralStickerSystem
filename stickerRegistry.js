@@ -117,8 +117,8 @@ const StickerRegistry = (function () {
     CB: {
       prefix: 'CB-',
       name: 'Catbox',
-      // Catbox ID 為字母數字，支援 .ext 格式
-      regex: /^CB-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4|webp)?$/i,
+      // Catbox ID 為字母數字，支援 .ext 格式，修正正則表達式以支援無點號或有點號的格式
+      regex: /^CB-[a-zA-Z0-9_-]+(?:\.(?:gif|png|jpg|jpeg|mp4|webp))?$/i,
       isVideo: (id) => {
         if (!id) return false;
         const lowerId = id.toLowerCase();
@@ -131,25 +131,44 @@ const StickerRegistry = (function () {
       getPreviewUrl: (id) => {
         const clean = id?.startsWith('CB-') ? id.slice(3) : id;
         if (!clean) return '';
+        // 支援 -ext 格式 (Twitch)
+        const twitchMatch = clean.match(/-(gif|png|jpg|jpeg|mp4|webp)$/i);
+        if (twitchMatch) {
+          const base = clean.slice(0, -twitchMatch[0].length);
+          return `https://files.catbox.moe/${base}.${twitchMatch[1]}`;
+        }
+        // 如果沒有點號副檔名，預設為 .gif
+        if (!/\.(gif|png|jpg|jpeg|mp4|webp)$/i.test(clean)) {
+          return `https://files.catbox.moe/${clean}.gif`;
+        }
         return `https://files.catbox.moe/${clean}`;
       },
       getDefaultCode: (id) => id || '',
       getPlatformCode: (id, platform) => {
-        const clean = id?.startsWith('CB-') ? id.slice(3) : id;
-        if (!clean) return '';
+        if (!id) return '';
+        // 確保 ID 是標準點號格式，如果缺少副檔名則補上 .gif
+        let normalized = id;
+        if (id.startsWith('CB-')) {
+          if (!/[.-](gif|png|jpg|jpeg|mp4|webp)$/i.test(id)) {
+            normalized = id + '.gif';
+          } else {
+            normalized = id.replace(/-(gif|png|jpg|jpeg|mp4|webp)$/i, '.$1');
+          }
+        }
+
         switch (platform) {
           case 'twitch':
             // Twitch: CB-xxx.gif → CB-xxx-gif（用 - 代替 .）
-            return id.replace(/\.(gif|png|jpg|jpeg|mp4|webp)$/i, '-$1');
+            return normalized.replace(/\.(gif|png|jpg|jpeg|mp4|webp)$/i, '-$1');
           case 'kick':
           case 'vaughn':
             // Kick/Vaughn 保持原始格式（使用 . ）
-            return id;
+            return normalized;
           case 'youtube':
             // YouTube: 發送原始 CB-xxx.gif 格式
-            return id;
+            return normalized;
           default:
-            return id;
+            return normalized;
         }
       }
     },

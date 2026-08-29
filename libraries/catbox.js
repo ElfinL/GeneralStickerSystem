@@ -17,7 +17,7 @@ class CatboxAdapter extends LibraryAdapter {
    * @returns {string|null} - 如 CB-z8dta6-gif
    */
   encode(url, useTwitchFormat = false) {
-    const match = url.match(/files\.catbox\.moe\/([a-zA-Z0-9]+)(?:\.(gif|png|jpg|jpeg|mp4|webp))?/i);
+    const match = url.match(/files\.catbox\.moe\/([a-zA-Z0-9_-]+)(?:\.(gif|png|jpg|jpeg|mp4|webp))?/i);
     if (!match || match[1].length < 6) return null;
     
     const id = match[1];
@@ -27,7 +27,8 @@ class CatboxAdapter extends LibraryAdapter {
       return `CB-${id}-${ext}`;
     }
     
-    return ext === 'gif' ? `CB-${id}` : `CB-${id}.${ext}`;
+    // 修正：不再為 gif 移除副檔名，確保所有格式都保留副檔名
+    return `CB-${id}.${ext}`;
   }
 
   /**
@@ -86,7 +87,7 @@ class CatboxAdapter extends LibraryAdapter {
     const idPart = id.slice(3);
     // 移除可能的副檔名或格式標記
     const cleanId = idPart.replace(/[.-](gif|png|jpg|jpeg|mp4|webp)$/i, '');
-    return /^[a-zA-Z0-9]{6,}$/.test(cleanId);
+    return /^[a-zA-Z0-9_-]{6,}$/.test(cleanId);
   }
 
   /**

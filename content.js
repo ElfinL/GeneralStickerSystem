@@ -2748,11 +2748,12 @@ function extractEmoteIdFromSrc(src, imgElement = null) {
   }
 
   // Catbox 圖片 URL：files.catbox.moe/xxx.gif → CB-xxx.gif
-  const catboxMatch = s.match(/files\.catbox\.moe\/([a-zA-Z0-9]+)(?:\.(gif|png|jpg|jpeg|mp4|webp))?/i);
+  const catboxMatch = s.match(/files\.catbox\.moe\/([a-zA-Z0-9_-]+)(?:\.(gif|png|jpg|jpeg|mp4|webp))?/i);
   if (catboxMatch) {
     const id = catboxMatch[1];
     const ext = catboxMatch[2] || 'gif';
-    return ext === 'gif' ? `CB-${id}` : `CB-${id}.${ext}`;
+    // 修正：不再為 gif 移除副檔名，確保所有格式都保留副檔名
+    return `CB-${id}.${ext}`;
   }
 
   const patterns = [
@@ -2875,9 +2876,9 @@ async function toggleFavoriteIdInStorage(id) {
 
   // GSS- 格式：保持原始格式，不做任何修改
 
-  // IM/ME 格式：將 -gif, -png, -jpg, -jpeg, -mp4 結尾替換為 . 點格式
-  if (trimmed.startsWith('IM-') || trimmed.startsWith('ME-')) {
-    trimmed = trimmed.replace(/-(gif|png|jpg|jpeg|mp4)$/i, '.$1');
+  // IM/ME/CB 格式：將 -gif, -png, -jpg, -jpeg, -mp4, -webp 結尾替換為 . 點格式
+  if (trimmed.startsWith('IM-') || trimmed.startsWith('ME-') || trimmed.startsWith('CB-')) {
+    trimmed = trimmed.replace(/-(gif|png|jpg|jpeg|mp4|webp)$/i, '.$1');
   }
 
   // 支援 IM- 前綴（Imgur 圖片）、ME- 前綴（meee.com.tw 圖片）、YT-（YouTube）、CB-（Catbox）、GSS-（圖片/影片連結）
