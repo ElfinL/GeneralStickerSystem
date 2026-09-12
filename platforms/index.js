@@ -121,6 +121,14 @@
   }
 
   /**
+   * 檢查是否為 Gosh 平台
+   * @returns {boolean}
+   */
+  function isGosh() {
+    return getCurrentPlatform() === 'gosh';
+  }
+
+  /**
    * 統一發送訊息介面
    * @param {string} message - 要發送的訊息
    * @param {Object} options - 選項
@@ -164,6 +172,7 @@
     if (typeof YouTubeAdapter !== 'undefined') registerAdapter(YouTubeAdapter);
     if (typeof BeamstreamAdapter !== 'undefined') registerAdapter(BeamstreamAdapter);
     if (typeof WTVAdapter !== 'undefined') registerAdapter(WTVAdapter);
+    if (typeof GoshAdapter !== 'undefined') registerAdapter(GoshAdapter);
 
     // 立即初始化
     const adapter = getPlatformAdapter();
@@ -183,6 +192,7 @@
     isYouTube,
     isWTV,
     isBeamstream,
+    isGosh,
     sendSticker,
     autoRegister
   };

@@ -23,6 +23,7 @@ const GSS_CONTENT_JS = [
   'platforms/youtube.js',
   'platforms/beamstream.js',
   'platforms/wtv.js',
+  'platforms/gosh.js',
   'platforms/index.js',
   'modules/gsstracker.js',
   'TexoStreamCore/sharedChat.js',

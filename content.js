@@ -707,6 +707,37 @@ function ensureStyles() {
       margin: var(--gss-sticker-margin, 4px 0) !important;
       clear: var(--gss-sticker-clear, both) !important;
     }
+    
+    /* Gosh 平台專用樣式 - 強制換行 */
+    .pc-chat-panel-main .gss-im-replaced,
+    .pc-chat-panel-main .dlsq-chat-img,
+    .pc-chat-panel-main .dlsq-chat-video {
+      display: block !important;
+      margin: 4px 0 !important;
+      clear: both !important;
+    }
+    
+    /* 強制打破 Gosh 平台的內聯鏈 */
+    .pc-chat-panel-main .chat-message-body,
+    .pc-chat-panel-main .chat-message-body span,
+    .pc-chat-panel-main .chat-message-body .inline,
+    .pc-chat-panel-main .chat-message-body .inline-block {
+      display: inline !important;
+    }
+    
+    /* Gosh 平台貼圖容器強制換行 */
+    .pc-chat-panel-main .dlsq-hidden-decoded,
+    .pc-chat-panel-main .dlsq-hidden-decoded a {
+      display: block !important;
+      width: 100% !important;
+    }
+    
+    .pc-chat-panel-main .dlsq-hidden-decoded img,
+    .pc-chat-panel-main .dlsq-hidden-decoded video {
+      display: block !important;
+      margin: 4px 0 !important;
+      clear: both !important;
+    }
     .dlsq-chat-img {
       max-width: var(--gss-sticker-max-width, 100px);
       max-height: var(--gss-sticker-max-height, 100px);
@@ -3596,6 +3627,8 @@ function findChatContainer() {
     'input[enterkeyhint="send"]',                // Beamstream enterkey
     '[data-testid="chat-message-input"]',       // WTV 輸入框容器
     '[data-chat-scroll-container]',              // WTV 聊天容器
+    '.pc-chat-panel-main',                       // Gosh 聊天容器
+    '.rich-message-editor',                      // Gosh 輸入框
     '[class*="chat-input"]',                      // Generic fallback
     '.chat',                                     // 最簡單的 chat
   ];
@@ -3872,6 +3905,34 @@ function ensureChatButton() {
       }
     } else {
       // 備援：直接加到 chat 容器
+      chat.appendChild(btn);
+    }
+  } else if (isGosh()) {
+    // Gosh: 插入到表情按鈕 (emoji-trigger) 之後
+    const emojiBtn = document.querySelector('button.emoji-trigger');
+    if (emojiBtn) {
+      btn.style.cssText = '';
+      btn.style.background = 'transparent';
+      btn.style.border = 'none';
+      btn.style.cursor = 'pointer';
+      btn.style.padding = '10px';
+      btn.style.width = '36px';
+      btn.style.height = '36px';
+      btn.style.flexShrink = '0';
+      btn.style.display = 'inline-flex';
+      btn.style.alignItems = 'center';
+      btn.style.justifyContent = 'center';
+      btn.style.borderRadius = '4px';
+      btn.style.verticalAlign = 'middle';
+
+      const goshIcon = btn.querySelector('img');
+      if (goshIcon) {
+        goshIcon.style.width = '16px';
+        goshIcon.style.height = '16px';
+      }
+
+      emojiBtn.after(btn);
+    } else {
       chat.appendChild(btn);
     }
   } else if (isBeamstream()) {
@@ -4259,6 +4320,7 @@ function getCurrentPlatform() {
   if (hostname.includes('youtube.com')) return 'youtube';
   if (hostname.includes('beamstream.gg')) return 'beamstream';
   if (hostname.includes('w.tv')) return 'wtv';
+  if (hostname.includes('gosh.com')) return 'gosh';
   return 'unknown';
 }
 
@@ -4285,6 +4347,10 @@ function isYouTube() {
 
 function isWTV() {
   return getCurrentPlatform() === 'wtv';
+}
+
+function isGosh() {
+  return getCurrentPlatform() === 'gosh';
 }
 
 // ==================== DLive 控制命令處理器 ====================
@@ -5609,6 +5675,7 @@ function applyStickerSizeMode(mode) {
     '.dlsq-chat-video',
     '.dlsq-yt-thumbnail',
     '.dlsq-yt-shorts',
+    '.gss-im-replaced',
     'img[alt^="DL-"]',
     'img[alt^="IM-"]',
     'img[alt^="ME-"]',
@@ -7703,6 +7770,34 @@ function initIMFeature() {
       console.log('[GSS] WTV MutationObserver attached');
     }
 
+  } else if (isGosh()) {
+    // ===== Gosh 平台：專門處理貼圖顯示 =====
+    setInterval(() => {
+      if (!isSendingMessage) scanAndReplaceIMImages();
+    }, 1000);
+
+    const goshChatContainer = document.querySelector('.pc-chat-panel-main');
+    if (goshChatContainer) {
+      let goshMutationTimeout = null;
+      const goshObserver = new MutationObserver((mutations) => {
+        if (isSendingMessage) return;
+        if (goshMutationTimeout) clearTimeout(goshMutationTimeout);
+        goshMutationTimeout = setTimeout(() => {
+          goshMutationTimeout = null;
+          const hasNewMessages = mutations.some(m => {
+            return Array.from(m.addedNodes).some(n => {
+              return n.nodeType === Node.ELEMENT_NODE && (
+                n.matches?.('[class*="message"]') ||
+                n.querySelector?.('[class*="message"]')
+              );
+            });
+          });
+          if (hasNewMessages) scanAndReplaceIMImages();
+        }, 100);
+      });
+      goshObserver.observe(goshChatContainer, { childList: true, subtree: true });
+      console.log('[GSS] Gosh MutationObserver attached');
+    }
   } else if (!isTwitchPage) {
     // ===== DLive 頁面：完整 IM 轉圖功能 =====
     setInterval(() => {
@@ -8074,6 +8169,9 @@ function processTwitchMergedTextNode(mergedNode, messageEl, originalNodes) {
           const url = decodeStickerId(match.id);
           if (url) {
             const isVideo = /\.mp4$/i.test(url);
+            const currentMode = window.gssStickerSizeMode || 'large';
+            const isInline = (currentMode === 'small');
+            
             if (isVideo) {
               mediaElement = document.createElement('video');
               mediaElement.src = url;
@@ -8084,12 +8182,32 @@ function processTwitchMergedTextNode(mergedNode, messageEl, originalNodes) {
               mediaElement.playsInline = true;
               mediaElement.className = 'dlsq-im-replaced dlsq-chat-video';
               mediaElement.style.cssText = 'max-width: var(--gss-sticker-max-width, none); max-height: var(--gss-sticker-max-height, none); border-radius: 4px;';
+              
+              // 根據模式設置樣式
+              if (!isInline) {
+                mediaElement.style.setProperty('display', 'block', 'important');
+                mediaElement.style.setProperty('margin', '4px 0', 'important');
+                mediaElement.style.setProperty('clear', 'both', 'important');
+              } else {
+                mediaElement.style.setProperty('display', 'inline-block', 'important');
+                mediaElement.style.setProperty('margin', '0 2px', 'important');
+              }
             } else {
               mediaElement = document.createElement('img');
               mediaElement.src = url;
               mediaElement.alt = match.id;
               mediaElement.className = 'dlsq-im-replaced dlsq-converted-image dlsq-chat-img';
               mediaElement.style.cssText = 'max-width: var(--gss-sticker-max-width, none); max-height: var(--gss-sticker-max-height, none); border-radius: 4px;';
+              
+              // 根據模式設置樣式
+              if (!isInline) {
+                mediaElement.style.setProperty('display', 'block', 'important');
+                mediaElement.style.setProperty('margin', '4px 0', 'important');
+                mediaElement.style.setProperty('clear', 'both', 'important');
+              } else {
+                mediaElement.style.setProperty('display', 'inline-block', 'important');
+                mediaElement.style.setProperty('margin', '0 2px', 'important');
+              }
             }
           }
         } else if (match.type === 'GSS') {
@@ -8099,6 +8217,9 @@ function processTwitchMergedTextNode(mergedNode, messageEl, originalNodes) {
           }
           if (isSafeImageUrl(imageUrl)) {
             const isVideo = /\.mp4$/i.test(imageUrl);
+            const currentMode = window.gssStickerSizeMode || 'large';
+            const isInline = (currentMode === 'small');
+            
             if (isVideo) {
               mediaElement = document.createElement('video');
               mediaElement.src = imageUrl;
@@ -8110,6 +8231,16 @@ function processTwitchMergedTextNode(mergedNode, messageEl, originalNodes) {
               mediaElement.autoplay = true;
               mediaElement.loop = true;
               mediaElement.playsInline = true;
+              
+              // 根據模式設置樣式
+              if (!isInline) {
+                mediaElement.style.setProperty('display', 'block', 'important');
+                mediaElement.style.setProperty('margin', '4px 0', 'important');
+                mediaElement.style.setProperty('clear', 'both', 'important');
+              } else {
+                mediaElement.style.setProperty('display', 'inline-block', 'important');
+                mediaElement.style.setProperty('margin', '0 2px', 'important');
+              }
             } else {
               mediaElement = document.createElement('img');
               mediaElement.src = imageUrl;
@@ -8119,6 +8250,16 @@ function processTwitchMergedTextNode(mergedNode, messageEl, originalNodes) {
               // 【修改】移除硬編碼的 max-width/max-height，改用 CSS 變量
               mediaElement.style.borderRadius = '4px';
               mediaElement.style.border = '2px solid #4CAF50';
+              
+              // 根據模式設置樣式
+              if (!isInline) {
+                mediaElement.style.setProperty('display', 'block', 'important');
+                mediaElement.style.setProperty('margin', '4px 0', 'important');
+                mediaElement.style.setProperty('clear', 'both', 'important');
+              } else {
+                mediaElement.style.setProperty('display', 'inline-block', 'important');
+                mediaElement.style.setProperty('margin', '0 2px', 'important');
+              }
             }
           }
         }
@@ -8129,7 +8270,30 @@ function processTwitchMergedTextNode(mergedNode, messageEl, originalNodes) {
 
           const fragment = document.createDocumentFragment();
           if (before) fragment.appendChild(document.createTextNode(before));
-          fragment.appendChild(mediaElement);
+          
+          // 【Gosh 平台專用】使用塊級容器強制換行
+          if (isGosh()) {
+            const currentMode = window.gssStickerSizeMode || 'large';
+            const isInline = (currentMode === 'small');
+            
+            if (!isInline) {
+              // 創建塊級容器包裝貼圖
+              const stickerContainer = document.createElement('div');
+              stickerContainer.style.display = 'block';
+              stickerContainer.style.width = '100%';
+              stickerContainer.style.margin = '4px 0';
+              stickerContainer.style.clear = 'both';
+              stickerContainer.appendChild(mediaElement);
+              fragment.appendChild(stickerContainer);
+            } else {
+              // 小圖模式：直接插入
+              fragment.appendChild(mediaElement);
+            }
+          } else {
+            // 其他平台：直接插入
+            fragment.appendChild(mediaElement);
+          }
+          
           if (after) fragment.appendChild(document.createTextNode(after));
 
           originalNodes.forEach(n => { if (n.parentNode) n.parentNode.removeChild(n); });
@@ -8395,7 +8559,29 @@ function processTwitchIMTextNode(textNode, messageEl) {
           // 使用更安全的方式：隱藏原文字，插入圖片
           const span = document.createElement('span');
           span.className = 'gss-im-image';
-          span.appendChild(img);
+          
+          // 【Gosh 平台專用】使用塊級容器強制換行
+          if (isGosh()) {
+            const currentMode = window.gssStickerSizeMode || 'large';
+            const isInline = (currentMode === 'small');
+            
+            if (!isInline) {
+              // 創建塊級容器包裝貼圖
+              const stickerContainer = document.createElement('div');
+              stickerContainer.style.display = 'block';
+              stickerContainer.style.width = '100%';
+              stickerContainer.style.margin = '4px 0';
+              stickerContainer.style.clear = 'both';
+              stickerContainer.appendChild(img);
+              span.appendChild(stickerContainer);
+            } else {
+              // 小圖模式：直接插入
+              span.appendChild(img);
+            }
+          } else {
+            // 其他平台：直接插入
+            span.appendChild(img);
+          }
 
           try {
             const parent = textNode.parentNode;
@@ -8444,6 +8630,9 @@ function processTwitchIMTextNode(textNode, messageEl) {
         const url = decodeStickerId(match.id);
         if (url) {
           const isVideo = /\.mp4$/i.test(url);
+          const currentMode = window.gssStickerSizeMode || 'large';
+          const isInline = (currentMode === 'small');
+          
           if (isVideo) {
             mediaElement = document.createElement('video');
             mediaElement.src = url;
@@ -8455,6 +8644,16 @@ function processTwitchIMTextNode(textNode, messageEl) {
             mediaElement.className = 'dlsq-im-replaced dlsq-chat-video';
             mediaElement.style.cssText = 'max-width: var(--gss-sticker-max-width, none); max-height: var(--gss-sticker-max-height, none); border-radius: 4px;';
             
+            // 根據模式設置樣式
+            if (!isInline) {
+              mediaElement.style.setProperty('display', 'block', 'important');
+              mediaElement.style.setProperty('margin', '4px 0', 'important');
+              mediaElement.style.setProperty('clear', 'both', 'important');
+            } else {
+              mediaElement.style.setProperty('display', 'inline-block', 'important');
+              mediaElement.style.setProperty('margin', '0 2px', 'important');
+            }
+            
             // 【同步】記錄到貼圖牆
             if (window.GSS_ImageLogger) {
               window.GSS_ImageLogger.log(url, match.id);
@@ -8465,6 +8664,16 @@ function processTwitchIMTextNode(textNode, messageEl) {
             mediaElement.alt = match.id;
             mediaElement.className = 'dlsq-im-replaced dlsq-converted-image dlsq-chat-img';
             mediaElement.style.cssText = 'max-width: var(--gss-sticker-max-width, none); max-height: var(--gss-sticker-max-height, none); border-radius: 4px;';
+            
+            // 根據模式設置樣式
+            if (!isInline) {
+              mediaElement.style.setProperty('display', 'block', 'important');
+              mediaElement.style.setProperty('margin', '4px 0', 'important');
+              mediaElement.style.setProperty('clear', 'both', 'important');
+            } else {
+              mediaElement.style.setProperty('display', 'inline-block', 'important');
+              mediaElement.style.setProperty('margin', '0 2px', 'important');
+            }
             
             // 【同步】記錄到貼圖牆
             if (window.GSS_ImageLogger) {
@@ -8479,6 +8688,9 @@ function processTwitchIMTextNode(textNode, messageEl) {
         }
         if (isSafeImageUrl(imageUrl)) {
           const isVideo = /\.mp4$/i.test(imageUrl);
+          const currentMode = window.gssStickerSizeMode || 'large';
+          const isInline = (currentMode === 'small');
+          
           if (isVideo) {
             mediaElement = document.createElement('video');
             mediaElement.src = imageUrl;
@@ -8490,6 +8702,16 @@ function processTwitchIMTextNode(textNode, messageEl) {
             mediaElement.autoplay = true;
             mediaElement.loop = true;
             mediaElement.playsInline = true;
+            
+            // 根據模式設置樣式
+            if (!isInline) {
+              mediaElement.style.setProperty('display', 'block', 'important');
+              mediaElement.style.setProperty('margin', '4px 0', 'important');
+              mediaElement.style.setProperty('clear', 'both', 'important');
+            } else {
+              mediaElement.style.setProperty('display', 'inline-block', 'important');
+              mediaElement.style.setProperty('margin', '0 2px', 'important');
+            }
             
             // 【同步】記錄到貼圖牆
             if (window.GSS_ImageLogger) {
@@ -8504,6 +8726,16 @@ function processTwitchIMTextNode(textNode, messageEl) {
             // 【修改】移除硬編碼的 max-width/max-height，改用 CSS 變量
             mediaElement.style.borderRadius = '4px';
             mediaElement.style.border = '2px solid #4CAF50';
+            
+            // 根據模式設置樣式
+            if (!isInline) {
+              mediaElement.style.setProperty('display', 'block', 'important');
+              mediaElement.style.setProperty('margin', '4px 0', 'important');
+              mediaElement.style.setProperty('clear', 'both', 'important');
+            } else {
+              mediaElement.style.setProperty('display', 'inline-block', 'important');
+              mediaElement.style.setProperty('margin', '0 2px', 'important');
+            }
             
             // 【同步】記錄到貼圖牆
             if (window.GSS_ImageLogger) {
@@ -8521,7 +8753,30 @@ function processTwitchIMTextNode(textNode, messageEl) {
 
           const fragment = document.createDocumentFragment();
           if (before) fragment.appendChild(document.createTextNode(before));
-          fragment.appendChild(mediaElement);
+          
+          // 【Gosh 平台專用】使用塊級容器強制換行
+          if (isGosh()) {
+            const currentMode = window.gssStickerSizeMode || 'large';
+            const isInline = (currentMode === 'small');
+            
+            if (!isInline) {
+              // 創建塊級容器包裝貼圖
+              const stickerContainer = document.createElement('div');
+              stickerContainer.style.display = 'block';
+              stickerContainer.style.width = '100%';
+              stickerContainer.style.margin = '4px 0';
+              stickerContainer.style.clear = 'both';
+              stickerContainer.appendChild(mediaElement);
+              fragment.appendChild(stickerContainer);
+            } else {
+              // 小圖模式：直接插入
+              fragment.appendChild(mediaElement);
+            }
+          } else {
+            // 其他平台：直接插入
+            fragment.appendChild(mediaElement);
+          }
+          
           if (after) fragment.appendChild(document.createTextNode(after));
 
           parent.replaceChild(fragment, textNode);
@@ -8847,6 +9102,11 @@ window.scrollTwitchChatToBottom = scrollTwitchChatToBottom;
 function createIMImage(imId) {
   const isDL = imId.startsWith('DL-');
   const isME = imId.startsWith('ME-');
+  const isGoshPlatform = isGosh();
+
+  // 檢查當前貼圖大小模式
+  const currentMode = window.gssStickerSizeMode || 'large';
+  const isInline = (currentMode === 'small');
 
   if (isDL) {
     const dlId = imId.slice(3);
@@ -8854,6 +9114,19 @@ function createIMImage(imId) {
     img.src = `https://images.prd.dlivecdn.com/emote/${dlId}`;
     img.alt = imId;
     img.className = 'gss-im-replaced dlsq-chat-img';
+    
+    // 根據模式設置樣式
+    if (!isInline) {
+      img.style.display = 'block';
+      img.style.margin = '4px 0';
+      img.style.clear = 'both';
+      img.style.setProperty('display', 'block', 'important');
+      img.style.setProperty('margin', '4px 0', 'important');
+      img.style.setProperty('clear', 'both', 'important');
+    } else {
+      img.style.display = 'inline-block';
+      img.style.margin = '0 2px';
+    }
     
     // 【同步】記錄到貼圖牆
     if (window.GSS_ImageLogger) {
@@ -8886,6 +9159,19 @@ function createIMImage(imId) {
     video.playsInline = true;
     video.className = 'gss-im-replaced dlsq-chat-video';
     
+    // 根據模式設置樣式
+    if (!isInline) {
+      video.style.display = 'block';
+      video.style.margin = '4px 0';
+      video.style.clear = 'both';
+      video.style.setProperty('display', 'block', 'important');
+      video.style.setProperty('margin', '4px 0', 'important');
+      video.style.setProperty('clear', 'both', 'important');
+    } else {
+      video.style.display = 'inline-block';
+      video.style.margin = '0 2px';
+    }
+    
     // 【同步】記錄到貼圖牆
     if (window.GSS_ImageLogger) {
       window.GSS_ImageLogger.log(url, imId);
@@ -8898,6 +9184,19 @@ function createIMImage(imId) {
     img.src = url;
     img.alt = imId;
     img.className = 'gss-im-replaced dlsq-chat-img';
+
+    // 根據模式設置樣式
+    if (!isInline) {
+      img.style.display = 'block';
+      img.style.margin = '4px 0';
+      img.style.clear = 'both';
+      img.style.setProperty('display', 'block', 'important');
+      img.style.setProperty('margin', '4px 0', 'important');
+      img.style.setProperty('clear', 'both', 'important');
+    } else {
+      img.style.display = 'inline-block';
+      img.style.margin = '0 2px';
+    }
 
     // 【同步】記錄到貼圖牆
     if (window.GSS_ImageLogger) {
