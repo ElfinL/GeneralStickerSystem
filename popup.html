@@ -921,6 +921,30 @@
     .custom-platform-item .actions button:hover {
       color: #ff5050;
     }
+
+    /* 平台選擇按鈕樣式 */
+    .platform-btn {
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(10, 12, 16, 0.6);
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .platform-btn:hover {
+      background: rgba(120, 190, 255, 0.14);
+      border-color: rgba(120, 190, 255, 0.45);
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .platform-btn.active {
+      background: rgba(120, 190, 255, 0.35);
+      border-color: rgba(120, 190, 255, 0.7);
+      color: rgba(255, 255, 255, 0.95);
+    }
   </style>
 </head>
 
@@ -953,6 +977,7 @@
         <div class="page-tabs">
           <button id="tabSticker" class="page-tab active">🎨 <span data-i18n="tabSticker">貼圖</span></button>
           <button id="tabTexo" class="page-tab">🧶 <span data-i18n="tabTexo">編織</span></button>
+          <button id="tabClean" class="page-tab">🧹 <span data-i18n="tabClean">清潔</span></button>
           <button id="tabSettings" class="page-tab">⚙️ <span id="tabSettingsText">設定</span></button>
           <button id="tabDisclaimer" class="page-tab">🛡️ <span data-i18n="tabDisclaimer">聲明</span></button>
         </div>
@@ -1078,6 +1103,52 @@
     </div>
   </div>
   <!-- 編織頁面結束 -->
+
+  <!-- 清潔元素頁 -->
+  <div id="cleanPage" class="page-content">
+    <div class="settings-page">
+      <div class="settings-section">
+        <div class="settings-section-title" data-i18n="cleanTitle">🧹 清潔元素</div>
+        <div style="font-size: 11px; color: rgba(255,255,255,0.7); margin-bottom: 12px; line-height: 1.5;" data-i18n="cleanDescription">
+          隱藏或移除網頁上的干擾元素，讓實況界面更乾淨。
+        </div>
+
+        <!-- 揀選模式按鈕 -->
+        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+          <button id="startPickerBtn" class="settings-btn" style="flex: 1; background: #4a90e2; color: white;" data-i18n="cleanStartPicker">🎯 開始揀選元素</button>
+          <button id="exitPickerBtn" class="settings-btn" style="flex: 1; background: #dc3545; color: white; display: none;" data-i18n="cleanExitPicker">🚫 退出揀選</button>
+        </div>
+
+        <!-- 揀選狀態提示 -->
+        <div id="pickerStatus" style="display: none; background: rgba(74, 144, 226, 0.2); border: 1px solid #4a90e2; border-radius: 6px; padding: 8px; margin-bottom: 12px; font-size: 11px; color: #4a90e2;">
+          揀選模式中：移動鼠標到要隱藏的元素上，點擊即可添加規則。按 Esc 退出。
+        </div>
+
+        <!-- 手動添加選擇器 -->
+        <div style="margin-bottom: 12px;">
+          <div style="font-size: 12px; color: rgba(255,255,255,0.8); margin-bottom: 6px;" data-i18n="cleanManualSelector">手動添加 CSS 選擇器：</div>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="manualSelector" data-i18n-placeholder="cleanManualPlaceholder" placeholder=".sidebar 或 #ads" style="flex: 1; padding: 8px; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; background: rgba(10, 12, 16, 0.8); color: white; font-family: Consolas, monospace;">
+            <button id="addManualSelectorBtn" class="settings-btn" style="width: auto; padding: 8px 12px;" data-i18n="cleanAddManual">添加</button>
+          </div>
+        </div>
+
+        <!-- 規則表格 -->
+        <div style="margin-top: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div style="font-size: 12px; color: rgba(255,255,255,0.8);" data-i18n="cleanRulesTitle">隱藏規則列表：</div>
+            <button id="clearAllRulesBtn" class="settings-btn" style="width: auto; padding: 4px 10px; font-size: 10px; background: #dc3545; color: white;" data-i18n="cleanClearAll">清空全部</button>
+          </div>
+          <div id="cleanRulesTable" style="max-height: 300px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;">
+            <div style="text-align: center; color: rgba(255,255,255,0.5); padding: 20px;" data-i18n="cleanNoRules">暫無隱藏規則</div>
+          </div>
+        </div>
+
+        <div id="cleanStatus" class="config-status" style="margin-top: 8px;"></div>
+      </div>
+    </div>
+  </div>
+  <!-- 清潔元素頁結束 -->
 
   <!-- 通用設定頁 -->
   <div id="settingsPage" class="page-content">
@@ -1222,6 +1293,8 @@
   <script src="stickerRegistry.js"></script>
   <script src="TexoStreamCore/index.js"></script>
   <script src="TexoStreamCore/popup.js"></script>
+  <script src="cleanelement/selector.js"></script>
+  <script src="cleanelement/storage.js"></script>
   <script src="popup.js"></script>
 
   <!-- 自定義確認對話框 -->

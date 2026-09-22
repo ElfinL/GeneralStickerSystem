@@ -375,6 +375,96 @@
         </ul>
       </div>
 
+      <div class="content-section">
+        <h2>🧹 清潔元素功能</h2>
+        <p>清潔元素功能讓你隱藏網頁上干擾視覺的元素，讓實況界面更乾淨。與 uBlock 不同，GSS 提供清楚的隱藏列表，讓你一目了然知道每個網域隱藏了什麼。</p>
+
+        <h3>📌 功能位置</h3>
+        <p>點擊插件面板中的【清潔】標籤頁即可進入清潔元素功能。</p>
+
+        <h3>🎯 方法一：揀選模式（推薦，最簡單）</h3>
+        <div class="highlight-box">
+          <p><strong>使用步驟：</strong></p>
+          <ol style="margin-left: 20px; margin-top: 8px;">
+            <li>在【清潔】頁面點擊【🎯 開始揀選元素】按鈕</li>
+            <li>Popup 會自動關閉，畫面中央會顯示「🎯 揀選模式中 | 點擊元素隱藏 | 按 Esc 退出」</li>
+            <li>將鼠標移動到你想隱藏的元素上（該元素會顯示藍色邊框）</li>
+            <li>點擊該元素，系統會自動生成選擇器並立即隱藏它</li>
+            <li>可以連續點擊多個元素進行隱藏</li>
+            <li>完成後按 <code>Esc</code> 鍵退出揀選模式</li>
+          </ol>
+        </div>
+
+        <h3>⌨️ 方法二：手動添加選擇器（進階）</h3>
+        <p>如果你知道 CSS 選擇器，可以直接手動添加。以下是詳細步驟：</p>
+        <div class="highlight-box">
+          <p><strong>步驟 1：取得 CSS 選擇器</strong></p>
+          <ol style="margin-left: 20px; margin-top: 8px; font-size: 13px;">
+            <li>在目標網頁按下 <code>F12</code> 開啟開發者工具</li>
+            <li>點擊開發者工具左上角的「選擇元素」按鈕（圖示：◇ 或 ↖️）</li>
+            <li>在網頁上點擊你想隱藏的元素</li>
+            <li>在開發者工具的「Elements」面板中，找到該元素的 HTML 程式碼</li>
+            <li>查看該元素的 <code>class</code> 或 <code>id</code> 屬性</li>
+          </ol>
+          <p style="margin-top: 12px; font-size: 12px; color: #868e96;">
+            <strong>選擇器格式：</strong><br>
+            • 如果有 <code>id="sidebar"</code> → 選擇器是 <code>#sidebar</code><br>
+            • 如果有 <code>class="advertisement"</code> → 選擇器是 <code>.advertisement</code><br>
+            • 如果有多個 class → 選擇器是 <code>.class1.class2</code><br>
+            • 如果是嵌套元素 → 選擇器是 <code>.parent .child</code>
+          </p>
+        </div>
+
+        <div class="highlight-box">
+          <p><strong>步驟 2：添加選擇器</strong></p>
+          <ol style="margin-left: 20px; margin-top: 8px; font-size: 13px;">
+            <li>在【清潔】頁面的「手動添加 CSS 選擇器」輸入框中，輸入你取得的選擇器</li>
+            <li>點擊右側的【添加】按鈕</li>
+            <li>系統會立即應用該規則並顯示在下方的規則列表中</li>
+          </ol>
+          <p style="margin-top: 12px; font-size: 12px; color: #868e96;">
+            <strong>範例：</strong><br>
+            • 輸入 <code>.sidebar</code> 隱藏側邊欄<br>
+            • 輸入 <code>#ads</code> 隱藏廣告區塊<br>
+            • 輸入 <code>.header .banner</code> 隱藏標題橫幅
+          </p>
+        </div>
+
+        <h3>📋 管理隱藏規則</h3>
+        <p>所有隱藏規則都會顯示在下方的表格中：</p>
+        <ul>
+          <li><strong>查看規則：</strong>表格顯示每個規則的平台、選擇器、元素類型和文字內容</li>
+          <li><strong>刪除規則：</strong>點擊規則右側的【刪除】按鈕即可移除該規則</li>
+          <li><strong>清空全部：</strong>點擊表格上方的【清空全部】按鈕可一次刪除所有規則</li>
+          <li><strong>按網域分組：</strong>規則自動按網域保存，不同網站的規則不會互相干擾</li>
+        </ul>
+
+        <h3>⚠️ 注意事項</h3>
+        <div class="highlight-box" style="background: rgba(255, 212, 59, 0.08); border-color: rgba(255, 212, 59, 0.4);">
+          <p><strong>選擇器穩定性警告：</strong></p>
+          <p style="margin-top: 8px; font-size: 12px;">
+            • 當你看到「⚠️ 選擇器可能不穩定，建議重新選擇」的提示時，表示系統認為該選擇器可能不穩定<br>
+            • 不穩定的選擇器可能包含 <code>nth-child</code> 或 <code>nth-of-type</code>，這些選擇器依賴元素位置<br>
+            • 網頁重新載入後，元素位置可能改變，導致選擇器失效<br>
+            • 建議選擇有固定 <code>id</code> 或多個穩定 <code>class</code> 的元素
+          </p>
+        </div>
+
+        <div class="highlight-box">
+          <p><strong>常見問題：</strong></p>
+          <ul style="margin-top: 8px; font-size: 12px; margin-left: 16px;">
+            <li><strong>Q：為什麼某些元素刷新後又出現了？</strong><br>
+              A：可能因為選擇器不穩定。建議重新選擇該元素的父容器，選擇有固定 id 或 class 的元素。</li>
+            <li><strong>Q：規則會永久保存嗎？</strong><br>
+              A：會。規則按網域自動保存到瀏覽器，重新載入頁面後規則仍然生效。</li>
+            <li><strong>Q：如何測試選擇器是否正確？</strong><br>
+              A：在開發者工具的 Console 中輸入 <code>document.querySelectorAll('你的選擇器')</code>，看能否找到元素。</li>
+            <li><strong>Q：可以隱藏頁面的任何元素嗎？</strong><br>
+              A：除了 <code>html</code> 和 <code>body</code> 元素外，其他元素都可以隱藏。</li>
+          </ul>
+        </div>
+      </div>
+
 
 
       <div class="content-section">
@@ -645,6 +735,96 @@
           <li><strong>✕ Delete:</strong> Click the ✕ button to remove a sticker from your list</li>
           <li><strong>Right-click Tags:</strong> Right-click a sticker to add or remove tags</li>
         </ul>
+      </div>
+
+      <div class="content-section">
+        <h2>🧹 Clean Elements</h2>
+        <p>Clean Elements allows you to hide distracting elements on web pages, making streaming interfaces cleaner. Unlike uBlock, GSS provides a clear list of hidden elements, so you can see exactly what's hidden on each domain.</p>
+
+        <h3>📌 Location</h3>
+        <p>Click the 【Clean】 tab in the extension panel to access the Clean Elements feature.</p>
+
+        <h3>🎯 Method 1: Picker Mode (Recommended, Easiest)</h3>
+        <div class="highlight-box">
+          <p><strong>Steps:</strong></p>
+          <ol style="margin-left: 20px; margin-top: 8px;">
+            <li>Click the 【🎯 Start Picker】 button in the 【Clean】 page</li>
+            <li>The popup will close automatically, and "🎯 Picker Mode | Click element to hide | Press Esc to exit" will appear in the center of the screen</li>
+            <li>Move your mouse to the element you want to hide (it will show a blue border)</li>
+            <li>Click the element, and the system will automatically generate a selector and hide it immediately</li>
+            <li>You can click multiple elements continuously to hide them</li>
+            <li>Press <code>Esc</code> to exit picker mode when done</li>
+          </ol>
+        </div>
+
+        <h3>⌨️ Method 2: Manual Selector Addition (Advanced)</h3>
+        <p>If you know CSS selectors, you can add them manually. Here are the detailed steps:</p>
+        <div class="highlight-box">
+          <p><strong>Step 1: Get CSS Selector</strong></p>
+          <ol style="margin-left: 20px; margin-top: 8px; font-size: 13px;">
+            <li>Press <code>F12</code> on the target webpage to open Developer Tools</li>
+            <li>Click the "Select Element" button in the top-left of Developer Tools (icon: ◇ or ↖️)</li>
+            <li>Click the element you want to hide on the webpage</li>
+            <li>In the "Elements" panel of Developer Tools, find the HTML code for that element</li>
+            <li>Check the element's <code>class</code> or <code>id</code> attribute</li>
+          </ol>
+          <p style="margin-top: 12px; font-size: 12px; color: #868e96;">
+            <strong>Selector Format:</strong><br>
+            • If <code>id="sidebar"</code> → Selector is <code>#sidebar</code><br>
+            • If <code>class="advertisement"</code> → Selector is <code>.advertisement</code><br>
+            • If multiple classes → Selector is <code>.class1.class2</code><br>
+            • If nested elements → Selector is <code>.parent .child</code>
+          </p>
+        </div>
+
+        <div class="highlight-box">
+          <p><strong>Step 2: Add Selector</strong></p>
+          <ol style="margin-left: 20px; margin-top: 8px; font-size: 13px;">
+            <li>In the "Manual CSS Selector" input box in the 【Clean】 page, enter the selector you obtained</li>
+            <li>Click the 【Add】 button on the right</li>
+            <li>The system will immediately apply the rule and display it in the rule list below</li>
+          </ol>
+          <p style="margin-top: 12px; font-size: 12px; color: #868e96;">
+            <strong>Examples:</strong><br>
+            • Enter <code>.sidebar</code> to hide sidebar<br>
+            • Enter <code>#ads</code> to hide ad block<br>
+            • Enter <code>.header .banner</code> to hide header banner
+          </p>
+        </div>
+
+        <h3>📋 Managing Hidden Rules</h3>
+        <p>All hidden rules are displayed in the table below:</p>
+        <ul>
+          <li><strong>View Rules:</strong> The table shows each rule's platform, selector, element type, and text content</li>
+          <li><strong>Delete Rule:</strong> Click the 【Delete】 button on the right of the rule to remove it</li>
+          <li><strong>Clear All:</strong> Click the 【Clear All】 button above the table to delete all rules at once</li>
+          <li><strong>Grouped by Domain:</strong> Rules are automatically saved by domain, so rules for different websites don't interfere with each other</li>
+        </ul>
+
+        <h3>⚠️ Important Notes</h3>
+        <div class="highlight-box" style="background: rgba(255, 212, 59, 0.08); border-color: rgba(255, 212, 59, 0.4);">
+          <p><strong>Selector Stability Warning:</strong></p>
+          <p style="margin-top: 8px; font-size: 12px;">
+            • When you see "⚠️ Selector may be unstable, try reselecting", it means the system thinks the selector might be unstable<br>
+            • Unstable selectors may contain <code>nth-child</code> or <code>nth-of-type</code>, which depend on element position<br>
+            • After page reload, element positions may change, causing the selector to fail<br>
+            • It's recommended to select elements with fixed <code>id</code> or multiple stable <code>class</code> attributes
+          </p>
+        </div>
+
+        <div class="highlight-box">
+          <p><strong>FAQ:</strong></p>
+          <ul style="margin-top: 8px; font-size: 12px; margin-left: 16px;">
+            <li><strong>Q: Why do some elements reappear after refresh?</strong><br>
+              A: Possibly because the selector is unstable. Try reselecting the element's parent container, choosing elements with fixed id or class.</li>
+            <li><strong>Q: Are rules permanently saved?</strong><br>
+              A: Yes. Rules are automatically saved by domain to the browser and remain effective after page reload.</li>
+            <li><strong>Q: How to test if a selector is correct?</strong><br>
+              A: In Developer Tools Console, enter <code>document.querySelectorAll('your selector')</code> to see if it finds elements.</li>
+            <li><strong>Q: Can I hide any element on the page?</strong><br>
+              A: Except for <code>html</code> and <code>body</code> elements, all other elements can be hidden.</li>
+          </ul>
+        </div>
       </div>
 
 
@@ -926,8 +1106,191 @@
         </ul>
       </div>
 
+      <div class="content-section">
+        <h2>🧹 清洁元素功能</h2>
+        <p>清洁元素功能让你隐藏网页上干扰视觉的元素，让实况界面更干净。与 uBlock 不同，GSS 提供清楚的隐藏列表，让你一目了然知道每个网域隐藏了什么。</p>
+
+        <h3>📌 功能位置</h3>
+        <p>点击插件面板中的【清洁】标签页即可进入清洁元素功能。</p>
+
+        <h3>🎯 方法一：拣选模式（推荐，最简单）</h3>
+        <div class="highlight-box">
+          <p><strong>使用步骤：</strong></p>
+          <ol style="margin-left: 20px; margin-top: 8px;">
+            <li>在【清洁】页面点击【🎯 开始拣选元素】按钮</li>
+            <li>Popup 会自动关闭，画面中央会显示「🎯 拣选模式中 | 点击元素隐藏 | 按 Esc 退出」</li>
+            <li>将鼠标移动到你想隐藏的元素上（该元素会显示蓝色边框）</li>
+            <li>点击该元素，系统会自动生成选择器并立即隐藏它</li>
+            <li>可以连续点击多个元素进行隐藏</li>
+            <li>完成后按 <code>Esc</code> 键退出拣选模式</li>
+          </ol>
+        </div>
+
+        <h3>⌨️ 方法二：手动添加选择器（进阶）</h3>
+        <p>如果你知道 CSS 选择器，可以直接手动添加。以下是详细步骤：</p>
+        <div class="highlight-box">
+          <p><strong>步骤 1：取得 CSS 选择器</strong></p>
+          <ol style="margin-left: 20px; margin-top: 8px; font-size: 13px;">
+            <li>在目标网页按下 <code>F12</code> 开启开发者工具</li>
+            <li>点击开发者工具左上角的「选择元素」按钮（图标：◇ 或 ↖️）</li>
+            <li>在网页上点击你想隐藏的元素</li>
+            <li>在开发者工具的「Elements」面板中，找到该元素的 HTML 代码</li>
+            <li>查看该元素的 <code>class</code> 或 <code>id</code> 属性</li>
+          </ol>
+          <p style="margin-top: 12px; font-size: 12px; color: #868e96;">
+            <strong>选择器格式：</strong><br>
+            • 如果有 <code>id="sidebar"</code> → 选择器是 <code>#sidebar</code><br>
+            • 如果有 <code>class="advertisement"</code> → 选择器是 <code>.advertisement</code><br>
+            • 如果有多个 class → 选择器是 <code>.class1.class2</code><br>
+            • 如果是嵌套元素 → 选择器是 <code>.parent .child</code>
+          </p>
+        </div>
+
+        <div class="highlight-box">
+          <p><strong>步骤 2：添加选择器</strong></p>
+          <ol style="margin-left: 20px; margin-top: 8px; font-size: 13px;">
+            <li>在【清洁】页面的「手动添加 CSS 选择器」输入框中，输入你取得的选择器</li>
+            <li>点击右侧的【添加】按钮</li>
+            <li>系统会立即应用该规则并显示在下方的规则列表中</li>
+          </ol>
+          <p style="margin-top: 12px; font-size: 12px; color: #868e96;">
+            <strong>示例：</strong><br>
+            • 输入 <code>.sidebar</code> 隐藏侧边栏<br>
+            • 输入 <code>#ads</code> 隐藏广告区块<br>
+            • 输入 <code>.header .banner</code> 隐藏标题横幅
+          </p>
+        </div>
+
+        <h3>📋 管理隐藏规则</h3>
+        <p>所有隐藏规则都会显示在下方的表格中：</p>
+        <ul>
+          <li><strong>查看规则：</strong>表格显示每个规则的平台、选择器、元素类型和文字内容</li>
+          <li><strong>删除规则：</strong>点击规则右侧的【删除】按钮即可移除该规则</li>
+          <li><strong>清空全部：</strong>点击表格上方的【清空全部】按钮可一次删除所有规则</li>
+          <li><strong>按网域分组：</strong>规则自动按网域保存，不同网站的规则不会互相干扰</li>
+        </ul>
+
+        <h3>⚠️ 注意事项</h3>
+        <div class="highlight-box" style="background: rgba(255, 212, 59, 0.08); border-color: rgba(255, 212, 59, 0.4);">
+          <p><strong>选择器稳定性警告：</strong></p>
+          <p style="margin-top: 8px; font-size: 12px;">
+            • 当你看到「⚠️ 选择器可能不稳定，建议重新选择」的提示时，表示系统认为该选择器可能不稳定<br>
+            • 不稳定的选择器可能包含 <code>nth-child</code> 或 <code>nth-of-type</code>，这些选择器依赖元素位置<br>
+            • 网页重新载入后，元素位置可能改变，导致选择器失效<br>
+            • 建议选择有固定 <code>id</code> 或多个稳定 <code>class</code> 的元素
+          </p>
+        </div>
+
+        <div class="highlight-box">
+          <p><strong>常见问题：</strong></p>
+          <ul style="margin-top: 8px; font-size: 12px; margin-left: 16px;">
+            <li><strong>Q：为什么某些元素刷新后又出现了？</strong><br>
+              A：可能因为选择器不稳定。建议重新选择该元素的父容器，选择有固定 id 或 class 的元素。</li>
+            <li><strong>Q：规则会永久保存吗？</strong><br>
+              A：会。规则按网域自动保存到浏览器，重新载入页面后规则仍然生效。</li>
+            <li><strong>Q：如何测试选择器是否正确？</strong><br>
+              A：在开发者工具的 Console 中输入 <code>document.querySelectorAll('你的选择器')</code>，看能否找到元素。</li>
+            <li><strong>Q：可以隐藏页面的任何元素吗？</strong><br>
+              A：除了 <code>html</code> 和 <code>body</code> 元素外，其他元素都可以隐藏。</li>
+          </ul>
+        </div>
+      </div>
+
+
+     
 
       <div class="content-section">
+        <h2>🧹 清洁元素功能</h2>
+        <p>清洁元素功能让你隐藏网页上干扰视觉的元素，让实况界面更干净。与 uBlock 不同，GSS 提供清楚的隐藏列表，让你一目了然知道每个网域隐藏了什么。</p>
+
+        <h3>📌 功能位置</h3>
+        <p>点击插件面板中的【清洁】标签页即可进入清洁元素功能。</p>
+
+        <h3>🎯 方法一：拣选模式（推荐，最简单）</h3>
+        <div class="highlight-box">
+          <p><strong>使用步骤：</strong></p>
+          <ol style="margin-left: 20px; margin-top: 8px;">
+            <li>在【清洁】页面点击【🎯 开始拣选元素】按钮</li>
+            <li>Popup 会自动关闭，画面中央会显示「🎯 拣选模式中 | 点击元素隐藏 | 按 Esc 退出」</li>
+            <li>将鼠标移动到你想隐藏的元素上（该元素会显示蓝色边框）</li>
+            <li>点击该元素，系统会自动生成选择器并立即隐藏它</li>
+            <li>可以连续点击多个元素进行隐藏</li>
+            <li>完成后按 <code>Esc</code> 键退出拣选模式</li>
+          </ol>
+        </div>
+
+        <h3>⌨️ 方法二：手动添加选择器（进阶）</h3>
+        <p>如果你知道 CSS 选择器，可以直接手动添加。以下是详细步骤：</p>
+        <div class="highlight-box">
+          <p><strong>步骤 1：取得 CSS 选择器</strong></p>
+          <ol style="margin-left: 20px; margin-top: 8px; font-size: 13px;">
+            <li>在目标网页按下 <code>F12</code> 开启开发者工具</li>
+            <li>点击开发者工具左上角的「选择元素」按钮（图标：◇ 或 ↖️）</li>
+            <li>在网页上点击你想隐藏的元素</li>
+            <li>在开发者工具的「Elements」面板中，找到该元素的 HTML 代码</li>
+            <li>查看该元素的 <code>class</code> 或 <code>id</code> 属性</li>
+          </ol>
+          <p style="margin-top: 12px; font-size: 12px; color: #868e96;">
+            <strong>选择器格式：</strong><br>
+            • 如果有 <code>id="sidebar"</code> → 选择器是 <code>#sidebar</code><br>
+            • 如果有 <code>class="advertisement"</code> → 选择器是 <code>.advertisement</code><br>
+            • 如果有多个 class → 选择器是 <code>.class1.class2</code><br>
+            • 如果是嵌套元素 → 选择器是 <code>.parent .child</code>
+          </p>
+        </div>
+
+        <div class="highlight-box">
+          <p><strong>步骤 2：添加选择器</strong></p>
+          <ol style="margin-left: 20px; margin-top: 8px; font-size: 13px;">
+            <li>在【清洁】页面的「手动添加 CSS 选择器」输入框中，输入你取得的选择器</li>
+            <li>点击右侧的【添加】按钮</li>
+            <li>系统会立即应用该规则并显示在下方的规则列表中</li>
+          </ol>
+          <p style="margin-top: 12px; font-size: 12px; color: #868e96;">
+            <strong>示例：</strong><br>
+            • 输入 <code>.sidebar</code> 隐藏侧边栏<br>
+            • 输入 <code>#ads</code> 隐藏广告区块<br>
+            • 输入 <code>.header .banner</code> 隐藏标题横幅
+          </p>
+        </div>
+
+        <h3>📋 管理隐藏规则</h3>
+        <p>所有隐藏规则都会显示在下方的表格中：</p>
+        <ul>
+          <li><strong>查看规则：</strong>表格显示每个规则的平台、选择器、元素类型和文字内容</li>
+          <li><strong>删除规则：</strong>点击规则右侧的【删除】按钮即可移除该规则</li>
+          <li><strong>清空全部：</strong>点击表格上方的【清空全部】按钮可一次删除所有规则</li>
+          <li><strong>按网域分组：</strong>规则自动按网域保存，不同网站的规则不会互相干扰</li>
+        </ul>
+
+        <h3>⚠️ 注意事项</h3>
+        <div class="highlight-box" style="background: rgba(255, 212, 59, 0.08); border-color: rgba(255, 212, 59, 0.4);">
+          <p><strong>选择器稳定性警告：</strong></p>
+          <p style="margin-top: 8px; font-size: 12px;">
+            • 当你看到「⚠️ 选择器可能不稳定，建议重新选择」的提示时，表示系统认为该选择器可能不稳定<br>
+            • 不稳定的选择器可能包含 <code>nth-child</code> 或 <code>nth-of-type</code>，这些选择器依赖元素位置<br>
+            • 网页重新载入后，元素位置可能改变，导致选择器失效<br>
+            • 建议选择有固定 <code>id</code> 或多个稳定 <code>class</code> 的元素
+          </p>
+        </div>
+
+        <div class="highlight-box">
+          <p><strong>常见问题：</strong></p>
+          <ul style="margin-top: 8px; font-size: 12px; margin-left: 16px;">
+            <li><strong>Q：为什么某些元素刷新后又出现了？</strong><br>
+              A：可能因为选择器不稳定。建议重新选择该元素的父容器，选择有固定 id 或 class 的元素。</li>
+            <li><strong>Q：规则会永久保存吗？</strong><br>
+              A：会。规则按网域自动保存到浏览器，重新载入页面后规则仍然生效。</li>
+            <li><strong>Q：如何测试选择器是否正确？</strong><br>
+              A：在开发者工具的 Console 中输入 <code>document.querySelectorAll('你的选择器')</code>，看能否找到元素。</li>
+            <li><strong>Q：可以隐藏页面的任何元素吗？</strong><br>
+              A：除了 <code>html</code> 和 <code>body</code> 元素外，其他元素都可以隐藏。</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+     <div class="content-section">
         <h2>🧶 TexoStreamCore (TSC) 实况管理</h2>
         <p>TSC 是 GSS 的实况主管理平台，让你在直播页面快速切换不同实况主的频道，并使用<strong>共用聊天室</strong>功能。</p>
 
@@ -980,7 +1343,6 @@
         <p><strong>贴图发送：</strong>Twitch、KICK、YouTube、Vaughn Live</p>
         <p><strong>开台状态检测：</strong>Twitch、KICK、YouTube、Vaughn Live（⚫ 尚未支持）</p>
       </div>
-    </div>
 
     <!-- 日本語内容 -->
     <div id="content-ja" class="hidden">
@@ -1198,6 +1560,95 @@
         </ul>
       </div>
 
+      <div class="content-section">
+        <h2>🧹 要素クリーニング</h2>
+        <p>要素クリーニング機能は、ウェブページ上の邪魔な要素を非表示にし、配信インターフェースをきれいにします。uBlockとは異なり、GSSは非表示要素の明確なリストを提供し、各ドメインで何が非表示になっているか一目でわかります。</p>
+
+        <h3>📌 機能の場所</h3>
+        <p>拡張機能パネルの【清潔】タブをクリックして要素クリーニング機能にアクセスします。</p>
+
+        <h3>🎯 方法1：ピッカーモード（推奨、最も簡単）</h3>
+        <div class="highlight-box">
+          <p><strong>使用手順：</strong></p>
+          <ol style="margin-left: 20px; margin-top: 8px;">
+            <li>【清潔】ページで【🎯 ピッカー開始】ボタンをクリック</li>
+            <li>Popupは自動的に閉じ、画面中央に「🎯 ピッカーモード | クリックで非表示 | Escで終了」が表示されます</li>
+            <li>非表示にしたい要素にマウスを移動（青い枠が表示されます）</li>
+            <li>要素をクリックすると、システムが自動的にセレクターを生成して即座に非表示にします</li>
+            <li>複数の要素を連続してクリックして非表示にできます</li>
+            <li>完了したら <code>Esc</code> キーを押してピッカーモードを終了</li>
+          </ol>
+        </div>
+
+        <h3>⌨️ 方法2：手動セレクター追加（上級者向け）</h3>
+        <p>CSSセレクターを知っている場合は、手動で追加できます。詳細な手順は以下の通りです：</p>
+        <div class="highlight-box">
+          <p><strong>手順1：CSSセレクターを取得</strong></p>
+          <ol style="margin-left: 20px; margin-top: 8px; font-size: 13px;">
+            <li>対象ウェブページで <code>F12</code> を押してデベロッパーツールを開く</li>
+            <li>デベロッパーツール左上の「要素を選択」ボタンをクリック（アイコン：◇ または ↖️）</li>
+            <li>ウェブページ上で非表示にしたい要素をクリック</li>
+            <li>デベロッパーツールの「Elements」パネルで、その要素のHTMLコードを見つける</li>
+            <li>要素の <code>class</code> または <code>id</code> 属性を確認</li>
+          </ol>
+          <p style="margin-top: 12px; font-size: 12px; color: #868e96;">
+            <strong>セレクター形式：</strong><br>
+            • <code>id="sidebar"</code> の場合 → セレクターは <code>#sidebar</code><br>
+            • <code>class="advertisement"</code> の場合 → セレクターは <code>.advertisement</code><br>
+            • 複数のクラスがある場合 → セレクターは <code>.class1.class2</code><br>
+            • ネストされた要素の場合 → セレクターは <code>.parent .child</code>
+          </p>
+        </div>
+
+        <div class="highlight-box">
+          <p><strong>手順2：セレクターを追加</strong></p>
+          <ol style="margin-left: 20px; margin-top: 8px; font-size: 13px;">
+            <li>【清潔】ページの「手動CSSセレクター」入力ボックスに、取得したセレクターを入力</li>
+            <li>右側の【追加】ボタンをクリック</li>
+            <li>システムが即座にルールを適用し、下のルールリストに表示されます</li>
+          </ol>
+          <p style="margin-top: 12px; font-size: 12px; color: #868e96;">
+            <strong>例：</strong><br>
+            • <code>.sidebar</code> を入力してサイドバーを非表示<br>
+            • <code>#ads</code> を入力して広告ブロックを非表示<br>
+            • <code>.header .banner</code> を入力してヘッダーバナーを非表示
+          </p>
+        </div>
+
+        <h3>📋 非表示ルールの管理</h3>
+        <p>すべての非表示ルールは下のテーブルに表示されます：</p>
+        <ul>
+          <li><strong>ルールの表示：</strong>テーブルは各ルールのプラットフォーム、セレクター、要素タイプ、テキスト内容を表示</li>
+          <li><strong>ルールの削除：</strong>ルール右側の【削除】ボタンをクリックして削除</li>
+          <li><strong>すべてクリア：</strong>テーブル上部の【すべてクリア】ボタンをクリックしてすべてのルールを一度に削除</li>
+          <li><strong>ドメイン別グループ化：</strong>ルールはドメイン別に自動保存され、異なるウェブサイトのルールは互いに干渉しません</li>
+        </ul>
+
+        <h3>⚠️ 注意事項</h3>
+        <div class="highlight-box" style="background: rgba(255, 212, 59, 0.08); border-color: rgba(255, 212, 59, 0.4);">
+          <p><strong>セレクター安定性の警告：</strong></p>
+          <p style="margin-top: 8px; font-size: 12px;">
+            • 「⚠️ セレクターが不安定かもしれません、再選択してください」という警告が表示された場合、システムがそのセレクターが不安定だと判断しています<br>
+            • 不安定なセレクターには <code>nth-child</code> または <code>nth-of-type</code> が含まれる可能性があり、これらは要素の位置に依存します<br>
+            • ページを再読み込み後、要素の位置が変わるとセレクターが失敗する可能性があります<br>
+            • 固定の <code>id</code> または複数の安定した <code>class</code> を持つ要素を選択することをお勧めします
+          </p>
+        </div>
+
+        <div class="highlight-box">
+          <p><strong>よくある質問：</strong></p>
+          <ul style="margin-top: 8px; font-size: 12px; margin-left: 16px;">
+            <li><strong>Q：なぜ一部の要素は更新後に再表示されるのですか？</strong><br>
+              A：セレクターが不安定な可能性があります。要素の親コンテナを再選択し、固定のidまたはclassを持つ要素を選択することをお勧めします。</li>
+            <li><strong>Q：ルールは永続的に保存されますか？</strong><br>
+              A：はい。ルールはドメイン別にブラウザに自動保存され、ページを再読み込み後も有効です。</li>
+            <li><strong>Q：セレクターが正しいかどうかをテストするには？</strong><br>
+              A：デベロッパーツールのConsoleで <code>document.querySelectorAll('セレクター')</code> を入力して、要素が見つかるか確認します。</li>
+            <li><strong>Q：ページ上の任意の要素を非表示にできますか？</strong><br>
+              A：<code>html</code> と <code>body</code> 要素を除き、他のすべての要素を非表示にできます。</li>
+          </ul>
+        </div>
+      </div>
 
 
       <div class="content-section">
@@ -1475,6 +1926,95 @@
         </ul>
       </div>
 
+      <div class="content-section">
+        <h2>🧹 요소 청소</h2>
+        <p>요소 청소 기능은 웹페이지의 방해 요소를 숨겨 방송 인터페이스를 깔끔하게 만듭니다. uBlock과 달리 GSS는 숨겨진 요소의 명확한 목록을 제공하여 각 도메인에서 무엇이 숨겨져 있는지 한눈에 알 수 있습니다.</p>
+
+        <h3>📌 기능 위치</h3>
+        <p>확장 프로그램 패널의【청소】탭을 클릭하여 요소 청소 기능에 접근합니다.</p>
+
+        <h3>🎯 방법 1: 선택기 모드 (권장, 가장 쉬움)</h3>
+        <div class="highlight-box">
+          <p><strong>사용 방법:</strong></p>
+          <ol style="margin-left: 20px; margin-top: 8px;">
+            <li>【청소】페이지에서【🎯 선택기 시작】버튼 클릭</li>
+            <li>Popup이 자동으로 닫히고 화면 중앙에「🎯 선택기 모드 | 클릭으로 숨기기 | Esc로 종료」가 표시됩니다</li>
+            <li>숨기고 싶은 요소로 마우스를 이동 (파란색 테두리가 표시됨)</li>
+            <li>요소를 클릭하면 시스템이 자동으로 선택자를 생성하고 즉시 숨깁니다</li>
+            <li>여러 요소를 연속으로 클릭하여 숨길 수 있습니다</li>
+            <li>완료 후 <code>Esc</code> 키를 눌러 선택기 모드 종료</li>
+          </ol>
+        </div>
+
+        <h3>⌨️ 방법 2: 수동 선택자 추가 (고급)</h3>
+        <p>CSS 선택자를 알고 있다면 직접 추가할 수 있습니다. 자세한 단계는 다음과 같습니다:</p>
+        <div class="highlight-box">
+          <p><strong>단계 1: CSS 선택자 가져오기</strong></p>
+          <ol style="margin-left: 20px; margin-top: 8px; font-size: 13px;">
+            <li>대상 웹페이지에서 <code>F12</code>를 눌러 개발자 도구 열기</li>
+            <li>개발자 도구 왼쪽 상단의「요소 선택」버튼 클릭 (아이콘: ◇ 또는 ↖️)</li>
+            <li>웹페이지에서 숨기고 싶은 요소 클릭</li>
+            <li>개발자 도구의「Elements」패널에서 해당 요소의 HTML 코드 찾기</li>
+            <li>요소의 <code>class</code> 또는 <code>id</code> 속성 확인</li>
+          </ol>
+          <p style="margin-top: 12px; font-size: 12px; color: #868e96;">
+            <strong>선택자 형식:</strong><br>
+            • <code>id="sidebar"</code>인 경우 → 선택자는 <code>#sidebar</code><br>
+            • <code>class="advertisement"</code>인 경우 → 선택자는 <code>.advertisement</code><br>
+            • 여러 클래스가 있는 경우 → 선택자는 <code>.class1.class2</code><br>
+            • 중첩된 요소인 경우 → 선택자는 <code>.parent .child</code>
+          </p>
+        </div>
+
+        <div class="highlight-box">
+          <p><strong>단계 2: 선택자 추가</strong></p>
+          <ol style="margin-left: 20px; margin-top: 8px; font-size: 13px;">
+            <li>【청소】페이지의「수동 CSS 선택자」입력창에 가져온 선택자 입력</li>
+            <li>오른쪽의【추가】버튼 클릭</li>
+            <li>시스템이 즉시 규칙을 적용하고 아래 규칙 목록에 표시</li>
+          </ol>
+          <p style="margin-top: 12px; font-size: 12px; color: #868e96;">
+            <strong>예시:</strong><br>
+            • <code>.sidebar</code> 입력하여 사이드바 숨기기<br>
+            • <code>#ads</code> 입력하여 광고 블록 숨기기<br>
+            • <code>.header .banner</code> 입력하여 헤더 배너 숨기기
+          </p>
+        </div>
+
+        <h3>📋 숨김 규칙 관리</h3>
+        <p>모든 숨김 규칙은 아래 테이블에 표시됩니다:</p>
+        <ul>
+          <li><strong>규칙 보기:</strong> 테이블은 각 규칙의 플랫폼, 선택자, 요소 유형, 텍스트 내용 표시</li>
+          <li><strong>규칙 삭제:</strong> 규칙 오른쪽의【삭제】버튼 클릭하여 제거</li>
+          <li><strong>전체 삭제:</strong> 테이블 상단의【전체 삭제】버튼 클릭하여 모든 규칙 한 번에 삭제</li>
+          <li><strong>도메인별 그룹화:</strong> 규칙은 도메인별로 자동 저장되며, 다른 웹사이트의 규칙은 서로 간섭하지 않음</li>
+        </ul>
+
+        <h3>⚠️ 주의사항</h3>
+        <div class="highlight-box" style="background: rgba(255, 212, 59, 0.08); border-color: rgba(255, 212, 59, 0.4);">
+          <p><strong>선택자 안정성 경고:</strong></p>
+          <p style="margin-top: 8px; font-size: 12px;">
+            • 「⚠️ 선택기가 불안정할 수 있음, 다시 선택」메시지가 표시되면 시스템이 해당 선택자가 불안정하다고 판단한 것입니다<br>
+            • 불안정한 선택자에는 <code>nth-child</code> 또는 <code>nth-of-type</code>가 포함될 수 있으며, 이는 요소 위치에 의존합니다<br>
+            • 페이지를 다시 로드하면 요소 위치가 변경되어 선택자가 실패할 수 있습니다<br>
+            • 고정된 <code>id</code> 또는 여러 개의 안정적인 <code>class</code>를 가진 요소를 선택하는 것을 권장합니다
+          </p>
+        </div>
+
+        <div class="highlight-box">
+          <p><strong>자주 묻는 질문:</strong></p>
+          <ul style="margin-top: 8px; font-size: 12px; margin-left: 16px;">
+            <li><strong>Q: 왜 일부 요소는 새로고침 후 다시 나타나나요?</strong><br>
+              A: 선택자가 불안정할 수 있습니다. 요소의 상위 컨테이너를 다시 선택하고, 고정된 id 또는 class를 가진 요소를 선택하는 것을 권장합니다.</li>
+            <li><strong>Q: 규칙은 영구적으로 저장되나요?</strong><br>
+              A: 네. 규칙은 도메인별로 브라우저에 자동 저장되며, 페이지를 다시 로드한 후에도 유효합니다.</li>
+            <li><strong>Q: 선택자가 올바른지 어떻게 테스트하나요?</strong><br>
+              A: 개발자 도구 Console에서 <code>document.querySelectorAll('선택자')</code>를 입력하여 요소를 찾을 수 있는지 확인합니다.</li>
+            <li><strong>Q: 페이지의 모든 요소를 숨길 수 있나요?</strong><br>
+              A: <code>html</code> 및 <code>body</code> 요소를 제외하고 다른 모든 요소를 숨길 수 있습니다.</li>
+          </ul>
+        </div>
+      </div>
 
 
       <div class="content-section">

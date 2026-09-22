@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extName__",
-  "version": "8.4",
+  "version": "8.6",
   "default_locale": "zh_TW",
   "icons": {
     "16": "icons/icon16.png",
@@ -88,6 +88,9 @@
         "modules/imageLogger.js",
         "TexoStreamCore/sharedChat.js",
         "TexoStreamCore/panel.js",
+        "cleanelement/selector.js",
+        "cleanelement/storage.js",
+        "cleanelement/index.js",
         "content.js"
       ]
     }

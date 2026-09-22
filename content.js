@@ -2822,13 +2822,21 @@ function getCandidateIdFromRightClick(target) {
 
   const img = target.closest ? target.closest('img') : null;
   if (img?.src) {
-    // 【WTV 特殊處理】檢查是否有 data-sticker-id 屬性
+    // 【優先處理】檢查是否有 data-sticker-id 屬性（最高優先級）
     if (img.dataset.stickerId) {
+      console.log('[GSS Debug] 使用 data-sticker-id:', img.dataset.stickerId);
       return img.dataset.stickerId;
     }
 
     const idFromSrc = extractEmoteIdFromSrc(img.src, img);
     if (idFromSrc) return idFromSrc;
+
+    // 如果不是標準格式，轉換為 GSS- 格式
+    if (!idFromSrc && img.src) {
+      const gssId = `GSS-${img.src.replace(/^https?:\/\//i, '')}`;
+      console.log('[GSS Debug] 轉換為 GSS 格式:', gssId);
+      return gssId;
+    }
   }
 
   // 檢查 video 元素（支援 GSS- 格式的影片）
@@ -2838,6 +2846,11 @@ function getCandidateIdFromRightClick(target) {
     if (video.dataset.stickerId) {
       return video.dataset.stickerId;
     }
+
+    // 如果不是標準格式，轉換為 GSS- 格式
+    const gssId = `GSS-${video.src.replace(/^https?:\/\//i, '')}`;
+    console.log('[GSS Debug] 視頻轉換為 GSS 格式:', gssId);
+    return gssId;
   }
 
   const sel = window.getSelection ? window.getSelection() : null;
@@ -4280,6 +4293,36 @@ async function sendChatMessage(message, retries = 2) {
   }
 
   const adapter = getPlatformAdapter();
+  const platform = getCurrentPlatform();
+
+  // gosh.com 平台特殊處理：使用 insertImage 命令直接插入圖片
+  if (platform === 'gosh' && typeof adapter.sendImage === 'function') {
+    try {
+      let imageUrl = message;
+      let stickerId = message; // 默認使用原始訊息作為貼圖 ID
+
+      // 嘗試使用 StickerRegistry 獲取圖片 URL
+      if (typeof StickerRegistry !== 'undefined') {
+        const registryUrl = StickerRegistry.getSendCode(message, 'gosh');
+        if (registryUrl && registryUrl.startsWith('http')) {
+          imageUrl = registryUrl;
+          console.log('[GSS] gosh 平台從 StickerRegistry 獲取圖片 URL:', imageUrl);
+        }
+      }
+
+      // 檢查是否為有效的圖片 URL
+      if (imageUrl && imageUrl.startsWith('http')) {
+        console.log('[GSS] gosh 平台使用 sendImage 方法:', imageUrl, '貼圖 ID:', stickerId);
+        const result = await adapter.sendImage(imageUrl, stickerId);
+        return result.id || true;
+      } else {
+        console.log('[GSS] gosh 平台無法獲取有效圖片 URL，使用普通 sendMessage');
+      }
+    } catch (e) {
+      console.warn('[GSS] gosh sendImage 失敗，降級到普通 sendMessage:', e);
+    }
+  }
+
   const result = await adapter.sendMessage(message);
   return result.id || true;
 }
@@ -9931,6 +9974,13 @@ function openYouTubePlayer(videoId) {
   if (typeof TexoPanel !== 'undefined') {
     TexoPanel.init();
     console.log('[GSS] Texo Panel initialized');
+  }
+
+  // ===== Clean Element - 清潔元素功能 =====
+  if (typeof CleanElement !== 'undefined') {
+    const platform = window.location.hostname;
+    CleanElement.init(platform);
+    console.log('[GSS] Clean Element initialized for platform:', platform);
   }
 
   // 手動測試快捷鍵（Shift+I）在 Twitch 上強制掃描

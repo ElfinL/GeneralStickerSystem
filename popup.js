@@ -1,8 +1,9 @@
-/* global DLSQ, I18N, SUPPORTED_LANGS, currentLang, t, applyLanguage, initLanguage, setLanguage */
+/* global DLSQ, I18N, SUPPORTED_LANGS, currentLang, t, applyLanguage, initLanguage, setLanguage, StickerRegistry, DLSQStickerStore, TexoPopup, CleanStorage */
 const TAG = typeof DLSQ !== 'undefined' ? DLSQ : null;
 
 function setStatus(text, color = '#28a745') {
   const el = document.getElementById('configStatus');
+  if (!el) return;
   el.style.color = color;
   el.textContent = text;
   if (!text) return;
@@ -12,10 +13,10 @@ function setStatus(text, color = '#28a745') {
 }
 
 function buildStickerFromId(id, index) {
-  // 使用 StickerRegistry 统一获取贴纸信息
+  // 使用 StickerRegistry 統一獲取貼圖資訊
   const info = StickerRegistry.getStickerInfo(id);
   if (!info) {
-    // 无效 ID 的降级处理
+    // 無效 ID 的降級處理
     return {
       name: `ID${index + 1}`,
       rawId: id,
@@ -24,8 +25,8 @@ function buildStickerFromId(id, index) {
     };
   }
 
-  // 构建向后兼容的贴纸对象
-  // 使用正规化的 ID 作为 code（DL-xxx 格式），而非平台特定格式
+  // 構建向後相容的貼圖物件
+  // 使用正規化的 ID 作為 code（DL-xxx 格式），而非平台特定格式
   return {
     name: info.type === 'DL' ? `ID${index + 1}` : `圖片 ${index + 1}`,
     rawId: info.id,
@@ -51,7 +52,6 @@ function parseStickerIdsWithTag(rawText) {
       // IM 格式：將 -gif, -png, -jpg, -jpeg, -mp4 結尾替換為 . 點格式
       if (rawId.startsWith('IM-')) {
         const id = rawId.replace(/-(gif|png|jpg|jpeg|mp4)$/i, '.$1');
-        // 驗證 IM ID 格式（必須有點號擴展名）
         if (!/^IM-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4)$/i.test(id)) continue;
         const tags = parts.slice(1).filter(p => p.startsWith('#')).map(p => p.slice(1));
         rows.push({ id, tags });
@@ -60,7 +60,6 @@ function parseStickerIdsWithTag(rawText) {
       // ME 格式：將 -gif, -png, -jpg, -jpeg, -mp4 結尾替換為 . 點格式
       if (rawId.startsWith('ME-')) {
         const id = rawId.replace(/-(gif|png|jpg|jpeg|mp4)$/i, '.$1');
-        // 驗證 ME ID 格式（必須有點號擴展名）
         if (!/^ME-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4)$/i.test(id)) continue;
         const tags = parts.slice(1).filter(p => p.startsWith('#')).map(p => p.slice(1));
         rows.push({ id, tags });
@@ -68,7 +67,6 @@ function parseStickerIdsWithTag(rawText) {
       }
       // 自動轉換舊 ID 格式
       const id = rawId.startsWith('DL-') ? rawId : `DL-${rawId}`;
-      // 驗證 ID 格式（支援 DL- 前綴）
       if (!/^(?:DL-)?[A-Za-z0-9_]+$/.test(id)) continue;
       const tags = parts.slice(1).filter(p => p.startsWith('#')).map(p => p.slice(1));
       rows.push({ id, tags });
@@ -88,7 +86,6 @@ function idsToText(ids) {
 }
 
 function extractIdFromSticker(sticker) {
-  // 移除 DLive 格式處理，返回 null
   return null;
 }
 
@@ -151,14 +148,11 @@ function loadSettings() {
   const tagVocabInput = document.getElementById('tagVocabInput');
   if (!idListInput) return;
 
-  // 使用統一的 storage key
   chrome.storage.local.get(['stickerIdsText', 'stickerTagVocabularyText', 'favoriteStickerIds'], (result) => {
-    // 載入詞庫
     if (tagVocabInput) {
       tagVocabInput.value = typeof result.stickerTagVocabularyText === 'string' ? result.stickerTagVocabularyText : '';
     }
 
-    // 載入 ID 清單
     if (typeof result.stickerIdsText === 'string') {
       const { rows } = parseStickerIdsWithTag(result.stickerIdsText);
       const sorted = sortRowsWithFavorites(rows, result.favoriteStickerIds);
@@ -167,10 +161,8 @@ function loadSettings() {
       idListInput.value = '';
     }
 
-    // 更新行號顯示
     updateLineInfo();
 
-    // 重置到開頭（不移除焦點，避免自動選中輸入框）
     requestAnimationFrame(() => {
       setTimeout(() => {
         idListInput.setSelectionRange(0, 0);
@@ -201,7 +193,6 @@ function loadStickers() {
     const { rows } = parseStickerIdsWithTag(result.stickerIdsText || '');
     const tagMap = TAG ? TAG.rowsToIdTagMap(rows) : {};
 
-    // 混合 DL 和 IM 的 stickers
     const stickers = rows.map((row, index) => buildStickerFromId(row.id, index));
     displayStickers(stickers, fav, tagMap);
   });
@@ -209,7 +200,8 @@ function loadStickers() {
 
 function displayStickers(stickers, favoriteIds = [], idToTags = {}) {
   const grid = document.getElementById('stickerGrid');
-  grid.innerHTML = '';
+  if (!grid) return;
+  grid.textContent = '';
 
   const favSet = new Set(favoriteIds);
   const sorted = [...stickers].sort((a, b) => {
@@ -234,7 +226,6 @@ function displayStickers(stickers, favoriteIds = [], idToTags = {}) {
       imgContainer.style.textAlign = 'center';
 
       if (sticker.isVideo) {
-        // IM 視頻類型
         const video = document.createElement('video');
         video.src = sticker.imageUrl;
         video.style.maxWidth = '50px';
@@ -250,7 +241,6 @@ function displayStickers(stickers, favoriteIds = [], idToTags = {}) {
         };
         imgContainer.appendChild(video);
       } else {
-        // 圖片類型
         const img = document.createElement('img');
         img.src = sticker.imageUrl;
         img.style.maxWidth = '50px';
@@ -328,7 +318,6 @@ function displayStickers(stickers, favoriteIds = [], idToTags = {}) {
   });
 }
 
-// 抽出來的常用/刪除函數
 function toggleFavorite(id) {
   chrome.storage.local.get(['stickerIdsText', 'favoriteStickerIds', 'stickerTagVocabularyText'], (r) => {
     const current = Array.isArray(r.favoriteStickerIds) ? r.favoriteStickerIds : [];
@@ -337,7 +326,6 @@ function toggleFavorite(id) {
     else set.add(id);
     const next = [...set];
 
-    // 統一處理 DL 和 IM
     const { rows } = parseStickerIdsWithTag(r.stickerIdsText || '');
     const sortedRows = sortRowsWithFavorites(rows, next);
     const nextText = TAG ? TAG.serializeStickerRows(sortedRows) : idsToText(sortedRows.map((x) => x.id));
@@ -465,7 +453,6 @@ function initSaveIdsButton() {
 }
 
 (async function dlsqBootPopup() {
-  // 更新標題版本號
   try {
     const manifest = chrome.runtime.getManifest();
     const version = manifest?.version || '3.0';
@@ -478,17 +465,13 @@ function initSaveIdsButton() {
       titleEl.appendChild(img);
       titleEl.appendChild(document.createTextNode(' General Sticker System (GSS) V' + version));
     }
-  } catch (e) {
-    // Version load error
-  }
+  } catch (e) {}
 
   try {
     if (typeof DLSQStickerStore !== 'undefined') {
       await DLSQStickerStore.migrateFromSyncIfNeeded();
     }
-  } catch (e) {
-    // DLSQ sticker migrate error
-  }
+  } catch (e) {}
 
   loadSettings();
   initLanguage(() => {
@@ -498,18 +481,16 @@ function initSaveIdsButton() {
   loadStickers();
 })();
 
-// ==================== 行號信息显示 ====================
+// ==================== 行號資訊顯示 ====================
 function updateLineInfo() {
   const textarea = document.getElementById('idListInput');
   const lineInfoText = document.getElementById('lineInfoText');
   if (!textarea || !lineInfoText) return;
 
-  // 處理 \r\n 和 \n 兩種換行符格式
   const normalizedValue = textarea.value.replace(/\r\n/g, '\n');
   const lines = normalizedValue.split('\n');
   const totalLines = lines.length;
 
-  // 計算當前光標所在行
   const cursorPos = textarea.selectionStart;
   const textBeforeCursor = textarea.value.substring(0, cursorPos).replace(/\r\n/g, '\n');
   const currentLine = textBeforeCursor.split('\n').length;
@@ -530,29 +511,24 @@ function initLineInfo() {
     const lines = textarea.value.split('\n');
     if (lineNum > lines.length) return;
 
-    // 計算目標行的起始位置
     let targetPos = 0;
     for (let i = 0; i < lineNum - 1; i++) {
-      targetPos += lines[i].length + 1; // +1 for \n
+      targetPos += lines[i].length + 1;
     }
 
-    // 設置光標位置並聚焦
     textarea.focus();
     textarea.setSelectionRange(targetPos, targetPos);
     updateLineInfo();
 
-    // 滾動到該行
-    const lineHeight = 18; // 近似行高
+    const lineHeight = 18;
     textarea.scrollTop = (lineNum - 1) * lineHeight;
   }
 
-  // 監聽光標移動
   textarea.addEventListener('keyup', updateLineInfo);
   textarea.addEventListener('click', updateLineInfo);
   textarea.addEventListener('input', updateLineInfo);
   textarea.addEventListener('scroll', updateLineInfo);
 
-  // 跳轉按鈕
   if (gotoLineBtn) {
     gotoLineBtn.addEventListener('click', gotoLine);
   }
@@ -562,7 +538,6 @@ function initLineInfo() {
     });
   }
 
-  // 初始更新 - 不移除焦點，避免自動選中輸入框
   setTimeout(() => {
     textarea.setSelectionRange(0, 0);
     textarea.scrollTop = 0;
@@ -587,51 +562,53 @@ function getCurrentPlatform(callback) {
 }
 
 // ==================== 頁面切換功能 ====================
-let currentPage = 'main'; // 'main', 'texo', 'settings', 或 'disclaimer'
+let currentPage = 'main';
 
 function initPageToggle() {
   const tabSticker = document.getElementById('tabSticker');
   const tabTexo = document.getElementById('tabTexo');
+  const tabClean = document.getElementById('tabClean');
   const tabSettings = document.getElementById('tabSettings');
   const tabDisclaimer = document.getElementById('tabDisclaimer');
   const mainPage = document.getElementById('mainPage');
   const texoPage = document.getElementById('texoPage');
+  const cleanPage = document.getElementById('cleanPage');
   const settingsPage = document.getElementById('settingsPage');
   const disclaimerPage = document.getElementById('disclaimerPage');
 
   if (!tabSticker || !tabSettings || !mainPage || !settingsPage) return;
 
-  // 檢測當前平台並調整 UI
   getCurrentPlatform((platform) => {
-    // 更新提醒文字（根據當前語言）
     const reminderText = document.getElementById('reminderText');
     if (reminderText && typeof t === 'function') {
       reminderText.textContent = t('reminder');
     }
-  }
-  );
+  });
 
   function switchToPage(page) {
     currentPage = page;
-    // 重置所有頁面和按鈕狀態
     mainPage.classList.remove('active');
     if (texoPage) texoPage.classList.remove('active');
+    if (cleanPage) cleanPage.classList.remove('active');
     settingsPage.classList.remove('active');
     if (disclaimerPage) disclaimerPage.classList.remove('active');
     tabSticker.classList.remove('active');
     if (tabTexo) tabTexo.classList.remove('active');
+    if (tabClean) tabClean.classList.remove('active');
     tabSettings.classList.remove('active');
     if (tabDisclaimer) tabDisclaimer.classList.remove('active');
 
-    // 激活當前頁面
     if (page === 'main') {
       mainPage.classList.add('active');
       tabSticker.classList.add('active');
     } else if (page === 'texo') {
       if (texoPage) texoPage.classList.add('active');
       if (tabTexo) tabTexo.classList.add('active');
-      // 初始化 TSC 開關
       initTscToggles();
+    } else if (page === 'clean') {
+      if (cleanPage) cleanPage.classList.add('active');
+      if (tabClean) tabClean.classList.add('active');
+      initCleanPage();
     } else if (page === 'settings') {
       settingsPage.classList.add('active');
       tabSettings.classList.add('active');
@@ -643,15 +620,14 @@ function initPageToggle() {
 
   tabSticker.addEventListener('click', () => switchToPage('main'));
   if (tabTexo) tabTexo.addEventListener('click', () => switchToPage('texo'));
+  if (tabClean) tabClean.addEventListener('click', () => switchToPage('clean'));
   tabSettings.addEventListener('click', () => switchToPage('settings'));
   if (tabDisclaimer) tabDisclaimer.addEventListener('click', () => switchToPage('disclaimer'));
 
-  // 初始化編織頁面功能
   if (typeof TexoPopup !== 'undefined') {
     TexoPopup.init();
   }
 
-  // 圖庫編輯按鈕 - 在新分頁開啟編輯器
   const openEditorBtn = document.getElementById('openEditorBtn');
   if (openEditorBtn) {
     openEditorBtn.addEventListener('click', () => {
@@ -659,8 +635,6 @@ function initPageToggle() {
       window.open(editorUrl, '_blank');
     });
   }
-
-  // 移除 DLive 設定頁按鈕初始化
 }
 
 // 禁用原生右鍵面板按鈕
@@ -670,8 +644,6 @@ initDisableNativeContextMenuButton();
 initStickerSizeControl();
 
 // ==================== 自動關閉 Mature 警告功能 ====================
-
-// 自定義確認對話框
 let customDialogCallback = null;
 
 function initCustomDialog() {
@@ -681,19 +653,11 @@ function initCustomDialog() {
 
   if (!dialog || !cancelBtn || !confirmBtn) return;
 
-  cancelBtn.addEventListener('click', () => {
-    hideCustomDialog(false);
-  });
+  cancelBtn.addEventListener('click', () => hideCustomDialog(false));
+  confirmBtn.addEventListener('click', () => hideCustomDialog(true));
 
-  confirmBtn.addEventListener('click', () => {
-    hideCustomDialog(true);
-  });
-
-  // 點擊背景關閉
   dialog.addEventListener('click', (e) => {
-    if (e.target === dialog) {
-      hideCustomDialog(false);
-    }
+    if (e.target === dialog) hideCustomDialog(false);
   });
 }
 
@@ -706,11 +670,9 @@ function showCustomDialog(title, content, onConfirm) {
 
   if (!dialog || !titleEl || !contentEl) return;
 
-  // 更新文字（支援多語言）
   titleEl.textContent = title || t('autoMatureTitle') || '🔞 自動關閉 Mature 警告';
   contentEl.textContent = content;
 
-  // 按鈕文字
   if (cancelBtn) cancelBtn.textContent = t('deleteCancelBtn') || '取消';
   if (confirmBtn) confirmBtn.textContent = t('deleteConfirmBtn') || '確定';
 
@@ -735,10 +697,8 @@ function initAutoMatureButton() {
   const btn = document.getElementById('btnAutoMature');
   if (!btn) return;
 
-  // 初始化自定義對話框
   initCustomDialog();
 
-  // 載入當前設置狀態
   chrome.storage.local.get(['autoCloseMatureWarning'], (result) => {
     const isEnabled = result.autoCloseMatureWarning === true;
     updateAutoMatureButtonState(btn, isEnabled);
@@ -749,9 +709,7 @@ function initAutoMatureButton() {
       const currentState = result.autoCloseMatureWarning === true;
 
       if (!currentState) {
-        // 要開啟 - 顯示自定義確認對話框
         const confirmMessage = t('autoMatureConfirm');
-
         showCustomDialog(null, confirmMessage, (confirmed) => {
           if (confirmed) {
             setAutoMatureWarning(true);
@@ -759,7 +717,6 @@ function initAutoMatureButton() {
           }
         });
       } else {
-        // 要關閉 - 直接關閉
         setAutoMatureWarning(false);
         updateAutoMatureButtonState(btn, false);
       }
@@ -774,9 +731,7 @@ function updateAutoMatureButtonState(btn, isEnabled) {
 }
 
 function setAutoMatureWarning(enabled) {
-  chrome.storage.local.set({ autoCloseMatureWarning: enabled }, () => {
-    // 移除 DLive 相關邏輯，只保存設置
-  });
+  chrome.storage.local.set({ autoCloseMatureWarning: enabled }, () => {});
   showSettingsStatus(
     enabled ? t('autoMatureEnabled') : t('autoMatureDisabled'),
     enabled ? '#28a745' : '#dc3545'
@@ -784,12 +739,10 @@ function setAutoMatureWarning(enabled) {
 }
 
 // ==================== 禁用原生右鍵面板功能 ====================
-
 function initDisableNativeContextMenuButton() {
   const btn = document.getElementById('btnDisableNativeContextMenu');
   if (!btn) return;
 
-  // 載入當前設置狀態
   chrome.storage.local.get(['disableNativeContextMenu'], (result) => {
     const isDisabled = result.disableNativeContextMenu === true;
     updateDisableNativeContextMenuButtonState(btn, isDisabled);
@@ -807,15 +760,12 @@ function initDisableNativeContextMenuButton() {
           newState ? '#28a745' : '#dc3545'
         );
 
-        // 通知所有頁面更新設置
         chrome.tabs.query({}, (tabs) => {
           tabs.forEach(tab => {
             chrome.tabs.sendMessage(tab.id, {
               type: 'GSS_CONTROL',
               command: newState ? 'disableNativeContextMenu' : 'enableNativeContextMenu'
-            }).catch(() => {
-              // 忽略無法連接的頁面錯誤
-            });
+            }).catch(() => {});
           });
         });
       });
@@ -826,18 +776,15 @@ function initDisableNativeContextMenuButton() {
 function updateDisableNativeContextMenuButtonState(btn, isDisabled) {
   btn.classList.toggle('active', isDisabled);
   const baseText = t('disableNativeContextMenuTitle') || '關閉右鍵面板';
-  // 【修改】只更新 .btn-text 元素的內容
   const textEl = btn.querySelector('.btn-text');
   if (textEl) {
     textEl.textContent = isDisabled ? `${baseText} (✓)` : baseText;
   } else {
-    // 如果沒有 .btn-text 元素，則更新整個按鈕（向後兼容）
     btn.textContent = isDisabled ? `${baseText} (✓)` : baseText;
   }
 }
 
 // ==================== 貼圖大小設定功能 ====================
-
 function initStickerSizeControl() {
   const buttons = document.querySelectorAll('.sticker-size-btn');
   const customSizeArea = document.getElementById('customSizeArea');
@@ -845,23 +792,20 @@ function initStickerSizeControl() {
   
   if (buttons.length === 0) return;
   
-  // 載入當前設定（預設為大圖模式）
   chrome.storage.local.get(['stickerSizeMode', 'stickerSizePercent'], (result) => {
     let currentMode = result.stickerSizeMode;
     if (currentMode === undefined || currentMode === false) {
-      currentMode = 'large'; // 預設大圖模式
+      currentMode = 'large';
     } else if (currentMode === true) {
-      currentMode = 'small'; // 舊的 true 轉為小圖模式
+      currentMode = 'small';
     }
     
-    // 初始化自定義數值
     if (customInput) {
       customInput.value = result.stickerSizePercent || 100;
     }
     
     updateStickerSizeButtons(currentMode);
     
-    // 顯示/隱藏自定義區域
     if (customSizeArea) {
       customSizeArea.style.display = (currentMode === 'custom') ? 'flex' : 'none';
     }
@@ -870,11 +814,9 @@ function initStickerSizeControl() {
       chrome.storage.local.set({ stickerSizeMode: 'large' });
     }
     
-    // 通知所有頁面更新設定
     notifySizeChange(currentMode, customInput?.value);
   });
   
-  // 按鈕點擊事件
   buttons.forEach(button => {
     button.addEventListener('click', () => {
       const mode = button.getAttribute('data-size');
@@ -885,7 +827,6 @@ function initStickerSizeControl() {
     });
   });
 
-  // 自定義數值變更事件
   if (customInput) {
     customInput.addEventListener('change', () => {
       let val = parseInt(customInput.value);
@@ -946,7 +887,6 @@ function saveStickerSizeMode(mode) {
 }
 
 // ==================== TSC 開關功能 ====================
-
 function initTscToggles() {
   const tscEnabled = document.getElementById('tscEnabled');
   const tscAutoCollect = document.getElementById('tscAutoCollect');
@@ -955,7 +895,6 @@ function initTscToggles() {
 
   if (!tscEnabled || !tscAutoCollect) return;
 
-  // 設置 i18n 文字（使用項目的 t() 函數）
   if (tscEnabledLabel && typeof t === 'function') {
     const text = t('tscEnabledLabel');
     if (text) tscEnabledLabel.textContent = text;
@@ -965,25 +904,21 @@ function initTscToggles() {
     if (text) tscAutoCollectLabel.textContent = text;
   }
 
-  // 防止重複初始化
   if (tscEnabled.dataset.initialized === 'true') return;
   tscEnabled.dataset.initialized = 'true';
 
-  // 載入儲存的設定（預設開啟）
   chrome.storage.local.get(['tscEnabled', 'tscAutoCollect'], (result) => {
-    const isEnabled = result.tscEnabled !== false; // 預設 true
-    const isAutoCollect = result.tscAutoCollect !== false; // 預設 true
+    const isEnabled = result.tscEnabled !== false;
+    const isAutoCollect = result.tscAutoCollect !== false;
 
     tscEnabled.checked = isEnabled;
     tscAutoCollect.checked = isAutoCollect;
-    tscAutoCollect.disabled = !isEnabled; // 如果主開關關閉，自動抓取也禁用
+    tscAutoCollect.disabled = !isEnabled;
   });
 
-  // 主開關變更事件
   tscEnabled.addEventListener('change', () => {
     const isEnabled = tscEnabled.checked;
 
-    // 立即更新 UI（不等待 storage）
     tscAutoCollect.disabled = !isEnabled;
     if (!isEnabled) {
       tscAutoCollect.checked = false;
@@ -997,12 +932,10 @@ function initTscToggles() {
         isEnabled ? 'TSC 系統已開啟' : 'TSC 系統已關閉',
         isEnabled ? '#28a745' : '#dc3545'
       );
-      // 通知所有頁面更新設置
       notifyAllTabs({ type: 'GSS_CONTROL', command: isEnabled ? 'enableTsc' : 'disableTsc' });
     });
   });
 
-  // 自動抓取開關變更事件
   tscAutoCollect.addEventListener('change', () => {
     const isAutoCollect = tscAutoCollect.checked;
     chrome.storage.local.set({ tscAutoCollect: isAutoCollect }, () => {
@@ -1015,24 +948,18 @@ function initTscToggles() {
   });
 }
 
-// 通知所有頁面的輔助函數
 function notifyAllTabs(message) {
   chrome.tabs.query({}, (tabs) => {
     tabs.forEach(tab => {
-      chrome.tabs.sendMessage(tab.id, message).catch(() => {
-        // 忽略無法連接的頁面錯誤
-      });
+      chrome.tabs.sendMessage(tab.id, message).catch(() => {});
     });
   });
 }
 
-// 當語言切換時更新所有設定按鈕文字
 function updateSettingsButtonTexts() {
-  // 通用設定標題
   const generalSettingsText = document.getElementById('generalSettingsText');
   if (generalSettingsText) generalSettingsText.textContent = t('generalSettings') || '通用設定';
 
-  // 更新右鍵面板按鈕
   const btnDisableNativeContextMenu = document.getElementById('btnDisableNativeContextMenu');
   if (btnDisableNativeContextMenu) {
     const textEl = btnDisableNativeContextMenu.querySelector('.btn-text');
@@ -1046,18 +973,15 @@ function updateSettingsButtonTexts() {
   const openEditorBtn = document.getElementById('openEditorBtn');
   if (openEditorBtn) openEditorBtn.textContent = t('openEditor');
 
-  // 貼圖大小設定翻譯
   const stickerSizeTitle = document.getElementById('stickerSizeTitle');
   if (stickerSizeTitle) stickerSizeTitle.textContent = t('stickerSizeTitle') || '📏 貼圖大小設定';
 
-  // 更新貼圖大小模式標籤
   const stickerSizeToggle = document.getElementById('stickerSizeToggle');
   if (stickerSizeToggle) {
     const isSmallMode = stickerSizeToggle.checked;
     updateStickerSizeLabel(isSmallMode);
   }
 
-  // 自定義平台翻譯
   const customPlatformSectionTitle = document.getElementById('customPlatformSectionTitle');
   if (customPlatformSectionTitle) customPlatformSectionTitle.textContent = t('customPlatformTitle');
 
@@ -1076,7 +1000,6 @@ function updateSettingsButtonTexts() {
     if (textEl) textEl.textContent = t('btnEditCustomPlatform');
   }
 
-  // 對話框翻譯
   const customPlatformDialogTitle = document.getElementById('customPlatformDialogTitle');
   if (customPlatformDialogTitle) customPlatformDialogTitle.textContent = t('customPlatformDialogTitle');
 
@@ -1098,23 +1021,18 @@ function updateSettingsButtonTexts() {
   const btnSaveCustomPlatform = document.getElementById('btnSaveCustomPlatform');
   if (btnSaveCustomPlatform) btnSaveCustomPlatform.textContent = t('texoSave');
 
-  // 重新渲染列表以更新「無數據」文字
   if (typeof renderCustomPlatforms === 'function') {
     renderCustomPlatforms();
   }
 }
 
-// 當語言切換時更新 TexoStreamCore 頁面文字
 function updateTexoTexts() {
-  // 標題
   const texoTitle = document.getElementById('texoTitle');
   if (texoTitle) texoTitle.textContent = t('texoTitle') || '🧶 實況編織核心';
 
-  // 副標題
   const texoSubtitle = document.getElementById('texoSubtitle');
   if (texoSubtitle) texoSubtitle.textContent = t('texoSubtitle') || 'Texo Stream Core - 管理多平台實況資訊';
 
-  // 輸入框標籤
   const texoLabel = document.getElementById('texoLabel');
   if (texoLabel) {
     const label = t('texoLabel') || '編織資料';
@@ -1128,11 +1046,9 @@ function updateTexoTexts() {
     texoLabel.appendChild(span);
   }
 
-  // placeholder
   const texoInput = document.getElementById('texoInput');
   if (texoInput) texoInput.placeholder = t('texoPlaceholder') || '>主播名稱 #https://www.twitch.tv/xxx\n#https://www.youtube.com/...\n#https://www.kick.com/...';
 
-  // 格式說明
   const texoFormatTitle = document.getElementById('texoFormatTitle');
   if (texoFormatTitle) texoFormatTitle.textContent = t('texoFormatTitle') || '格式規則：';
 
@@ -1142,7 +1058,6 @@ function updateTexoTexts() {
   const texoFormatPlatform = document.getElementById('texoFormatPlatform');
   if (texoFormatPlatform) texoFormatPlatform.textContent = t('texoFormatPlatform') || '直播平台';
 
-  // TSC 標籤
   const tscEnabledLabel = document.getElementById('tscEnabledLabel');
   if (tscEnabledLabel) {
     const text = t('tscEnabledLabel');
@@ -1160,31 +1075,69 @@ function updateTexoTexts() {
   const texoFormatSeeHelp = document.getElementById('texoFormatSeeHelp');
   if (texoFormatSeeHelp) texoFormatSeeHelp.textContent = t('texoFormatSeeHelp') || '詳見';
 
-  // 儲存按鈕
   const texoSaveText = document.getElementById('texoSaveText');
   if (texoSaveText) texoSaveText.textContent = t('texoSave') || '💾 儲存';
 
-  // 狀態（如果不是顯示已儲存狀態）
   const texoStatus = document.getElementById('texoStatus');
   if (texoStatus && !texoStatus.textContent.includes('✅')) {
     texoStatus.textContent = t('texoStatus') || '自動載入上次儲存的內容';
   }
 
-  // Tab 按鈕（只更新文字部分，保留 emoji）
   const tabTexoSpan = document.querySelector('#tabTexo [data-i18n="tabTexo"]');
   if (tabTexoSpan) tabTexoSpan.textContent = t('tabTexo') || '編織';
-  
+
+  const tabCleanSpan = document.querySelector('#tabClean [data-i18n="tabClean"]');
+  if (tabCleanSpan) tabCleanSpan.textContent = t('tabClean') || '清潔';
+
   const tabSettingsText = document.getElementById('tabSettingsText');
   if (tabSettingsText) tabSettingsText.textContent = t('tabSettings') || '設定';
+
+  if (typeof t === 'function') {
+    const cleanTitle = document.querySelector('#cleanPage .settings-section-title');
+    if (cleanTitle) cleanTitle.textContent = t('cleanTitle') || '🧹 清潔元素';
+
+    const cleanDescription = document.querySelector('#cleanPage .settings-section > div:nth-child(2)');
+    if (cleanDescription) cleanDescription.textContent = t('cleanDescription') || '隱藏或移除網頁上的干擾元素，讓實況界面更乾淨。';
+
+    const startPickerBtn = document.getElementById('startPickerBtn');
+    if (startPickerBtn) startPickerBtn.textContent = t('cleanStartPicker') || '🎯 開始揀選元素';
+
+    const exitPickerBtn = document.getElementById('exitPickerBtn');
+    if (exitPickerBtn) exitPickerBtn.textContent = t('cleanExitPicker') || '🚫 退出揀選';
+
+    const pickerStatus = document.getElementById('pickerStatus');
+    if (pickerStatus) pickerStatus.textContent = t('cleanPickerStatus') || '揀選模式中：移動鼠標到要隱藏的元素上，點擊即可添加規則。按 Esc 退出。';
+
+    const manualSelectorLabel = document.querySelector('#cleanPage div:nth-child(4) > div:nth-child(1)');
+    if (manualSelectorLabel) manualSelectorLabel.textContent = t('cleanManualSelector') || '手動添加 CSS 選擇器：';
+
+    const manualSelector = document.getElementById('manualSelector');
+    if (manualSelector) manualSelector.placeholder = t('cleanManualPlaceholder') || '.sidebar 或 #ads';
+
+    const addManualBtn = document.getElementById('addManualSelectorBtn');
+    if (addManualBtn) addManualBtn.textContent = t('cleanAddManual') || '添加';
+
+    const rulesTitle = document.querySelector('#cleanPage div:nth-child(5) > div:nth-child(1)');
+    if (rulesTitle) rulesTitle.textContent = t('cleanRulesTitle') || '隱藏規則列表：';
+
+    const clearAllBtn = document.getElementById('clearAllRulesBtn');
+    if (clearAllBtn) clearAllBtn.textContent = t('cleanClearAll') || '清空全部';
+
+    displayRulesTable();
+
+    getCurrentTab().then(tab => {
+      if (tab) {
+        chrome.tabs.sendMessage(tab.id, { action: 'updateLanguage', lang: currentLang });
+      }
+    });
+  }
   
-  // 【新增】貼圖大小調整翻譯
   const stickerSizeTitle = document.getElementById('stickerSizeTitle');
   if (stickerSizeTitle) stickerSizeTitle.textContent = t('stickerSizeTitle') || '📏 貼圖大小設定';
   
   const stickerSizeRange = document.getElementById('stickerSizeRange');
   if (stickerSizeRange) stickerSizeRange.textContent = t('stickerSizeRange') || '範圍：5% - 200% • 每次 ±5%';
 }
-
 
 function showSettingsStatus(message, color) {
   const status = document.getElementById('settingsStatus');
@@ -1205,8 +1158,376 @@ document.addEventListener('DOMContentLoaded', () => {
     initSaveIdsButton();
     initCustomPlatformManager();
     initStickerSizeButtons();
+    initCleanPage();
   });
 });
+
+// ==================== 清潔元素頁面功能 ====================
+let cleanRulesList = [];
+let isPickerActive = false;
+
+function initCleanPage() {
+  loadAllCleanRules();
+
+  const startPickerBtn = document.getElementById('startPickerBtn');
+  const exitPickerBtn = document.getElementById('exitPickerBtn');
+
+  if (startPickerBtn) {
+    startPickerBtn.addEventListener('click', () => {
+      startPickerMode();
+    });
+  }
+
+  if (exitPickerBtn) {
+    exitPickerBtn.addEventListener('click', () => {
+      exitPickerMode();
+    });
+  }
+
+  const addManualBtn = document.getElementById('addManualSelectorBtn');
+  const manualInput = document.getElementById('manualSelector');
+
+  if (addManualBtn && manualInput) {
+    addManualBtn.addEventListener('click', () => {
+      const selector = manualInput.value.trim();
+      if (selector) {
+        addRuleToSelector(selector);
+        manualInput.value = '';
+      }
+    });
+
+    manualInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        addManualBtn.click();
+      }
+    });
+  }
+
+  const clearAllBtn = document.getElementById('clearAllRulesBtn');
+  if (clearAllBtn) {
+    clearAllBtn.addEventListener('click', () => {
+      if (confirm('確定要清空所有隱藏規則嗎？')) {
+        clearAllRules();
+      }
+    });
+  }
+
+  chrome.runtime.onMessage.addListener((message) => {
+    if (message.action === 'pickerElementSelected') {
+      handlePickerSelection(message.rule);
+    } else if (message.action === 'pickerExited') {
+      exitPickerMode();
+    }
+  });
+}
+
+async function loadAllCleanRules() {
+  try {
+    const result = await CleanStorage.getAllRulesSummary();
+    cleanRulesList = [];
+
+    for (const platform in result) {
+      const platformRules = await CleanStorage.getRules(platform);
+      platformRules.forEach(rule => {
+        rule.platform = platform;
+        cleanRulesList.push(rule);
+      });
+    }
+
+    displayRulesTable();
+  } catch (error) {
+    console.error('[CleanPopup] 載入規則失敗:', error);
+  }
+}
+
+// 重構表單渲染：全面改用 DOM API (createElement + textContent) 消滅所有 innerHTML 警告
+function displayRulesTable() {
+  const tableEl = document.getElementById('cleanRulesTable');
+  if (!tableEl) return;
+
+  const t = typeof window.t === 'function' ? window.t : null;
+
+  tableEl.textContent = '';
+
+  if (cleanRulesList.length === 0) {
+    const emptyDiv = document.createElement('div');
+    emptyDiv.style.cssText = 'text-align: center; color: rgba(255,255,255,0.5); padding: 20px;';
+    emptyDiv.setAttribute('data-i18n', 'cleanNoRules');
+    emptyDiv.textContent = t ? t('cleanNoRules') || '暫無隱藏規則' : '暫無隱藏規則';
+    tableEl.appendChild(emptyDiv);
+    return;
+  }
+
+  const table = document.createElement('table');
+  table.style.cssText = 'width: 100%; border-collapse: collapse; font-size: 11px;';
+
+  const thead = document.createElement('thead');
+  const headerTr = document.createElement('tr');
+  headerTr.style.background = 'rgba(255,255,255,0.1)';
+
+  const headers = [
+    { name: t ? t('cleanTablePlatform') || '平台' : '平台', width: '15%', align: 'left' },
+    { name: t ? t('cleanTableSelector') || '選擇器' : '選擇器', width: '25%', align: 'left' },
+    { name: t ? t('cleanTableElement') || '元素' : '元素', width: '15%', align: 'left' },
+    { name: t ? t('cleanTableText') || '文字' : '文字', width: '30%', align: 'left' },
+    { name: t ? t('cleanTableAction') || '操作' : '操作', width: '15%', align: 'center' }
+  ];
+
+  headers.forEach(h => {
+    const th = document.createElement('th');
+    th.style.cssText = `padding: 8px; text-align: ${h.align}; color: rgba(255,255,255,0.8); border-bottom: 1px solid rgba(255,255,255,0.1); width: ${h.width};`;
+    th.textContent = h.name;
+    headerTr.appendChild(th);
+  });
+  thead.appendChild(headerTr);
+  table.appendChild(thead);
+
+  const tbody = document.createElement('tbody');
+  const noTextTranslation = t ? t('cleanNoText') || '(無文字)' : '(無文字)';
+
+  const sortedRules = [...cleanRulesList].sort((a, b) => {
+    return (b.createdAt || 0) - (a.createdAt || 0);
+  });
+
+  sortedRules.forEach((rule) => {
+    const tr = document.createElement('tr');
+    tr.style.cssText = 'border-bottom: 1px solid rgba(255,255,255,0.05);';
+
+    const shortSelector = rule.selector.length > 40 ? rule.selector.substring(0, 40) + '...' : rule.selector;
+    const shortText = rule.text && rule.text.length > 20 ? rule.text.substring(0, 20) + '...' : (rule.text || noTextTranslation);
+
+    const tdPlatform = document.createElement('td');
+    tdPlatform.style.cssText = 'padding: 8px; color: rgba(255,255,255,0.7);';
+    tdPlatform.textContent = rule.platform;
+
+    const tdSelector = document.createElement('td');
+    tdSelector.style.cssText = 'padding: 8px; font-family: Consolas, monospace; color: #4a90e2; word-break: break-all;';
+    tdSelector.title = rule.selector;
+    tdSelector.textContent = shortSelector;
+
+    const tdTag = document.createElement('td');
+    tdTag.style.cssText = 'padding: 8px; color: rgba(255,255,255,0.6);';
+    tdTag.textContent = rule.tag || 'element';
+
+    const tdText = document.createElement('td');
+    tdText.style.cssText = 'padding: 8px; color: rgba(255,255,255,0.5);';
+    tdText.title = rule.text || noTextTranslation;
+    tdText.textContent = shortText;
+
+    const tdAction = document.createElement('td');
+    tdAction.style.cssText = 'padding: 8px; text-align: center;';
+
+    const btnDelete = document.createElement('button');
+    btnDelete.className = 'delete-rule-btn';
+    btnDelete.dataset.id = rule.id;
+    btnDelete.dataset.platform = rule.platform;
+    btnDelete.style.cssText = 'background: rgba(255,255,255,0.1); border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 10px; color: #ff6b6b;';
+    btnDelete.textContent = t ? t('cleanTableDelete') || '刪除' : '刪除';
+
+    btnDelete.addEventListener('click', () => {
+      deleteRule(rule.id, rule.platform);
+    });
+
+    tdAction.appendChild(btnDelete);
+
+    tr.appendChild(tdPlatform);
+    tr.appendChild(tdSelector);
+    tr.appendChild(tdTag);
+    tr.appendChild(tdText);
+    tr.appendChild(tdAction);
+
+    tbody.appendChild(tr);
+  });
+
+  table.appendChild(tbody);
+  tableEl.appendChild(table);
+}
+
+async function addRuleToSelector(selector) {
+  try {
+    const currentPlatform = await getCurrentPlatformHost();
+
+    const existing = cleanRulesList.find(r => r.selector === selector && r.platform === currentPlatform);
+    if (existing) {
+      showCleanStatus('選擇器已存在', '#ffc107');
+      return;
+    }
+
+    const newRule = {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      selector: selector,
+      tag: 'manual',
+      text: '',
+      enabled: true,
+      createdAt: Date.now(),
+      platform: currentPlatform
+    };
+
+    const platformRules = await CleanStorage.getRules(currentPlatform);
+    platformRules.push(newRule);
+    await CleanStorage.saveRules(currentPlatform, platformRules);
+
+    newRule.platform = currentPlatform;
+    cleanRulesList.push(newRule);
+
+    displayRulesTable();
+    showCleanStatus('規則已添加', '#28a745');
+
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]) {
+        chrome.tabs.sendMessage(tabs[0].id, { action: 'reloadCleanRules' });
+      }
+    });
+  } catch (error) {
+    console.error('[CleanPopup] 添加規則失敗:', error);
+    showCleanStatus('添加失敗', '#dc3545');
+  }
+}
+
+async function deleteRule(ruleId, platform) {
+  try {
+    const platformRules = await CleanStorage.getRules(platform);
+    const filtered = platformRules.filter(r => r.id !== ruleId);
+    await CleanStorage.saveRules(platform, filtered);
+
+    cleanRulesList = cleanRulesList.filter(r => r.id !== ruleId);
+
+    displayRulesTable();
+    showCleanStatus('規則已刪除', '#28a745');
+
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]) {
+        chrome.tabs.sendMessage(tabs[0].id, { action: 'reloadCleanRules' });
+      }
+    });
+  } catch (error) {
+    console.error('[CleanPopup] 刪除規則失敗:', error);
+    showCleanStatus('刪除失敗', '#dc3545');
+  }
+}
+
+async function clearAllRules() {
+  try {
+    const platforms = [...new Set(cleanRulesList.map(r => r.platform))];
+    for (const platform of platforms) {
+      await CleanStorage.clearRules(platform);
+    }
+
+    cleanRulesList = [];
+    displayRulesTable();
+    showCleanStatus('所有規則已清空', '#28a745');
+
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]) {
+        chrome.tabs.sendMessage(tabs[0].id, { action: 'reloadCleanRules' });
+      }
+    });
+  } catch (error) {
+    console.error('[CleanPopup] 清空規則失敗:', error);
+    showCleanStatus('清空失敗', '#dc3545');
+  }
+}
+
+async function startPickerMode() {
+  try {
+    const tab = await getCurrentTab();
+    if (!tab) {
+      showCleanStatus('無法獲取當前標籤頁', '#dc3545');
+      return;
+    }
+
+    chrome.tabs.sendMessage(tab.id, { action: 'startPicker' }, (response) => {
+      if (chrome.runtime.lastError) {
+        showCleanStatus('無法啟動揀選模式', '#dc3545');
+      } else if (response && (response.success || response.ok)) {
+        isPickerActive = true;
+        document.getElementById('startPickerBtn').style.display = 'none';
+        document.getElementById('exitPickerBtn').style.display = 'block';
+        document.getElementById('pickerStatus').style.display = 'block';
+        window.close();
+      }
+    });
+  } catch (error) {
+    console.error('[CleanPopup] 啟動揀選模式失敗:', error);
+    showCleanStatus('啟動失敗', '#dc3545');
+  }
+}
+
+function exitPickerMode() {
+  isPickerActive = false;
+  document.getElementById('startPickerBtn').style.display = 'block';
+  document.getElementById('exitPickerBtn').style.display = 'none';
+  document.getElementById('pickerStatus').style.display = 'none';
+
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    if (tabs[0]) {
+      chrome.tabs.sendMessage(tabs[0].id, { action: 'exitPicker' });
+    }
+  });
+}
+
+async function handlePickerSelection(rule) {
+  try {
+    const currentPlatform = await getCurrentPlatformHost();
+
+    const existing = cleanRulesList.find(r => r.selector === rule.selector && r.platform === currentPlatform);
+    if (existing) {
+      showCleanStatus('選擇器已存在', '#ffc107');
+      return;
+    }
+
+    rule.platform = currentPlatform;
+    const platformRules = await CleanStorage.getRules(currentPlatform);
+    platformRules.push(rule);
+    await CleanStorage.saveRules(currentPlatform, platformRules);
+
+    cleanRulesList.push(rule);
+
+    displayRulesTable();
+    showCleanStatus('已添加隱藏規則', '#28a745');
+
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]) {
+        chrome.tabs.sendMessage(tabs[0].id, { action: 'reloadCleanRules' });
+      }
+    });
+  } catch (error) {
+    console.error('[CleanPopup] 處理揀選失敗:', error);
+    showCleanStatus('添加失敗', '#dc3545');
+  }
+}
+
+async function getCurrentPlatformHost() {
+  const tab = await getCurrentTab();
+  if (tab && tab.url) {
+    try {
+      const url = new URL(tab.url);
+      return url.hostname;
+    } catch {
+      return 'unknown';
+    }
+  }
+  return 'unknown';
+}
+
+function getCurrentTab() {
+  return new Promise((resolve) => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      resolve(tabs[0] || null);
+    });
+  });
+}
+
+function showCleanStatus(message, color) {
+  const status = document.getElementById('cleanStatus');
+  if (status) {
+    status.textContent = message;
+    status.style.color = color || '#28a745';
+    setTimeout(() => {
+      status.textContent = '';
+    }, 2000);
+  }
+}
 
 // ==================== Sticker Size Buttons 功能 ====================
 function initStickerSizeButtons() {
@@ -1239,7 +1560,6 @@ function initHomeButton() {
   const homeBtn = document.getElementById('homeBtn');
   if (!homeBtn) return;
 
-  // 主頁按鈕點擊 - 在新分頁打開主頁
   homeBtn.addEventListener('click', () => {
     const homeUrl = 'https://elfinl.github.io/General-Sticker-System/';
     window.open(homeUrl, '_blank');
@@ -1251,7 +1571,6 @@ function initHelpPopover() {
   const helpBtn = document.getElementById('helpBtn');
   if (!helpBtn) return;
 
-  // 問號按鈕點擊 - 在新分頁打開說明頁面
   helpBtn.addEventListener('click', () => {
     const helpUrl = 'https://elfinl.github.io/General-Sticker-System/help.html';
     window.open(helpUrl, '_blank');
@@ -1259,24 +1578,19 @@ function initHelpPopover() {
 }
 
 // ==================== Update Notification Button 功能 ====================
-// 直接讀取 manifest.json 的版本號（只需改 manifest.json 即可）
 const CURRENT_VERSION = chrome.runtime.getManifest().version;
 
 function initUpdateButton() {
   const updateBtn = document.getElementById('updateBtn');
   if (!updateBtn) return;
 
-  // 先隱藏按鈕，等待檢查存儲狀態後再顯示，避免閃爍
   updateBtn.style.visibility = 'hidden';
 
-  // 檢查是否已看過當前版本
   chrome.storage.local.get(['lastSeenVersion'], (result) => {
     const hasSeen = result.lastSeenVersion === CURRENT_VERSION;
 
-    // 顯示按鈕
     updateBtn.style.visibility = 'visible';
 
-    // 如果已看過，移除高亮狀態；否則添加高亮
     if (hasSeen) {
       updateBtn.classList.remove('highlighted');
       updateBtn.title = '查看更新日誌';
@@ -1286,23 +1600,16 @@ function initUpdateButton() {
     }
   });
 
-  // 點擊事件 - 打開更新日誌
   updateBtn.addEventListener('click', () => {
-    // 移除高亮狀態
     updateBtn.classList.remove('highlighted');
     updateBtn.title = '查看更新日誌';
 
-    // 標記為已讀（立即保存）
-    chrome.storage.local.set({ lastSeenVersion: CURRENT_VERSION }, () => {
-      console.log('[GSS] Update button clicked, marked as seen for version', CURRENT_VERSION);
-    });
+    chrome.storage.local.set({ lastSeenVersion: CURRENT_VERSION }, () => {});
 
-    // 打開更新日誌頁面
     const updatelogUrl = 'https://elfinl.github.io/General-Sticker-System/updatelog.html';
     window.open(updatelogUrl, '_blank');
   });
 
-  // 監聽 storage 變化 - 當其他頁面（如聊天面板）標記為已讀時，同步移除高亮
   chrome.storage.onChanged.addListener((changes, areaName) => {
     if (areaName === 'local' && changes.lastSeenVersion) {
       const newVersion = changes.lastSeenVersion.newValue;
@@ -1316,7 +1623,6 @@ function initUpdateButton() {
 
 // ==================== 通用提示功能 ====================
 function showToast(message) {
-  // 使用現有的狀態顯示機制或創建一個簡單的 toast
   const statusEl = document.getElementById('texoStatus') || document.getElementById('settingsStatus');
   if (statusEl) {
     const originalText = statusEl.textContent;
@@ -1328,6 +1634,7 @@ function showToast(message) {
     }, 3000);
   }
 }
+
 function normalizeHostname(input) {
   return String(input || '')
     .replace(/^https?:\/\//i, '')
@@ -1360,13 +1667,12 @@ function registerCustomPlatformInBackground(hostname) {
   });
 }
 
-// ==================== 自定義平台管理邏輯 (簡化版) ====================
+// ==================== 自定義平台管理邏輯 ====================
 let customPlatforms = [];
 let editingIndex = -1;
 
-// 解析新版配置格式（支持 @hostname/@chatContainer/@logic 指令）
 function parseCustomPlatformConfig(text) {
-  const lines = text.split('\n');
+  const lines = (text || '').split(/\r?\n/);
   const config = {
     hostname: '',
     chatContainer: '',
@@ -1374,12 +1680,11 @@ function parseCustomPlatformConfig(text) {
   };
   
   let currentSection = null;
-  let logicLines = [];
+  const logicLines = [];
   
   for (const line of lines) {
     const trimmed = line.trim();
     
-    // 检测新的 @ 指令
     if (/^@hostname\s+/i.test(trimmed)) {
       config.hostname = trimmed.replace(/^@hostname\s+/i, '').trim();
       currentSection = 'hostname';
@@ -1387,24 +1692,22 @@ function parseCustomPlatformConfig(text) {
       config.chatContainer = trimmed.replace(/^@chatcontainer\s+/i, '').trim();
       currentSection = 'chatContainer';
     } else if (/^@logic\s*/i.test(trimmed)) {
-      // 提取 @logic 后的第一行内容
-      const firstLine = trimmed.replace(/^@logic\s*/i, '').trim();
+      const firstLine = line.replace(/^[ \t]*@logic\s*/i, '');
       if (firstLine) {
         logicLines.push(firstLine);
       }
       currentSection = 'logic';
-    } else if (currentSection === 'logic' && trimmed) {
-      // 继续收集 logic 的多行内容
-      logicLines.push(line); // 保留原始缩进
-    } else if (trimmed && !config.hostname) {
-      // 兼容旧格式：第一行非空且没有 @ 指令，视为 hostname
-      config.hostname = trimmed;
-    } else if (trimmed && !config.chatContainer && config.hostname) {
-      // 兼容旧格式：第二行视为 chatContainer
-      config.chatContainer = trimmed;
-    } else if (trimmed && config.chatContainer) {
-      // 兼容旧格式：后续行视为 logic
+    } else if (currentSection === 'logic') {
       logicLines.push(line);
+    } else if (trimmed && !config.hostname) {
+      config.hostname = trimmed;
+      currentSection = 'hostname';
+    } else if (trimmed && !config.chatContainer && config.hostname) {
+      config.chatContainer = trimmed;
+      currentSection = 'chatContainer';
+    } else if (trimmed && config.chatContainer) {
+      logicLines.push(line);
+      currentSection = 'logic';
     }
   }
   
@@ -1412,7 +1715,6 @@ function parseCustomPlatformConfig(text) {
   return config;
 }
 
-// 将配置转换为可编辑的文本格式
 function formatCustomPlatformConfig(config) {
   return `@hostname ${config.hostname || ''}\n@chatContainer ${config.chatContainer || ''}\n@logic ${config.logic || ''}`;
 }
@@ -1427,6 +1729,9 @@ function initCustomPlatformManager() {
 
   if (!listEl || !addBtn || !dialog) return;
 
+  if (dialog.dataset.bound === 'true') return;
+  dialog.dataset.bound = 'true';
+
   chrome.storage.local.get(['customPlatforms'], (r) => {
     customPlatforms = Array.isArray(r.customPlatforms) ? r.customPlatforms : [];
     renderCustomPlatforms();
@@ -1436,7 +1741,10 @@ function initCustomPlatformManager() {
     listEl.textContent = '';
     
     if (customPlatforms.length === 0) {
-      listEl.innerHTML = '<div style="text-align:center; color:rgba(255,255,255,0.3); padding:20px; font-size:12px;">尚無自定義平台</div>';
+      const emptyDiv = document.createElement('div');
+      emptyDiv.style.cssText = 'text-align:center; color:rgba(255,255,255,0.3); padding:20px; font-size:12px;';
+      emptyDiv.textContent = '尚無自定義平台';
+      listEl.appendChild(emptyDiv);
       return;
     }
     customPlatforms.forEach((p, i) => {
@@ -1487,7 +1795,6 @@ function initCustomPlatformManager() {
 
   addBtn.onclick = () => {
     editingIndex = -1;
-    // 使用新的大文本框
     const configTextarea = document.getElementById('customPlatformConfig');
     if (configTextarea) {
       configTextarea.value = '@hostname \n@chatContainer \n@logic ';
@@ -1500,7 +1807,6 @@ function initCustomPlatformManager() {
     if (editingIndex < 0) return showSettingsStatus('請先選擇一個平台', '#dc3545');
     const p = customPlatforms[editingIndex];
     
-    // 使用新的大文本框，格式化显示
     const configTextarea = document.getElementById('customPlatformConfig');
     if (configTextarea) {
       configTextarea.value = formatCustomPlatformConfig(p);
@@ -1512,23 +1818,20 @@ function initCustomPlatformManager() {
   cancelBtn.onclick = () => dialog.classList.remove('show');
 
   saveBtn.onclick = async () => {
-    // 优先使用新的大文本框
     const configTextarea = document.getElementById('customPlatformConfig');
     let hostname, chatContainer, logic;
     
     if (configTextarea) {
-      // 解析新格式
       const parsed = parseCustomPlatformConfig(configTextarea.value);
       hostname = normalizeHostname(parsed.hostname);
       chatContainer = parsed.chatContainer;
       logic = parsed.logic;
     } else {
-      // 兼容旧格式（如果 HTML 还没更新）
       hostname = normalizeHostname(
-        document.getElementById('customPlatformHostname').value
+        document.getElementById('customPlatformHostname')?.value
       );
-      chatContainer = document.getElementById('customPlatformChatContainer').value.trim();
-      logic = document.getElementById('customPlatformLogic').value.trim();
+      chatContainer = (document.getElementById('customPlatformChatContainer')?.value || '').trim();
+      logic = (document.getElementById('customPlatformLogic')?.value || '').trim();
     }
 
     if (!hostname || !logic) {
@@ -1554,18 +1857,14 @@ function initCustomPlatformManager() {
     showSettingsStatus('已儲存。請重新整理該平台分頁', '#28a745');
   };
   
-  // 【新增】点击 overlay 背景关闭对话框（但在 textarea 内点击不关闭）
   dialog.addEventListener('click', (e) => {
     if (e.target === dialog) {
-      // 检查当前焦点是否在配置文本框内
       const configTextarea = document.getElementById('customPlatformConfig');
       const activeElement = document.activeElement;
       
-      // 如果焦点不在 textarea 内，才关闭对话框
       if (!configTextarea || activeElement !== configTextarea) {
         dialog.classList.remove('show');
       }
     }
   });
 }
-document.addEventListener('DOMContentLoaded', initCustomPlatformManager);

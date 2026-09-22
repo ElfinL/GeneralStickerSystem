@@ -36,6 +36,17 @@ class PlatformAdapter {
   }
 
   /**
+   * 直接插入圖片 (gosh.com 專用)
+   * @param {string} imageUrl - 圖片 URL
+   * @param {string} stickerId - 可選的貼圖 ID，用於右鍵功能
+   * @returns {Promise<{ok: boolean, error?: string}>}
+   */
+  async sendImage(imageUrl, stickerId = null) {
+    // 預設行為：不支援，降級到普通 sendMessage
+    return await this.sendMessage(imageUrl);
+  }
+
+  /**
    * 尋找聊天室輸入框元素
    * @returns {HTMLElement|null}
    */

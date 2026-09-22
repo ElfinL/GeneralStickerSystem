@@ -143,6 +143,34 @@
     }
 
     const { isIM, isME } = options;
+    const platform = getCurrentPlatform();
+
+    // gosh.com 平台特殊處理：使用 insertImage 命令直接插入圖片
+    if (platform === 'gosh' && typeof adapter.sendImage === 'function') {
+      try {
+        let imageUrl = message;
+        let stickerId = message; // 默認使用原始訊息作為貼圖 ID
+
+        // 嘗試使用 StickerRegistry 獲取圖片 URL
+        if (typeof StickerRegistry !== 'undefined') {
+          const registryUrl = StickerRegistry.getSendCode(message, 'gosh');
+          if (registryUrl && registryUrl.startsWith('http')) {
+            imageUrl = registryUrl;
+            console.log('[GSS Platform] gosh 平台從 StickerRegistry 獲取圖片 URL:', imageUrl);
+          }
+        }
+
+        // 檢查是否為有效的圖片 URL
+        if (imageUrl && imageUrl.startsWith('http')) {
+          console.log('[GSS Platform] gosh 平台使用 sendImage 方法:', imageUrl, '貼圖 ID:', stickerId);
+          return await adapter.sendImage(imageUrl, stickerId);
+        } else {
+          console.log('[GSS Platform] gosh 平台無法獲取有效圖片 URL，使用普通 sendMessage');
+        }
+      } catch (e) {
+        console.warn('[GSS Platform] gosh sendImage 失敗，降級到普通 sendMessage:', e);
+      }
+    }
 
     // 直接發送訊息（移除 DLive 零寬編碼邏輯）
     return await adapter.sendMessage(message);
