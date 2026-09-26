@@ -134,6 +134,7 @@
    * @param {Object} options - 選項
    * @param {boolean} options.isIM - 是否為 IM 類型貼圖
    * @param {boolean} options.isME - 是否為 ME 類型貼圖
+   * @param {boolean} options.autoSend - 是否自動發送（默認為 true）
    * @returns {Promise<{ok: boolean, id?: string, error?: string}>}
    */
   async function sendSticker(message, options = {}) {
@@ -142,7 +143,7 @@
       throw new Error('不支援的平台');
     }
 
-    const { isIM, isME } = options;
+    const { isIM, isME, autoSend = true } = options;
     const platform = getCurrentPlatform();
 
     // gosh.com 平台特殊處理：使用 insertImage 命令直接插入圖片
@@ -162,8 +163,8 @@
 
         // 檢查是否為有效的圖片 URL
         if (imageUrl && imageUrl.startsWith('http')) {
-          console.log('[GSS Platform] gosh 平台使用 sendImage 方法:', imageUrl, '貼圖 ID:', stickerId);
-          return await adapter.sendImage(imageUrl, stickerId);
+          console.log('[GSS Platform] gosh 平台使用 sendImage 方法:', imageUrl, '貼圖 ID:', stickerId, '自動發送:', autoSend);
+          return await adapter.sendImage(imageUrl, stickerId, autoSend);
         } else {
           console.log('[GSS Platform] gosh 平台無法獲取有效圖片 URL，使用普通 sendMessage');
         }

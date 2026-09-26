@@ -3573,9 +3573,45 @@ async function refreshPanelStickers() {
         } else {
           // 貼到輸入框模式（自動發送但不按 ENTER）
           const adapter = getPlatformAdapter();
-          if (adapter && typeof adapter.sendMessage === 'function') {
-            // 使用平台適配器的 sendMessage 方法（但不按 ENTER）
-            adapter.sendMessage(sendCode)
+          const platform = getCurrentPlatform();
+
+          // gosh.com 平台特殊處理：使用 insertImage 插入圖片但不發送
+          if (platform === 'gosh' && typeof adapter.sendImage === 'function') {
+            let imageUrl = sendCode;
+            let stickerId = sendCode;
+
+            // 嘗試使用 StickerRegistry 獲取圖片 URL
+            if (typeof StickerRegistry !== 'undefined') {
+              const registryUrl = StickerRegistry.getSendCode(sendCode, 'gosh');
+              if (registryUrl && registryUrl.startsWith('http')) {
+                imageUrl = registryUrl;
+                console.log('[GSS] gosh 平台（不自動發送）從 StickerRegistry 獲取圖片 URL:', imageUrl);
+              }
+            }
+
+            // 檢查是否為有效的圖片 URL
+            if (imageUrl && imageUrl.startsWith('http')) {
+              console.log('[GSS] gosh 平台（不自動發送）使用 sendImage 方法:', imageUrl, '貼圖 ID:', stickerId);
+              adapter.sendImage(imageUrl, stickerId, false)
+                .catch((e) => {
+                  showSendFailureToast(e?.message || e);
+                })
+                .finally(() => {
+                  tile._isSending = false;
+                });
+            } else {
+              console.log('[GSS] gosh 平台無法獲取有效圖片 URL，使用普通 sendMessage');
+              adapter.sendMessage(sendCode)
+                .catch((e) => {
+                  showSendFailureToast(e?.message || e);
+                })
+                .finally(() => {
+                  tile._isSending = false;
+                });
+            }
+          } else if (adapter && typeof adapter.sendMessage === 'function') {
+            // 其他平台使用 sendMessage 方法（傳遞 autoSend=false）
+            adapter.sendMessage(sendCode, false)
               .catch((e) => {
                 showSendFailureToast(e?.message || e);
               })
@@ -4192,28 +4228,37 @@ function setupUiAutoMount() {
   obs.observe(document.documentElement, { childList: true, subtree: true });
 
   // 右鍵：新增貼圖 ID（能解析到 emote id 才攔截，且需檢查設置）
-  document.addEventListener('contextmenu', (e) => {
-    console.log('[GSS Debug] Global contextmenu triggered:', e.target);
-    console.log('[GSS Debug] gssDisableNativeContextMenu setting:', window.gssDisableNativeContextMenu);
+  // 改為在聊天室容器內監聽，而不是全局監聽
+  function attachContextMenuToChat() {
+    const chatContainer = findChatContainer(true);
+    if (chatContainer && !chatContainer._gssContextMenuAttached) {
+      chatContainer._gssContextMenuAttached = true;
+      chatContainer.addEventListener('contextmenu', (e) => {
+        // 如果設置為禁用 GSS 右鍵面板，則不攔截
+        if (window.gssDisableNativeContextMenu) {
+          return;
+        }
 
-    // 如果設置為禁用 GSS 右鍵面板，則不攔截
-    if (window.gssDisableNativeContextMenu) {
-      console.log('[GSS Debug] Native contextmenu disabled');
-      return;
+        const id = getCandidateIdFromRightClick(e.target);
+        if (!id) {
+          return;
+        }
+
+        e.preventDefault();
+        showContextMenuAt(e.clientX, e.clientY, id, e.target);
+      }, true);
+      console.log('[GSS] Context menu listener attached to chat container');
     }
+  }
 
-    const id = getCandidateIdFromRightClick(e.target);
-    console.log('[GSS Debug] ID from right click:', id);
+  // 立即嘗試附加
+  attachContextMenuToChat();
 
-    if (!id) {
-      console.log('[GSS Debug] No ID found, skipping');
-      return;
-    }
-
-    console.log('[GSS Debug] Preventing default and showing context menu');
-    e.preventDefault();
-    showContextMenuAt(e.clientX, e.clientY, id, e.target);
+  // 監聽聊天室容器變化
+  const chatObserver = new MutationObserver(() => {
+    attachContextMenuToChat();
   });
+  chatObserver.observe(document.body, { childList: true, subtree: true });
 
   // 選單內點擊改由 #dlsq_ctx_menu / #dlsq_panel_tag_menu 節點的 capture mousedown 處理（避免 DLive 先攔截）
   document.addEventListener('mousedown', (e) => {
@@ -4312,8 +4357,15 @@ async function sendChatMessage(message, retries = 2) {
 
       // 檢查是否為有效的圖片 URL
       if (imageUrl && imageUrl.startsWith('http')) {
-        console.log('[GSS] gosh 平台使用 sendImage 方法:', imageUrl, '貼圖 ID:', stickerId);
-        const result = await adapter.sendImage(imageUrl, stickerId);
+        // 獲取自動發送設置
+        const autoSendEnabled = await new Promise(resolve => {
+          chrome.storage.local.get(['autoSendEnabled'], (result) => {
+            resolve(result.autoSendEnabled !== false); // 默認為 true
+          });
+        });
+
+        console.log('[GSS] gosh 平台使用 sendImage 方法:', imageUrl, '貼圖 ID:', stickerId, '自動發送:', autoSendEnabled);
+        const result = await adapter.sendImage(imageUrl, stickerId, autoSendEnabled);
         return result.id || true;
       } else {
         console.log('[GSS] gosh 平台無法獲取有效圖片 URL，使用普通 sendMessage');

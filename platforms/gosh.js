@@ -130,9 +130,10 @@ class GoshAdapter extends PlatformAdapter {
    * 完全按照用戶提供的 Console 代碼邏輯實現
    * @param {string} imageUrl - 圖片 URL
    * @param {string} stickerId - 可選的貼圖 ID，用於右鍵功能
+   * @param {boolean} autoSend - 是否自動發送（默認 true）
    * @returns {Promise<{ok: boolean, error?: string}>}
    */
-  async sendImage(imageUrl, stickerId = null) {
+  async sendImage(imageUrl, stickerId = null, autoSend = true) {
     this.isSendingMessage = true;
 
     try {
@@ -142,7 +143,7 @@ class GoshAdapter extends PlatformAdapter {
         throw new Error('找不到 .rich-message-editor 元素');
       }
 
-      console.log('[GoshAdapter] 使用 insertImage 插入圖片:', imageUrl, '貼圖 ID:', stickerId);
+      console.log('[GoshAdapter] 使用 insertImage 插入圖片:', imageUrl, '貼圖 ID:', stickerId, '自動發送:', autoSend);
 
       // 聚焦輸入框
       c.focus();
@@ -180,19 +181,24 @@ class GoshAdapter extends PlatformAdapter {
       // 觸發 input 事件
       c.dispatchEvent(new InputEvent('input', { bubbles: true }));
 
-      // 幫你按 Enter 發送（延遲 150ms）
-      await new Promise(resolve => setTimeout(resolve, 150));
+      // 只有在 autoSend 為 true 時才自動按 Enter 發送
+      if (autoSend) {
+        // 幫你按 Enter 發送（延遲 150ms）
+        await new Promise(resolve => setTimeout(resolve, 150));
 
-      c.dispatchEvent(new KeyboardEvent('keydown', {
-        key: 'Enter',
-        code: 'Enter',
-        keyCode: 13,
-        bubbles: true
-      }));
+        c.dispatchEvent(new KeyboardEvent('keydown', {
+          key: 'Enter',
+          code: 'Enter',
+          keyCode: 13,
+          bubbles: true
+        }));
 
-      // 發送後監聽聊天室中的新圖片，為其添加屬性
-      if (stickerId) {
-        this.monitorChatImages(imageUrl, stickerId);
+        // 發送後監聽聊天室中的新圖片，為其添加屬性
+        if (stickerId) {
+          this.monitorChatImages(imageUrl, stickerId);
+        }
+      } else {
+        console.log('[GoshAdapter] 自動發送已關閉，只插入圖片不發送');
       }
 
       return { ok: true };

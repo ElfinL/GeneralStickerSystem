@@ -69,8 +69,10 @@ class KickAdapter extends PlatformAdapter {
   /**
    * 發送聊天訊息 (Kick)
    * KICK 使用 contenteditable div，需要特殊處理
+   * @param {string} message - 要發送的訊息
+   * @param {boolean} autoSend - 是否自動發送（默認 true）
    */
-  async sendMessage(message) {
+  async sendMessage(message, autoSend = true) {
     this.isSendingMessage = true;
 
     try {
@@ -80,7 +82,7 @@ class KickAdapter extends PlatformAdapter {
         throw new Error('找不到 Kick 聊天輸入框');
       }
 
-      console.log('[KickAdapter] sendMessage called with:', message);
+      console.log('[KickAdapter] sendMessage called with:', message, 'autoSend:', autoSend);
 
       // GSS 格式直接發送原始 ID，不使用零寬編碼
 
@@ -126,28 +128,33 @@ class KickAdapter extends PlatformAdapter {
       // 等待 DOM 更新
       await this.delay(50);
 
-      // 發送訊息（模擬 Enter 鍵）
-      const enterEvent = new KeyboardEvent('keydown', {
-        bubbles: true,
-        cancelable: true,
-        key: 'Enter',
-        code: 'Enter',
-        keyCode: 13,
-        which: 13
-      });
-      chatInput.dispatchEvent(enterEvent);
+      // 只有在 autoSend 為 true 時才發送訊息（模擬 Enter 鍵）
+      if (autoSend) {
+        // 發送訊息（模擬 Enter 鍵）
+        const enterEvent = new KeyboardEvent('keydown', {
+          bubbles: true,
+          cancelable: true,
+          key: 'Enter',
+          code: 'Enter',
+          keyCode: 13,
+          which: 13
+        });
+        chatInput.dispatchEvent(enterEvent);
 
-      await this.delay(50);
+        await this.delay(50);
 
-      const enterUpEvent = new KeyboardEvent('keyup', {
-        bubbles: true,
-        cancelable: true,
-        key: 'Enter',
-        code: 'Enter',
-        keyCode: 13,
-        which: 13
-      });
-      chatInput.dispatchEvent(enterUpEvent);
+        const enterUpEvent = new KeyboardEvent('keyup', {
+          bubbles: true,
+          cancelable: true,
+          key: 'Enter',
+          code: 'Enter',
+          keyCode: 13,
+          which: 13
+        });
+        chatInput.dispatchEvent(enterUpEvent);
+      } else {
+        console.log('[KickAdapter] 自動發送已關閉，只插入訊息不發送');
+      }
 
       return { ok: true };
     } finally {
