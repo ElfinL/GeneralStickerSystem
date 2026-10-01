@@ -2787,6 +2787,39 @@ function extractEmoteIdFromSrc(src, imgElement = null) {
     return `CB-${id}.${ext}`;
   }
 
+  // 嘗試從 URL 中提取文件名和副檔名，並根據域名判斷格式
+  const domainMatch = s.match(/https?:\/\/([^\/]+)/i);
+  if (domainMatch) {
+    const domain = domainMatch[1];
+    const pathMatch = s.match(/\/([^\/?#]+)(?:\?|#|$)/i);
+    if (pathMatch) {
+      const filename = pathMatch[1];
+      const extMatch = filename.match(/\.([a-zA-Z0-9]+)$/i);
+      const ext = extMatch ? extMatch[1] : 'gif';
+
+      // 根據域名判斷格式
+      if (domain.includes('imgur.com')) {
+        // Imgur 域名，提取 ID
+        const idMatch = filename.match(/^([a-zA-Z0-9-]+)\./i);
+        if (idMatch) {
+          return `IM-${idMatch[1]}.${ext}`;
+        }
+      } else if (domain.includes('meee.com.tw')) {
+        // MEEE 域名，提取 ID
+        const idMatch = filename.match(/^([a-zA-Z0-9]+)\./i);
+        if (idMatch) {
+          return `ME-${idMatch[1]}.${ext}`;
+        }
+      } else if (domain.includes('catbox.moe')) {
+        // Catbox 域名，提取 ID
+        const idMatch = filename.match(/^([a-zA-Z0-9_-]+)\./i);
+        if (idMatch) {
+          return `CB-${idMatch[1]}.${ext}`;
+        }
+      }
+    }
+  }
+
   const patterns = [
     /\/emote\/([A-Za-z0-9_]+)(?:[/?#]|$)/i,
     /\/emotes\/([A-Za-z0-9_]+)(?:[/?#]|$)/i,
@@ -2916,7 +2949,8 @@ async function toggleFavoriteIdInStorage(id) {
   let trimmed = String(id || '').trim();
 
   // 先檢查 GSS- 格式，避免被後續的格式統一邏輯影響
-  const isGSSFormat = /^GSS-(?:https?:\/\/)?[^\s]+\.(?:jpg|jpeg|png|gif|webp|bmp|svg|mp4)(?:\?[^\s]*)?$/i.test(trimmed);
+  // 放寬 GSS 格式驗證：只要是 GSS- 開頭即可，不強制要求副檔名
+  const isGSSFormat = /^GSS-.+$/i.test(trimmed);
 
   // GSS- 格式：保持原始格式，不做任何修改
 
@@ -2954,7 +2988,8 @@ async function addStickerIdToStorage(id) {
   let trimmed = String(id || '').trim();
 
   // 先檢查 GSS- 格式，避免被後續的格式統一邏輯影響
-  const isGSSFormat = /^GSS-(?:https?:\/\/)?[^\s]+\.(?:jpg|jpeg|png|gif|webp|bmp|svg|mp4)(?:\?[^\s]*)?$/i.test(trimmed);
+  // 放寬 GSS 格式驗證：只要是 GSS- 開頭即可，不強制要求副檔名
+  const isGSSFormat = /^GSS-.+$/i.test(trimmed);
 
   // GSS- 格式：保持原始格式，不做任何修改
 
@@ -2994,7 +3029,8 @@ async function removeStickerIdFromStorage(id) {
   let trimmed = String(id || '').trim();
 
   // 先檢查 GSS- 格式，避免被後續的格式統一邏輯影響
-  const isGSSFormat = /^GSS-(?:https?:\/\/)?[^\s]+\.(?:jpg|jpeg|png|gif|webp|bmp|svg|mp4)(?:\?[^\s]*)?$/i.test(trimmed);
+  // 放寬 GSS 格式驗證：只要是 GSS- 開頭即可，不強制要求副檔名
+  const isGSSFormat = /^GSS-.+$/i.test(trimmed);
 
   // GSS- 格式：保持原始格式，不做任何修改
 
@@ -3029,7 +3065,8 @@ async function applyTagToStickerIdInStorage(id, tagLabel) {
   let trimmed = String(id || '').trim();
 
   // 先檢查 GSS- 格式，避免被後續的格式統一邏輯影響
-  const isGSSFormat = /^GSS-(?:https?:\/\/)?[^\s]+\.(?:jpg|jpeg|png|gif|webp|bmp|svg|mp4)(?:\?[^\s]*)?$/i.test(trimmed);
+  // 放寬 GSS 格式驗證：只要是 GSS- 開頭即可，不強制要求副檔名
+  const isGSSFormat = /^GSS-.+$/i.test(trimmed);
 
   // GSS- 格式：保持原始格式，不做任何修改
 
