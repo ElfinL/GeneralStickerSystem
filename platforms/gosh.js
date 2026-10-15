@@ -71,7 +71,7 @@ class GoshAdapter extends PlatformAdapter {
     return null;
   }
 
-  async sendMessage(message) {
+  async sendMessage(message, autoSend = true) {
     this.isSendingMessage = true;
 
     try {
@@ -101,104 +101,24 @@ class GoshAdapter extends PlatformAdapter {
 
       await this.delay(50);
 
-      const enterEvent = new KeyboardEvent('keydown', {
-        bubbles: true,
-        cancelable: true,
-        key: 'Enter',
-        code: 'Enter',
-        keyCode: 13,
-        which: 13
-      });
-      chatInput.dispatchEvent(enterEvent);
-
-      await this.delay(50);
-
-      const sendBtn = this.findSendButton();
-      if (sendBtn && !sendBtn.disabled) {
-        sendBtn.click();
-      }
-
-      return { ok: true };
-    } finally {
-      this.isSendingMessage = false;
-    }
-  }
-
-  /**
-   * 使用 gosh.com 獨有的 insertImage 命令直接插入圖片
-   * 這是 gosh.com 平台的特殊功能，可以不用轉圖直接顯示圖片
-   * 完全按照用戶提供的 Console 代碼邏輯實現
-   * @param {string} imageUrl - 圖片 URL
-   * @param {string} stickerId - 可選的貼圖 ID，用於右鍵功能
-   * @param {boolean} autoSend - 是否自動發送（默認 true）
-   * @returns {Promise<{ok: boolean, error?: string}>}
-   */
-  async sendImage(imageUrl, stickerId = null, autoSend = true) {
-    this.isSendingMessage = true;
-
-    try {
-      // 按照用戶提供的代碼邏輯
-      let c = document.querySelector('.rich-message-editor');
-      if (!c) {
-        throw new Error('找不到 .rich-message-editor 元素');
-      }
-
-      console.log('[GoshAdapter] 使用 insertImage 插入圖片:', imageUrl, '貼圖 ID:', stickerId, '自動發送:', autoSend);
-
-      // 聚焦輸入框
-      c.focus();
-
-      // 直接用瀏覽器內置插圖指令
-      const success = document.execCommand('insertImage', false, imageUrl);
-      console.log('[GoshAdapter] insertImage 結果:', success);
-
-      // 為插入的圖片添加 data-sticker-id 屬性以支援右鍵功能
-      if (success && stickerId) {
-        // 立即嘗試為圖片添加屬性
-        const images = c.querySelectorAll('img');
-        if (images.length > 0) {
-          const lastImage = images[images.length - 1];
-          // 檢查是否是我們剛插入的圖片（通過 src 匹配）
-          if (lastImage.src === imageUrl || lastImage.src.includes(imageUrl)) {
-            lastImage.setAttribute('data-sticker-id', stickerId);
-            console.log('[GoshAdapter] 為圖片添加 data-sticker-id:', stickerId);
-          } else {
-            // 如果立即找不到，使用 setTimeout 延遲處理
-            setTimeout(() => {
-              const delayedImages = c.querySelectorAll('img');
-              if (delayedImages.length > 0) {
-                const delayedLastImage = delayedImages[delayedImages.length - 1];
-                if (delayedLastImage.src === imageUrl || delayedLastImage.src.includes(imageUrl)) {
-                  delayedLastImage.setAttribute('data-sticker-id', stickerId);
-                  console.log('[GoshAdapter] 延遲為圖片添加 data-sticker-id:', stickerId);
-                }
-              }
-            }, 50);
-          }
-        }
-      }
-
-      // 觸發 input 事件
-      c.dispatchEvent(new InputEvent('input', { bubbles: true }));
-
-      // 只有在 autoSend 為 true 時才自動按 Enter 發送
+      // 只有在 autoSend 為 true 時才發送
       if (autoSend) {
-        // 幫你按 Enter 發送（延遲 150ms）
-        await new Promise(resolve => setTimeout(resolve, 150));
-
-        c.dispatchEvent(new KeyboardEvent('keydown', {
+        const enterEvent = new KeyboardEvent('keydown', {
+          bubbles: true,
+          cancelable: true,
           key: 'Enter',
           code: 'Enter',
           keyCode: 13,
-          bubbles: true
-        }));
+          which: 13
+        });
+        chatInput.dispatchEvent(enterEvent);
 
-        // 發送後監聽聊天室中的新圖片，為其添加屬性
-        if (stickerId) {
-          this.monitorChatImages(imageUrl, stickerId);
+        await this.delay(50);
+
+        const sendBtn = this.findSendButton();
+        if (sendBtn && !sendBtn.disabled) {
+          sendBtn.click();
         }
-      } else {
-        console.log('[GoshAdapter] 自動發送已關閉，只插入圖片不發送');
       }
 
       return { ok: true };
@@ -207,41 +127,7 @@ class GoshAdapter extends PlatformAdapter {
     }
   }
 
-  /**
-   * 監聽聊天室中的新圖片，為匹配的圖片添加 data-sticker-id
-   * @param {string} targetUrl - 目標圖片 URL
-   * @param {string} stickerId - 貼圖 ID
-   */
-  monitorChatImages(targetUrl, stickerId) {
-    const chatContainer = this.findChatContainer();
-    if (!chatContainer) return;
 
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        mutation.addedNodes.forEach((node) => {
-          if (node.nodeType === Node.ELEMENT_NODE) {
-            const images = node.querySelectorAll ? node.querySelectorAll('img') : [];
-            images.forEach((img) => {
-              if (img.src === targetUrl || img.src.includes(targetUrl)) {
-                if (!img.dataset.stickerId) {
-                  img.setAttribute('data-sticker-id', stickerId);
-                  console.log('[GoshAdapter] 為聊天室中的圖片添加 data-sticker-id:', stickerId);
-                }
-              }
-            });
-          }
-        });
-      });
-    });
-
-    observer.observe(chatContainer, { childList: true, subtree: true });
-
-    // 5秒後停止監聽
-    setTimeout(() => {
-      observer.disconnect();
-      console.log('[GoshAdapter] 停止監聽聊天室圖片');
-    }, 5000);
-  }
 
   /**
    * 初始化 gosh.com 平台的點擊放大功能（使用事件委托）

@@ -3610,43 +3610,8 @@ async function refreshPanelStickers() {
         } else {
           // 貼到輸入框模式（自動發送但不按 ENTER）
           const adapter = getPlatformAdapter();
-          const platform = getCurrentPlatform();
 
-          // gosh.com 平台特殊處理：使用 insertImage 插入圖片但不發送
-          if (platform === 'gosh' && typeof adapter.sendImage === 'function') {
-            let imageUrl = sendCode;
-            let stickerId = sendCode;
-
-            // 嘗試使用 StickerRegistry 獲取圖片 URL
-            if (typeof StickerRegistry !== 'undefined') {
-              const registryUrl = StickerRegistry.getSendCode(sendCode, 'gosh');
-              if (registryUrl && registryUrl.startsWith('http')) {
-                imageUrl = registryUrl;
-                console.log('[GSS] gosh 平台（不自動發送）從 StickerRegistry 獲取圖片 URL:', imageUrl);
-              }
-            }
-
-            // 檢查是否為有效的圖片 URL
-            if (imageUrl && imageUrl.startsWith('http')) {
-              console.log('[GSS] gosh 平台（不自動發送）使用 sendImage 方法:', imageUrl, '貼圖 ID:', stickerId);
-              adapter.sendImage(imageUrl, stickerId, false)
-                .catch((e) => {
-                  showSendFailureToast(e?.message || e);
-                })
-                .finally(() => {
-                  tile._isSending = false;
-                });
-            } else {
-              console.log('[GSS] gosh 平台無法獲取有效圖片 URL，使用普通 sendMessage');
-              adapter.sendMessage(sendCode)
-                .catch((e) => {
-                  showSendFailureToast(e?.message || e);
-                })
-                .finally(() => {
-                  tile._isSending = false;
-                });
-            }
-          } else if (adapter && typeof adapter.sendMessage === 'function') {
+          if (adapter && typeof adapter.sendMessage === 'function') {
             // 其他平台使用 sendMessage 方法（傳遞 autoSend=false）
             adapter.sendMessage(sendCode, false)
               .catch((e) => {
@@ -4375,42 +4340,6 @@ async function sendChatMessage(message, retries = 2) {
   }
 
   const adapter = getPlatformAdapter();
-  const platform = getCurrentPlatform();
-
-  // gosh.com 平台特殊處理：使用 insertImage 命令直接插入圖片
-  if (platform === 'gosh' && typeof adapter.sendImage === 'function') {
-    try {
-      let imageUrl = message;
-      let stickerId = message; // 默認使用原始訊息作為貼圖 ID
-
-      // 嘗試使用 StickerRegistry 獲取圖片 URL
-      if (typeof StickerRegistry !== 'undefined') {
-        const registryUrl = StickerRegistry.getSendCode(message, 'gosh');
-        if (registryUrl && registryUrl.startsWith('http')) {
-          imageUrl = registryUrl;
-          console.log('[GSS] gosh 平台從 StickerRegistry 獲取圖片 URL:', imageUrl);
-        }
-      }
-
-      // 檢查是否為有效的圖片 URL
-      if (imageUrl && imageUrl.startsWith('http')) {
-        // 獲取自動發送設置
-        const autoSendEnabled = await new Promise(resolve => {
-          chrome.storage.local.get(['autoSendEnabled'], (result) => {
-            resolve(result.autoSendEnabled !== false); // 默認為 true
-          });
-        });
-
-        console.log('[GSS] gosh 平台使用 sendImage 方法:', imageUrl, '貼圖 ID:', stickerId, '自動發送:', autoSendEnabled);
-        const result = await adapter.sendImage(imageUrl, stickerId, autoSendEnabled);
-        return result.id || true;
-      } else {
-        console.log('[GSS] gosh 平台無法獲取有效圖片 URL，使用普通 sendMessage');
-      }
-    } catch (e) {
-      console.warn('[GSS] gosh sendImage 失敗，降級到普通 sendMessage:', e);
-    }
-  }
 
   const result = await adapter.sendMessage(message);
   return result.id || true;

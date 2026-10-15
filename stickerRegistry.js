@@ -34,14 +34,12 @@ const StickerRegistry = (function () {
             return id.replace(/\.(gif|png|jpg|jpeg|mp4)$/i, '-$1');
           case 'vaughn':
           case 'kick':
-            // Vaughn/Kick 保持原始格式（使用 . ）
+          case 'gosh':
+            // Vaughn/Kick/Gosh 保持原始格式（使用 . ）
             return id;
           case 'youtube':
             // YouTube: 發送原始 IM-xxx.gif 格式（轉圖功能會將其轉換為圖片）
             return id;
-          case 'gosh':
-            // Gosh: 直接返回圖片 URL（使用 insertImage 命令）
-            return `https://i.imgur.com/${clean}`;
           default:
             return id;
         }
@@ -67,13 +65,11 @@ const StickerRegistry = (function () {
             return id.replace(/\.(gif|png|jpg|jpeg|mp4)$/i, '-$1');
           case 'vaughn':
           case 'kick':
+          case 'gosh':
             return id; // 保持原始格式
           case 'youtube':
             // YouTube: 發送原始 ME-xxx.gif 格式（轉圖功能會將其轉換為圖片）
             return id;
-          case 'gosh':
-            // Gosh: 直接返回圖片 URL（使用 insertImage 命令）
-            return `https://meee.com.tw/${clean}`;
           default:
             return id;
         }
@@ -95,14 +91,8 @@ const StickerRegistry = (function () {
       getPlatformCode: (id, platform) => {
         const clean = id?.slice(3);
         if (!clean) return '';
-        switch (platform) {
-          case 'gosh':
-            // Gosh: 直接返回 YouTube 縮略圖 URL
-            return `https://img.youtube.com/vi/${clean}/mqdefault.jpg`;
-          default:
-            // 其他平台發送 YT-xxx 格式（轉圖功能會將其轉換為 YouTube 縮略圖）
-            return `YT-${clean}`;
-        }
+        // 所有平台都發送 YT-xxx 格式
+        return `YT-${clean}`;
       }
     },
 
@@ -121,14 +111,8 @@ const StickerRegistry = (function () {
       getPlatformCode: (id, platform) => {
         const clean = id?.slice(4);
         if (!clean) return '';
-        switch (platform) {
-          case 'gosh':
-            // Gosh: 直接返回 YouTube 縮略圖 URL
-            return `https://img.youtube.com/vi/${clean}/mqdefault.jpg`;
-          default:
-            // 其他平台發送 YTS-xxx 格式（轉圖功能會將其轉換為 YouTube Shorts 嵌入播放器）
-            return `YTS-${clean}`;
-        }
+        // 所有平台都發送 YTS-xxx 格式
+        return `YTS-${clean}`;
       }
     },
 
@@ -180,15 +164,12 @@ const StickerRegistry = (function () {
             return normalized.replace(/\.(gif|png|jpg|jpeg|mp4|webp)$/i, '-$1');
           case 'kick':
           case 'vaughn':
-            // Kick/Vaughn 保持原始格式（使用 . ）
+          case 'gosh':
+            // Kick/Vaughn/Gosh 保持原始格式（使用 . ）
             return normalized;
           case 'youtube':
             // YouTube: 發送原始 CB-xxx.gif 格式
             return normalized;
-          case 'gosh':
-            // Gosh: 直接返回完整的 catbox URL
-            const baseClean = normalized.startsWith('CB-') ? normalized.slice(3) : normalized;
-            return `https://files.catbox.moe/${baseClean}`;
           default:
             return normalized;
         }
@@ -220,26 +201,8 @@ const StickerRegistry = (function () {
       },
       getDefaultCode: (id) => id || '',
       getPlatformCode: (id, platform) => {
-        const clean = id?.startsWith('GSS-') ? id.slice(4) : id;
-        if (!clean) return '';
-        // 確保有協議頭
-        let url = clean;
-        if (!url.match(/^https?:\/\//i)) {
-          url = 'https://' + url;
-        }
-        switch (platform) {
-          case 'twitch':
-            return id; // Twitch 保持原始格式
-          case 'vaughn':
-          case 'kick':
-            return id; // Kick/Vaughn 保持原始格式
-          case 'youtube':
-            return id; // YouTube 保持原始格式
-          case 'gosh':
-            return url; // Gosh 直接返回完整 URL
-          default:
-            return id;
-        }
+        // 所有平台都保持原始格式
+        return id;
       }
     }
   };
