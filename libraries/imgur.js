@@ -26,7 +26,7 @@ class ImgurAdapter extends LibraryAdapter {
       return `IM-${id}-${ext}`;
     }
     
-    return ext === 'gif' ? `IM-${id}` : `IM-${id}.${ext}`;
+    return `IM-${id}.${ext}`;
   }
 
   /**

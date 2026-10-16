@@ -92,35 +92,41 @@ function findChatContainer(requireScrollable = false) {
  */
 function scrollToBottom(wrapper, platform = null) {
   const currentPlatform = platform || getCurrentPlatform();
-  
+
   // 如果是小圖模式，跳過自動捲動
   const isInline = (window.gssStickerSizeMode === 'small');
   if (isInline) {
     console.log('[GSS] Skip scroll: inline mode');
     return;
   }
-  
+
   // WTV 使用獨立邏輯，不走這裡
   if (currentPlatform === 'wtv') {
     console.warn('[GSS] WTV should use its own scroll logic');
     return;
   }
-  
+
+  // 【測試】gosh 平台暫時禁用自動滾軸，測試官方是否會幫忙滾動
+  if (currentPlatform === 'gosh') {
+    console.log('[GSS] Skip scroll: gosh platform (testing official scroll)');
+    return;
+  }
+
   const chatContainer = findChatContainer(true);
-  
+
   if (!chatContainer) {
     // fallback: 使用 scrollIntoView
     wrapper?.parentElement?.scrollIntoView(false);
     return;
   }
-  
+
   // 檢查用戶是否在底部附近
   const distanceToBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight;
   if (distanceToBottom > 500) {
     console.log('[GSS] Skip scroll: user not near bottom');
     return;
   }
-  
+
   // 根據不同平台執行滾動
   if (currentPlatform === 'kick') {
     chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -129,13 +135,13 @@ function scrollToBottom(wrapper, platform = null) {
     chatContainer.scrollTo({ top: targetScroll, behavior: 'auto' });
     chatContainer.dispatchEvent(new Event('scroll', { bubbles: true }));
     window.dispatchEvent(new Event('scroll', { bubbles: true }));
-    
+
     // 點擊"暫停"按鈕恢復自動滾動
     const resumeBtn = document.querySelector('button[class*="scroll"], button[dir="ltr"]');
     if (resumeBtn && resumeBtn.textContent.includes('暂停')) {
       resumeBtn.click();
     }
-    
+
     setTimeout(() => {
       chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'auto' });
     }, 100);
@@ -2759,10 +2765,12 @@ function extractEmoteIdFromSrc(src, imgElement = null) {
   if (!src) return null;
   const s = String(src);
 
-  // Imgur 圖片 URL：i.imgur.com/xxx.gif → IM-xxx.gif
-  const imgurMatch = s.match(/i\.imgur\.com\/([a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4))/i);
+  // Imgur 圖片 URL：i.imgur.com/xxx.gif → IM-xxx.gif（無副檔名時補 .gif）
+  const imgurMatch = s.match(/(?:i\.)?imgur\.com\/([a-zA-Z0-9-]+)(?:\.(gif|png|jpg|jpeg|mp4|webp|gifv))?/i);
   if (imgurMatch) {
-    return `IM-${imgurMatch[1]}`;
+    let ext = (imgurMatch[2] || 'gif').toLowerCase();
+    if (ext === 'gifv' || ext === 'webp') ext = 'gif';
+    return `IM-${imgurMatch[1]}.${ext}`;
   }
 
   // MEEE 圖片 URL：meee.com.tw/xxx.jpg → ME-xxx.jpg
@@ -2799,10 +2807,11 @@ function extractEmoteIdFromSrc(src, imgElement = null) {
 
       // 根據域名判斷格式
       if (domain.includes('imgur.com')) {
-        // Imgur 域名，提取 ID
-        const idMatch = filename.match(/^([a-zA-Z0-9-]+)\./i);
+        const idMatch = filename.match(/^([a-zA-Z0-9-]+)(?:\.(gif|png|jpg|jpeg|mp4|webp|gifv))?$/i);
         if (idMatch) {
-          return `IM-${idMatch[1]}.${ext}`;
+          let imgExt = (idMatch[2] || ext || 'gif').toLowerCase();
+          if (imgExt === 'gifv' || imgExt === 'webp') imgExt = 'gif';
+          return `IM-${idMatch[1]}.${imgExt}`;
         }
       } else if (domain.includes('meee.com.tw')) {
         // MEEE 域名，提取 ID
@@ -2945,19 +2954,24 @@ async function writeStickerRows(rows, favoriteIds) {
   return { sorted: sortedForDisplay, text };
 }
 
-async function toggleFavoriteIdInStorage(id) {
+function normalizeStickerIdForStorage(id) {
   let trimmed = String(id || '').trim();
+  if (/^GSS-.+$/i.test(trimmed)) return trimmed;
+  if (trimmed.startsWith('IM-') || trimmed.startsWith('ME-') || trimmed.startsWith('CB-')) {
+    trimmed = TAG ? TAG.normalizeId(trimmed) : trimmed.replace(/-(gif|png|jpg|jpeg|mp4|webp)$/i, '.$1');
+  }
+  if (/^(IM|ME)-/i.test(trimmed) && !/\.(gif|png|jpg|jpeg|mp4)$/i.test(trimmed)) {
+    trimmed += '.gif';
+  }
+  return trimmed;
+}
+
+async function toggleFavoriteIdInStorage(id) {
+  let trimmed = normalizeStickerIdForStorage(id);
 
   // 先檢查 GSS- 格式，避免被後續的格式統一邏輯影響
   // 放寬 GSS 格式驗證：只要是 GSS- 開頭即可，不強制要求副檔名
   const isGSSFormat = /^GSS-.+$/i.test(trimmed);
-
-  // GSS- 格式：保持原始格式，不做任何修改
-
-  // IM/ME/CB 格式：將 -gif, -png, -jpg, -jpeg, -mp4, -webp 結尾替換為 . 點格式
-  if (trimmed.startsWith('IM-') || trimmed.startsWith('ME-') || trimmed.startsWith('CB-')) {
-    trimmed = trimmed.replace(/-(gif|png|jpg|jpeg|mp4|webp)$/i, '.$1');
-  }
 
   // 支援 IM- 前綴（Imgur 圖片）、ME- 前綴（meee.com.tw 圖片）、YT-（YouTube）、CB-（Catbox）、GSS-（圖片/影片連結）
   // 移除 DL- 前綴支援
@@ -2985,18 +2999,11 @@ async function toggleFavoriteIdInStorage(id) {
 }
 
 async function addStickerIdToStorage(id) {
-  let trimmed = String(id || '').trim();
+  let trimmed = normalizeStickerIdForStorage(id);
 
   // 先檢查 GSS- 格式，避免被後續的格式統一邏輯影響
   // 放寬 GSS 格式驗證：只要是 GSS- 開頭即可，不強制要求副檔名
   const isGSSFormat = /^GSS-.+$/i.test(trimmed);
-
-  // GSS- 格式：保持原始格式，不做任何修改
-
-  // IM/ME 格式：將 -gif, -png, -jpg, -jpeg, -mp4 結尾替換為 . 點格式
-  if (trimmed.startsWith('IM-') || trimmed.startsWith('ME-')) {
-    trimmed = trimmed.replace(/-(gif|png|jpg|jpeg|mp4)$/i, '.$1');
-  }
 
   // 移除 DLive 格式統一邏輯
 
@@ -3026,18 +3033,11 @@ async function addStickerIdToStorage(id) {
 }
 
 async function removeStickerIdFromStorage(id) {
-  let trimmed = String(id || '').trim();
+  let trimmed = normalizeStickerIdForStorage(id);
 
   // 先檢查 GSS- 格式，避免被後續的格式統一邏輯影響
   // 放寬 GSS 格式驗證：只要是 GSS- 開頭即可，不強制要求副檔名
   const isGSSFormat = /^GSS-.+$/i.test(trimmed);
-
-  // GSS- 格式：保持原始格式，不做任何修改
-
-  // IM/ME/CB 格式：將 -gif, -png, -jpg, -jpeg, -mp4, -webp 結尾替換為 . 點格式
-  if (trimmed.startsWith('IM-') || trimmed.startsWith('ME-') || trimmed.startsWith('CB-')) {
-    trimmed = TAG ? TAG.normalizeId(trimmed) : trimmed.replace(/-(gif|png|jpg|jpeg|mp4|webp)$/i, '.$1');
-  }
 
   // 支援 DL- 前綴（DLive 貼圖）、IM- 前綴（Imgur 圖片）、ME- 前綴（meee.com.tw 圖片）、YT-（YouTube）、CB-（Catbox）、GSS-（圖片/影片連結）
   const isValidDL = /^(?:DL-)?[A-Za-z0-9_]+$/.test(trimmed);
@@ -3062,18 +3062,11 @@ async function removeStickerIdFromStorage(id) {
 
 async function applyTagToStickerIdInStorage(id, tagLabel) {
   if (!TAG) throw new Error('標籤模組未載入');
-  let trimmed = String(id || '').trim();
+  let trimmed = normalizeStickerIdForStorage(id);
 
   // 先檢查 GSS- 格式，避免被後續的格式統一邏輯影響
   // 放寬 GSS 格式驗證：只要是 GSS- 開頭即可，不強制要求副檔名
   const isGSSFormat = /^GSS-.+$/i.test(trimmed);
-
-  // GSS- 格式：保持原始格式，不做任何修改
-
-  // IM/ME/CB 格式：將 -gif, -png, -jpg, -jpeg, -mp4, -webp 結尾替換為 . 點格式
-  if (trimmed.startsWith('IM-') || trimmed.startsWith('ME-') || trimmed.startsWith('CB-')) {
-    trimmed = TAG.normalizeId(trimmed);
-  }
 
   // 支援 DL- 前綴（DLive 貼圖）、IM- 前綴（Imgur 圖片）、ME- 前綴（meee.com.tw 圖片）、YT-（YouTube）、CB-（Catbox）、GSS-（圖片/影片連結）
   const isValidDL = /^(?:DL-)?[A-Za-z0-9_]+$/.test(trimmed);
@@ -6018,13 +6011,13 @@ const DKIP = {
     const match = url.match(/(?:i\.)?imgur\.com\/([a-zA-Z0-9]+)(?:\.(gif|png|jpg|jpeg|mp4))?/i);
     if (!match || match[1].length < 5) return null;
     const id = match[1];
-    const ext = match[2] || 'gif'; // 默認 gif
+    let ext = (match[2] || 'gif').toLowerCase();
     if (useTwitchFormat) {
       // Twitch 格式：IM-ha3eTC7-gif（用 - 代替 .）
       return `IM-${id}-${ext}`;
     }
-    // 標準格式：IM-ha3eTC7.gif
-    return ext === 'gif' ? `IM-${id}` : `IM-${id}.${ext}`;
+    // 標準格式一律保留副檔名：IM-ha3eTC7.gif
+    return `IM-${id}.${ext}`;
   },
 
   // 解碼：IM-xxx → 圖片URL（支援兩種格式：IM-id.gif 和 IM-id-gif）
@@ -7640,16 +7633,17 @@ function getImageUrlFromTarget(target) {
 
 function extractImgurId(url, useTwitchFormat = false) {
   if (!url) return null;
-  const match = url.match(/(?:i\.)?imgur\.com\/([a-zA-Z0-9]+)(?:\.(gif|png|jpg|jpeg|mp4))?/i);
+  const match = url.match(/(?:i\.)?imgur\.com\/([a-zA-Z0-9]+)(?:\.(gif|png|jpg|jpeg|mp4|webp|gifv))?/i);
   if (!match) return null;
   const id = match[1];
-  const ext = match[2] || 'gif'; // 默認 gif
+  let ext = (match[2] || 'gif').toLowerCase();
+  if (ext === 'gifv' || ext === 'webp') ext = 'gif';
   if (useTwitchFormat) {
     // Twitch 格式：IM-ha3eTC7-gif（用 - 代替 .）
     return `${id}-${ext}`;
   }
-  // 標準格式：ha3eTC7.gif
-  return ext === 'gif' ? id : `${id}.${ext}`;
+  // 標準格式一律保留副檔名（GSS 驗證要求 IM-xxx.gif）
+  return `${id}.${ext}`;
 }
 
 function extractMeeeId(url, useTwitchFormat = false) {
@@ -7904,6 +7898,15 @@ function initIMFeature() {
     const url = getImageUrlFromTarget(e.target);
     if (!url) return;
 
+    // 已轉圖的貼圖優先用 alt（通常已含 IM-xxx.gif）
+    const mediaEl = e.target?.closest?.('img, video') || e.target;
+    const altId = String(mediaEl?.alt || '').trim();
+    if (/^(IM|ME)-[a-zA-Z0-9-]+/i.test(altId)) {
+      e.preventDefault();
+      showContextMenuAt(e.clientX, e.clientY, normalizeStickerIdForStorage(altId), mediaEl);
+      return;
+    }
+
     // 檢查是否為 imgur 或 meee 圖片
     const imgurId = extractImgurId(url);
     const meeeId = extractMeeeId(url);
@@ -7915,7 +7918,6 @@ function initIMFeature() {
     // 【Twitch 格式】使用 -gif/-jpg 格式（用 - 代替 .）
     // 【KICK 格式】使用原始 . 格式
     const isTwitchPage = window.location.hostname.includes('twitch.tv');
-    const isKickPage = window.location.hostname.includes('kick.com');
     const useDashFormat = isTwitchPage; // 只有 Twitch 使用 - 代替 .
     let id;
     if (imgurId) {
@@ -7923,7 +7925,7 @@ function initIMFeature() {
     } else {
       id = 'ME-' + extractMeeeId(url, useDashFormat);
     }
-    showContextMenuAt(e.clientX, e.clientY, id, e.target);
+    showContextMenuAt(e.clientX, e.clientY, normalizeStickerIdForStorage(id), e.target);
   }, true);
 }
 

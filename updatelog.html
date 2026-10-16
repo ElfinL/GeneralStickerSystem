@@ -217,9 +217,19 @@
     const VERSION_DATA = {
   'zh-TW': [
     {
+      "version": "v9.0",
+      "date": "10月16日",
+      "isLatest": true,
+      "content": [
+        "修正 Vaughn 平台 IM 格式 .gif 右鍵無法添加至 GSS 的問題",
+        "修正 Gosh 平台 .mp4 顯示問題：原生聊天室會把 .mp4 當成 .mp 連結，因此插件發送時會將 .mp4 轉成 -mp4；手動輸入 ID 時請將 .mp4 改為 -mp4",
+        "修正 Gosh 部分滾軸問題：插件把 ID 轉成圖後，原生聊天室不會為後插入的圖片自動捲動，所以必須由插件自行模擬滾軸。這種限制無法徹底解決，只能降低影響"
+      ]
+    },
+    {
       "version": "v8.9",
       "date": "10月15日",
-      "isLatest": true,
+      "isLatest": false,
       "content": [
         "gosh 平台官方禁止了其聊天室最大的特色功能，我們已恢復為與其他平台一致的 ID 貼圖方式"
       ]
@@ -827,9 +837,19 @@
       ],
       'zh-CN': [
           {
+      "version": "v9.0",
+      "date": "10月16日",
+      "isLatest": true,
+      "content": [
+        "修正 Vaughn 平台 IM 格式 .gif 右键无法添加至 GSS 的问题",
+        "修正 Gosh 平台 .mp4 显示问题：原生聊天室会把 .mp4 当成 .mp 链接，因此插件发送时会将 .mp4 转成 -mp4；手动输入 ID 时请将 .mp4 改为 -mp4",
+        "修正 Gosh 部分滚轴问题：插件把 ID 转成图后，原生聊天室不会为后插入的图片自动滚动，所以必须由插件自行模拟滚轴。这种限制无法彻底解决，只能降低影响"
+      ]
+    },
+          {
       "version": "v8.9",
       "date": "10月15日",
-      "isLatest": true,
+      "isLatest": false,
       "content": [
         "gosh 平台官方禁止了其聊天室最大的特色功能，我们已恢复为与其他平台一致的 ID 贴图方式"
       ]
@@ -1430,9 +1450,19 @@
       ],
       'en': [
         {
+      "version": "v9.0",
+      "date": "Oct 16",
+      "isLatest": true,
+      "content": [
+        "Fixed Vaughn IM-format .gif stickers failing to add to GSS via right-click",
+        "Fixed Gosh .mp4 display: native chat treats .mp4 as a .mp link, so the extension now converts .mp4 to -mp4 when posting. When typing IDs manually, change .mp4 to -mp4",
+        "Improved Gosh auto-scroll: after the extension converts IDs into images, native chat will not scroll for those inserted images, so the extension has to simulate scrolling itself. This cannot be fully solved—only reduced"
+      ]
+    },
+        {
       "version": "v8.9",
       "date": "Oct 15",
-      "isLatest": true,
+      "isLatest": false,
       "content": [
         "gosh platform officially disabled their chat room's biggest feature, we've reverted to the ID-based sticker method consistent with other platforms"
       ]
@@ -2032,9 +2062,19 @@
       ],
       'ja': [
          {
+      "version": "v9.0",
+      "date": "10月16日",
+      "isLatest": true,
+      "content": [
+        "Vaughn の IM 形式 .gif を右クリックで GSS に追加できない問題を修正",
+        "Gosh の .mp4 表示問題を修正：ネイティブチャットが .mp4 を .mp リンクとして扱うため、拡張機能は今後送信時に .mp4 を -mp4 に変換します。手動入力時は .mp4 を -mp4 に変えてください",
+        "Gosh の一部スクロール問題を改善：拡張機能が ID を画像に変換して後から挿入するため、ネイティブチャットは自動スクロールしてくれません。そのため拡張機能側でスクロールをシミュレートする必要があります。完全には解決できず、影響を抑えるのみです"
+      ]
+    },
+         {
       "version": "v8.9",
       "date": "10月15日",
-      "isLatest": true,
+      "isLatest": false,
       "content": [
         "gosh プラットフォームがチャットルームの最大の特徴機能を禁止したため、他のプラットフォームと同じID方式に戻しました"
       ]
@@ -2634,9 +2674,19 @@
       ],
       'ko': [
         {
+      "version": "v9.0",
+      "date": "10월 16일",
+      "isLatest": true,
+      "content": [
+        "Vaughn IM 형식 .gif를 우클릭으로 GSS에 추가하지 못하는 문제를 수정",
+        "Gosh .mp4 표시 문제 수정: 네이티브 채팅이 .mp4를 .mp 링크로 처리하므로, 플러그인은 이제 전송 시 .mp4를 -mp4로 변환합니다. 수동 입력 시 .mp4를 -mp4로 바꿔 주세요",
+        "Gosh 일부 스크롤 문제를 개선: 플러그인이 ID를 이미지로 변환해 나중에 삽입하면, 네이티브 채팅은 그 이미지 때문에 자동 스크롤하지 않습니다. 그래서 플러그인이 스크롤을 직접 흉내 내야 합니다. 완전히 해결할 수는 없으며 영향만 줄일 수 있습니다"
+      ]
+    },
+        {
       "version": "v8.9",
       "date": "10월 15일",
-      "isLatest": true,
+      "isLatest": false,
       "content": [
         "gosh 플랫폼이 채팅방의 가장 큰 특징 기능을 금지하여, 다른 플랫폼과 동일한 ID 방식으로 복구했습니다"
       ]

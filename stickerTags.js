@@ -32,13 +32,17 @@
 
   function normalizeId(id) {
     if (!id) return id;
-    // IM 格式：將 -gif, -png, -jpg, -jpeg, -mp4 結尾替換為 . 點格式
+    // IM 格式：將 -gif, -png, -jpg, -jpeg, -mp4 結尾替換為 . 點格式；缺副檔名時補 .gif
     if (id.startsWith('IM-')) {
-      return id.replace(/-(gif|png|jpg|jpeg|mp4)$/i, '.$1');
+      let next = id.replace(/-(gif|png|jpg|jpeg|mp4)$/i, '.$1');
+      if (!/\.(gif|png|jpg|jpeg|mp4)$/i.test(next)) next += '.gif';
+      return next;
     }
-    // ME 格式：將 -gif, -png, -jpg, -jpeg, -mp4 結尾替換為 . 點格式
+    // ME 格式：將 -gif, -png, -jpg, -jpeg, -mp4 結尾替換為 . 點格式；缺副檔名時補 .gif
     if (id.startsWith('ME-')) {
-      return id.replace(/-(gif|png|jpg|jpeg|mp4)$/i, '.$1');
+      let next = id.replace(/-(gif|png|jpg|jpeg|mp4)$/i, '.$1');
+      if (!/\.(gif|png|jpg|jpeg|mp4)$/i.test(next)) next += '.gif';
+      return next;
     }
     // CB 格式：將 -gif, -png, -jpg, -jpeg, -mp4, -webp 結尾替換為 . 點格式
     if (id.startsWith('CB-')) {

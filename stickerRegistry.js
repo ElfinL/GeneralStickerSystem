@@ -34,9 +34,11 @@ const StickerRegistry = (function () {
             return id.replace(/\.(gif|png|jpg|jpeg|mp4)$/i, '-$1');
           case 'vaughn':
           case 'kick':
-          case 'gosh':
-            // Vaughn/Kick/Gosh 保持原始格式（使用 . ）
+            // Vaughn/Kick 保持原始格式（使用 . ）
             return id;
+          case 'gosh':
+            // Gosh: 使用橫線代替點號（避免聊天室誤認為連結）
+            return id.replace(/\.(gif|png|jpg|jpeg|mp4)$/i, '-$1');
           case 'youtube':
             // YouTube: 發送原始 IM-xxx.gif 格式（轉圖功能會將其轉換為圖片）
             return id;
@@ -65,8 +67,10 @@ const StickerRegistry = (function () {
             return id.replace(/\.(gif|png|jpg|jpeg|mp4)$/i, '-$1');
           case 'vaughn':
           case 'kick':
-          case 'gosh':
             return id; // 保持原始格式
+          case 'gosh':
+            // Gosh: 使用橫線代替點號（避免聊天室誤認為連結）
+            return id.replace(/\.(gif|png|jpg|jpeg|mp4)$/i, '-$1');
           case 'youtube':
             // YouTube: 發送原始 ME-xxx.gif 格式（轉圖功能會將其轉換為圖片）
             return id;
@@ -164,9 +168,11 @@ const StickerRegistry = (function () {
             return normalized.replace(/\.(gif|png|jpg|jpeg|mp4|webp)$/i, '-$1');
           case 'kick':
           case 'vaughn':
-          case 'gosh':
-            // Kick/Vaughn/Gosh 保持原始格式（使用 . ）
+            // Kick/Vaughn 保持原始格式（使用 . ）
             return normalized;
+          case 'gosh':
+            // Gosh: 使用橫線代替點號（避免聊天室誤認為連結）
+            return normalized.replace(/\.(gif|png|jpg|jpeg|mp4|webp)$/i, '-$1');
           case 'youtube':
             // YouTube: 發送原始 CB-xxx.gif 格式
             return normalized;
